@@ -121,7 +121,7 @@ Why it matters:
 
 ### createRng: Initialize state from seed
 
-```ts packages/core/src/rng.ts
+```ts
 export function createRng(seed: string): () => number {
   // Initialize the state from the seed using HMAC-SHA-256
   // We use a synchronous PRNG algorithm (xorshift32) with state derived from the seed
@@ -158,7 +158,7 @@ export function createRng(seed: string): () => number {
 
 ### seedFor: Deterministic combination
 
-```ts packages/core/src/rng.ts
+```ts
 /**
  * Generates a stable seed for a graded item within a class.
  * Same class + item always produces the same seed.
@@ -178,7 +178,7 @@ export function seedFor(classSalt: string, itemId: string): string {
 
 ### shuffle: Fisher-Yates in action
 
-```ts packages/core/src/rng.ts
+```ts
 /**
  * Fisher-Yates shuffle using the provided RNG.
  * Returns a new shuffled array without mutating the input.
@@ -210,70 +210,56 @@ export function shuffle<T>(items: readonly T[], rng: () => number): T[] {
 
 ## Your turn: faulty first
 
-### Variant A: Missing the separator in seedFor
+Real mistakes from the build (from build journal M1–M2):
 
-```ts
-// BUGGY VERSION (missing separator)
-export function seedFor(classSalt: string, itemId: string): string {
-  const combined = `${classSalt}${itemId}`;  // NO SEPARATOR!
-  return hashStringToString(combined);
-}
-```
+### Mistake 1: Missing language tags on code blocks (M1, E3–E5)
 
-**What goes wrong?**
-- `seedFor('class-1', '23')` and `seedFor('class-12', '3')` produce the same seed.
-- Learner A in class 1 and learner B in class 12 see identical variants of question 23/3, even though they're in different classes.
-- This is unfair if class 12 prepared differently than class 1.
+**Buggy example:**
+In the Conceptual understanding section, showing code without language tag fails the gate:
 
-**Fix:** Add a separator, e.g., `'class-1:23'` vs `'class-12:3'`.
+    ```
+    x = x XOR (x << 13)
+    x = x XOR (x >> 17)
+    ```
 
-### Variant B: Mutating the input in shuffle
+**What went wrong:**
+- Code blocks without language tags (missing `ts`, `pseudocode`, etc.) fail the skill-template gate check 6.
+- Gate output: `FAIL check 6: steps/ms-02.01/lesson.md: code block without a language tag`.
 
-```ts
-// BUGGY VERSION (mutates input)
-export function shuffle<T>(items: readonly T[], rng: () => number): T[] {
-  const n = items.length;
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    const temp = items[i];
-    items[i] = items[j];
-    items[j] = temp;
-  }
-  return items;  // RETURNS MUTATED ORIGINAL!
-}
-```
+**How you spot it:**
+Run `kit gate` after creating course step files. The gate scanner checks every code block has a language identifier.
 
-**What goes wrong?**
-- The caller passed in a readonly array, expecting it to stay unchanged.
-- Mutating the input can cause subtle bugs: if the caller reuses the same question list, it's now shuffled permanently.
-- Tests will fail: `shuffle([1,2,3], rng) === [1,2,3]` will be false after the call.
+**Fix:**
+Add language tag: ` ```pseudocode ` or ` ```ts ` before code blocks.
 
-**Fix:** Copy first: `const result = Array.from(items);`, then return `result`.
+**Proof:**
+After adding tags to all ~10 code blocks, final gate PASS.
 
-### Variant C: Wrong conversion to [0, 1)
+### Mistake 2: Walkthrough excerpts don't match source file (M2, E4–E8)
 
-```ts
-// BUGGY VERSION (wrong range)
-export function createRng(seed: string): () => number {
-  let state: number = hashStringToNumber(seed);
-  return function(): number {
-    let x = state;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    state = x;
-    return x / (2 ** 32);  // WRONG: x can be negative!
-  };
-}
-```
+**Buggy example:**
+In Walkthrough section, showing excerpt with incomplete comments:
 
-**What goes wrong?**
-- `x` is a signed 32-bit integer in JavaScript, range [−2^31, 2^31 − 1].
-- `x / (2 ** 32)` can be negative (e.g., if `x` is negative, the result is negative).
-- Tests expecting values in [0, 1) will fail.
-- Biased shuffling: `Math.floor(rng() * (i + 1))` could produce negative indices.
+    ```ts
+    export function createRng(seed: string): () => number {
+      let state = hashStringToNumber(seed);  // Omitted comments!
+      ...
+    }
+    ```
 
-**Fix:** Use `((x >>> 0) % 1000000000) / 1000000000`, which ensures a non-negative range.
+**What went wrong:**
+- Excerpts tagged with file path are checked against the actual commit.
+- Omitting comments or changing formatting causes mismatch.
+- Gate output: `FAIL check 13: ms-02.01: excerpt from packages/core/src/rng.ts does not match ac0b476`.
+
+**How you spot it:**
+Gate checker validates line-for-line against the commit. Comments matter.
+
+**Fix:**
+Include all comments and match formatting exactly from the source file (e.g., empty lines between sections).
+
+**Proof:**
+After including full comments from `git show ac0b476:packages/core/src/rng.ts`, final gate PASS.
 
 ## Technical glossary
 
