@@ -92,11 +92,30 @@ export function pace(
     }
   }
 
-  // Calculate total behindSec: sum of positive deltas only
+  // Calculate total behindSec: sum of deltas of finished sections + current section's overrun
+  // According to SPEC: "sum of deltas of finished sections plus the current section's overrun (if any)"
+  // This means: sum deltas for all finished sections, and for the current section only count overrun (positive delta)
   behindSec = 0;
-  for (const sec of perSection) {
-    if (sec.deltaSec !== null && sec.deltaSec > 0) {
-      behindSec += sec.deltaSec;
+  for (let i = 0; i < perSection.length; i++) {
+    const sec = perSection[i];
+    if (sec.deltaSec === null) continue;
+
+    if (sec.id === currentId) {
+      // Current section: only add overrun (if positive)
+      if (sec.deltaSec > 0) {
+        behindSec += sec.deltaSec;
+      }
+    } else if (i < perSection.length - 1 || eventsByTime.length > 0) {
+      // Finished section: add delta (can be positive or negative)
+      // Check if there's a later event to determine if this is actually finished
+      const enteredAt = eventMap.get(sec.id);
+      if (enteredAt !== undefined) {
+        const nextEventIndex = eventsByTime.findIndex((e) => e.at > enteredAt);
+        if (nextEventIndex !== -1) {
+          // This section is finished (another was entered after it)
+          behindSec += sec.deltaSec;
+        }
+      }
     }
   }
 
@@ -163,19 +182,40 @@ export function scriptTotalSec(markdown: string): number | null {
   // Look for lines like:
   // "Total runtime: **45 minutes**"
   // "### Total runtime: **2 hours**"
+  // "Total runtime: **2 hours 30 minutes**"
+  // "Total runtime: **2.5 hours**"
   const lines = markdown.split('\n');
 
   for (const line of lines) {
-    const match = line.match(/Total\s+runtime:\s*\*{0,2}(\d+)\s+(hours?|minutes?)\*{0,2}/i);
+    // Try to match the total runtime pattern
+    // Match: "Total runtime" followed by optional colon/spaces, then ** if present, then content, then ** if present
+    let match = line.match(/Total\s+runtime\s*:\s*\*\*(.+?)\*\*/i);
+    if (!match) {
+      // Try without the ** markers
+      match = line.match(/Total\s+runtime\s*:\s*([^\n]*)/i);
+    }
     if (!match) continue;
 
-    const value = parseInt(match[1], 10);
-    const unit = match[2].toLowerCase();
+    const content = match[1].trim();
 
-    if (unit.startsWith('hour')) {
-      return value * 3600;
-    } else if (unit.startsWith('minute')) {
-      return value * 60;
+    // Parse the content: could be "45 minutes", "2 hours", "2 hours 30 minutes", etc.
+    let totalSec = 0;
+
+    // Try to match hours
+    const hoursMatch = content.match(/(\d+(?:\.\d+)?)\s*hours?/i);
+    if (hoursMatch) {
+      totalSec += Math.round(parseFloat(hoursMatch[1]) * 3600);
+    }
+
+    // Try to match minutes
+    const minutesMatch = content.match(/(\d+(?:\.\d+)?)\s*minutes?/i);
+    if (minutesMatch) {
+      totalSec += Math.round(parseFloat(minutesMatch[1]) * 60);
+    }
+
+    // If we found either hours or minutes, return the result
+    if (totalSec > 0) {
+      return totalSec;
     }
   }
 
