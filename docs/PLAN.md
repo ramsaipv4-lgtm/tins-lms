@@ -1,4 +1,4 @@
-# Coach LMS — Plan v5 (consolidated)
+# Coach LMS — Plan v6 (consolidated)
 
 Status: **DRAFT for owner review.** Comment on any section (quote its ID). The whole file is replaced
 by the next version; the changelog at the bottom says what moved.
@@ -108,6 +108,27 @@ All AI reaches the app through **one tool layer** (`get_plan`, `propose_plan_edi
 Swapping rules for Needle or Laya changes no other code. Hidden tests run against the rule-based
 implementations.
 
+### 4.2 Technology stack (DEC-13, chosen by Claude at the owner's request)
+
+| Layer | Choice | Why | Checked |
+|---|---|---|---|
+| Language | **TypeScript** everywhere | One language for phone, browser, hub and tests | Node 22.22 runs `.ts` files directly (no build step for core tests): verified |
+| Core logic (planner, scheduler, ledgers, Shift engine, exam assembly, graph) | **Plain TypeScript pure functions, zero runtime dependencies**, tested with `node --test` | Keeps the TINS gate honest; easiest for weaker models to build correctly; runs identically on phone, browser and hub | — |
+| Hub and pipelines (server, sync, import and convert pipeline, MCP server, payroll runs) | **Effect v4** (`effect@rc`, version pinned exactly) | Typed errors, schema validation, retries, and the detailed error messages the owner asked for. The core `effect` package has no external dependencies | `4.0.0-rc.118` is on npm: verified. RC since 12 Aug 2026, no broad breaking changes planned (search) |
+| UI | **Svelte 5 + SvelteKit** (static adapter), installable offline web app via `@vite-pwa/sveltekit` | Small bundles for 2021-era phones; explicit state (runes) suits offline-first | `svelte` 5.57.1 on npm: verified |
+| Notebook board | **Excalidraw 0.18 (MIT, React)**, loaded only on the board page | The only React in the app, kept separate | 0.18.1, MIT: verified |
+| Native companion app | **Capacitor** shell around the same Svelte app (Android first). System 1 runs as WebAssembly inside it (needle-rs, laya-ts); a Cactus native plugin comes later for speed | One codebase for web and phone | Not verified here |
+| Hub storage | **SQLite via built-in `node:sqlite`**; ledgers stay append-only | No database server to install | Works on Node 22.22 (prints an "experimental" warning): verified |
+| Content converter | **Microsoft MarkItDown** as a Python sidecar on the hub | The npm package named `markitdown` is a different, proprietary package and must not be used | Verified (npm metadata; Python MarkItDown run on package5) |
+| Tests | `node --test` for core + the hidden acceptance suite; **Playwright** for UI flows | Both work offline; Chromium is available in the build environment | — |
+
+Every dependency above becomes a locked D-row in `SPEC.md`; the tins-kit gate rejects any
+dependency not named in one.
+
+**Risk.** Models know Effect v3 better than v4 (v4 renamed core APIs, e.g. `Context.Tag` became
+`Context.Service`). Mitigation: Effect is confined to the hub and pipelines, the version is pinned,
+and a short v4 API crib ships as a tins-kit pattern.
+
 ---
 
 ## 5. Admin workflow (Priya)
@@ -126,6 +147,32 @@ implementations.
 | A-10 | **Privacy rules** enforced as P-5 (not configurable downwards). | — |
 | A-11 | **Academy dashboard:** active learners, completion, exam and Shift outcomes, ticket throughput, contribution wall, time spent. | MCQ-Mastery (4), OpenProject (23), contribution tools (24–27) |
 | A-12 | **Certificates** issued when capstone and final assessment pass. | frappe/lms (7) |
+
+### 5.1 Trainer management (inspired by "Spark — Trainer Management")
+
+The upload is a website mirror of `spark.devlustro.com` (one compiled JavaScript bundle, no
+source). Its features were reconstructed from the bundle's interface text. It is an HR and
+operations system for academies that send trainers to client colleges.
+
+| Area | What Spark does | What we take, and how we change it |
+|---|---|---|
+| **Trainer profiles** | HR master: date of joining, skills and domains, verified resume, contract type, lifecycle (Onboarding → Active → Suspended / Inactive) | Same; skills link to the skill map so admins can match trainers to batches |
+| **Compliance documents** | ID proof (Aadhaar), PAN, bank mandate, offer letter, master service agreement; review console (approve / reject with remarks) | Same review console, but **we store verification status, masked numbers (last 4 digits) and an expiry, not the ID images**. Any file kept is encrypted, and every view is logged (P-5, §11) |
+| **Training sites** | Client colleges with address, coordinates and a geofence radius | Same; a site links to programs and batches |
+| **Attendance** | Check-in with GPS distance from the site plus a photo; exceptions and admin overrides with justification | Two options per site: (a) **scan the site's QR code** (no GPS, no photo; default) or (b) GPS check-in that stores only *within / outside* and the distance, never a location trail. Photos are opt-in per site. Exceptions and overrides keep a reason and an audit entry |
+| **Schedules** | Class schedule feed, reschedule requests with justification | Same; feeds the trainer's own timeline (their coach plan) |
+| **Class delivery reports** | Hours delivered, remarks, issues | Same; prefilled from the class session (hours, quiz results, Shift run) so the trainer only adds remarks |
+| **Expenses** | Claims: travel, food, accommodation, local transport; approve, reject, part-paid, disburse | Same; amounts in **integer paise** (tins-kit money pattern); claims are an append-only ledger |
+| **Payroll** | Per-lecture rate or monthly retainer; payroll runs approved, then disbursed; payslips | Same, as an Effect pipeline with a dry run before approval; payslips as PDFs |
+| **Commercials** | Quotations → invoices (GST number, amount in words), ageing analysis (0–30 days etc.), billed revenue | Same; invoices are locked once issued; corrections are credit notes |
+| **Approvals and audit** | Central approval hub, executive dashboard, audit log, login history | Same; one approval inbox for documents, attendance exceptions, expenses, payroll runs and Shift grading changes (DEC-1) |
+
+Admin steps added: **A-13** trainer onboarding and compliance review · **A-14** sites and check-in
+method · **A-15** approvals inbox · **A-16** payroll and expense runs · **A-17** quotations,
+invoices and ageing.
+
+Trainer steps added: **T-22** check in at a site · **T-23** file the class delivery report
+(prefilled) · **T-24** file expenses · **T-25** view payslips · **T-26** request a reschedule.
 
 ## 6. Trainer workflow (Meera)
 
@@ -201,56 +248,116 @@ Example → Known → Assumption → Observation → Answer (code) → TRACE TAB
 | **Into the LMS** | Saved boards attach to the day's skill node, appear in every enrolled learner's "related" panel, and are linked from `whiteboard_dayNN.md` exercises |
 | **Learner use** | Learners do the package's whiteboard exercises on the same board; recall exercises of type *diagram* are drawn here |
 
-### 6.5 Trace viewer (pyviz_tutor)
+### 6.5 Trace viewer: Python, JavaScript, Java, C, C++ (DEC-14)
 
-pyviz_tutor (MIT, zero-dependency Python) runs a Python script and records each step: variables,
-stack, output, and counts of comparisons and swaps. It produces one HTML page with a time-travel
-slider.
+One **trace format** for every language. Each step records: line, call stack with local variables,
+heap objects, output, and counters (comparisons, swaps). The format follows the de-facto standard
+used by Python Tutor, so one viewer and one "predict, then reveal" mode work for every language.
 
-In the LMS:
+| Language | How traces are produced | Where it runs | Phase |
+|---|---|---|---|
+| Python | `sys.settrace` tracer (as in pyviz_tutor, MIT) | Hub or desktop; in the browser via Pyodide later | 2 (browser 3) |
+| JavaScript | The code is instrumented by a parser, then run in a sandboxed worker | Browser, offline | 2 |
+| Java | Debugger-interface (JDI) backend | Hub (needs a JDK) | 3 |
+| C and C++ | Valgrind-based backend (Python Tutor's approach: pointers, uninitialised memory, out-of-bounds) | Hub on Linux | 3 |
+| Any other | Hand-drawn trace table on the Notebook board | — | — |
 
-- **Predict, then reveal** (commit-before-reveal for code). A learner fills a trace table on the
-  Notebook board first, then opens the real trace to compare, row by row.
-- Live-coding scripts link to traces of their programs.
-- **Offline fix:** the generated page loads two libraries from a CDN (`viewer.py` lines 977–979).
-  The LMS ships local copies so traces work offline.
-- **Limit:** Python only. The reference whiteboard examples are in **C**, so C traces need another
-  tracer, or a hand-drawn trace table as the fallback.
+Other rules:
 
-## 7. Learner workflow (Arjun)
+- pyviz_tutor's output loads two libraries from a CDN (`viewer.py` lines 977–979); our viewer
+  bundles its own, so traces work offline.
+- **Predict, then reveal:** the learner fills a trace table on the Notebook board first, then
+  compares it with the real trace, row by row.
+- One click sends a trace's steps to the Notebook board as a pre-filled trace table (in the green
+  grid style of the reference PDF).
+- **Licensing:** Python Tutor's public site is free to use. The licence of its source backends must
+  be checked before reusing any code (OQ-10).
 
-### 7.0 The coaching conversation framework (owner's prompt)
+### 6.6 Algorithm visualizers (DEC-15)
 
-Every coaching conversation uses the owner's 4-stage framework, with a **halt for the person's
-answer** at each decision point (P-12):
+All four sites the owner listed (and Treelab) are blocked from this build environment, so they are
+described from search results only.
 
-| Stage | The coach… | Ends with |
+| Source | What it offers (from search) | What we take | Licence status |
+|---|---|---|---|
+| David Galles, USF *Data Structure Visualizations* | Broad coverage (stacks, queues, trees, heaps, hashing, sorting, graph algorithms); HTML5 canvas; source downloadable | Coverage list; canvas-animation approach | Source is downloadable, but the licence is not stated in results; check before reuse |
+| VisuAlgo (NUS) | **e-Lecture mode** (narrated walkthrough); **auto-generated, randomised quiz questions with automatic grading**; training mode | e-Lecture mode (story-mode friendly); randomised, auto-graded "what happens next?" questions per structure | Free to use, not open source: inspiration and links only |
+| DSA Visualizer (dsavisualizer.in; GitHub `suber-IQ/dsa-visualizer`) | Step-by-step execution, real-time animation, performance metrics, code snippets, **custom input** | Custom input, step metrics, code panel | Open-source repo; licence to check |
+| visualizedsa.com (BFS) | Not found by search; assumed graph editing with queue and visited panels | Graph editor and queue/visited side panels | Unknown |
+| Treelab (treelab.dev) | Visual tree-structure experiments, custom algorithms | Tree workbench | Unknown |
+
+**Our visualizer framework (one engine, many algorithms):**
+
+1. **Algorithm player.** Each algorithm emits a deterministic list of steps (same idea as the trace
+   format). Controls: play, pause, step forward and back, speed, and **custom input**. Side panels
+   for stack, queue, visited set and counters. A **code panel** highlights the current line in
+   Python, C, C++, Java or JavaScript.
+2. **Predict the next step** (VisuAlgo-style training, commit-before-reveal). Randomised from a
+   seed, auto-graded, results flow into the learner's drill statistics and Anki (missed steps become
+   cards).
+3. **e-Lecture mode.** Narrated steps that interleave with explanation; in story mode they become
+   panels of a chapter.
+4. **To the Notebook board.** Any step can be sent to the board as a drawing or trace table.
+5. **Graph and tree editor.** Build your own input graph or tree (visualizedsa-, Treelab-style).
+   The same node-graph component also draws the skill map and the knowledge graph.
+
+The first set: arrays and sorting; stacks and queues; linked lists; BST, AVL and heaps; hashing;
+BFS, DFS, Dijkstra; recursion trees; dynamic-programming tables.
+
+## 7. Learner workflow (Arjun)## 7. Learner workflow (Arjun)
+
+### 7.0 The coaching conversation framework (owner's prompt, completed: DEC-16)
+
+The owner's 4-stage prompt is the backbone (P-12): goal clarification, constraints and risks,
+proposed pathway, final versioned plan, with a halt for the person at each decision point.
+
+**The owner's problem with it:** using it meant writing essays, with no options to pick from.
+v6 completes the framework with two missing stages and a **low-friction answer mode** at every step.
+
+| Stage | The coach… | What the person does (low friction) |
 |---|---|---|
-| 1. **Goal clarification** | Restates the goal and the core problem in its own words | "Is this correct? Answer Yes or correct me." |
-| 2. **Constraint and risk analysis** | Lists what the coach cannot do, what the person must do, and **pitfalls they may have overlooked** | (continues to stage 3) |
-| 3. **Proposed solution pathway** | Proposes a collaborative workflow with high-level steps | "Agree, or modify?" |
-| 4. **Final action plan** | Adopts the person's changes explicitly ("that's a better idea; here is how I'm incorporating it"), then produces a **versioned master plan** ("Plan v1", "Plan v2"…) | The saved plan |
+| 0. **Context** (new) | Asks who the plan is for and what area it covers | Taps a domain card: Career / Learning, Money, Fitness, Relationships, Habits, or "a specific problem" |
+| 1. **Goal clarification** | Shows **3–5 predicted goal statements** for that domain, each already in measurable form ("Deploy a real project to the cloud in 90 days") | Taps one or two, edits a word, or types one short sentence (System 1 extracts the fields). Confirms "Yes" or taps a suggested correction |
+| 2. **Constraints and risks** | Pre-fills what it can infer, and asks the rest as **sliders and chips**: time windows (drag on a day strip), budget (slider), energy, equipment. Then shows **predicted pitfalls as chips** from a rule table (e.g. "phone after 22:00" → "late-night scrolling"), each with a suggested counter-measure | Ticks the pitfalls that apply; nothing to write |
+| 3. **Proposed pathway** | Offers **three plan cards: Light / Standard / Intense**, each with hours per week, expected date to reach the goal, and its trade-off | Picks one, then adjusts with **small modifier chips** ("move learning to evenings", "no weekends") |
+| 4. **Final action plan** | Says explicitly which of the person's changes it adopted, then saves the **versioned master plan** (Plan v1) | Taps "Save and start" |
+| 5. **Review cadence** (new) | Schedules check-ins (weekly, and after any 3 missed blocks). Each check-in replays stages 2–4 **with the previous answers pre-selected**, so a change takes a few taps and creates Plan v2 | Taps "same as before" or changes one chip |
 
-Where it is used:
+**What fixes the missing behaviour in the original prompt:**
 
-- **Onboarding.** Stage 1 is the goals interview; stage 2 covers time, money, health and skills
-  constraints; stage 3 is the draft 12-week arc and daily rhythm; stage 4 is the agreed plan that
-  drives the timeline.
-- **Any new problem**, e.g. "I keep missing my morning lessons". The agreed plan is stored like a
-  SPEC: numbered and versioned, and a change creates a new version.
-- **Shift postmortems and capstone planning** (stages 2–4).
+- **"Halt and await"** is enforced by the app, not trusted to a model.
+- **"No" at stage 1** shows the 3 nearest alternatives instead of asking for a rewrite; after two
+  "No"s it offers free text.
+- **"I have no memory between conversations"** is solved by the app: the saved profile and plan
+  versions are the coach's memory, so every session starts from them.
+- **Defer anything:** any question can be answered "ask me later"; the coach asks it in context
+  (e.g. the calorie question is asked on the first day the person logs a meal).
+- **Import instead of typing (later phases):** calendar file (`.ics`) for fixed commitments;
+  bank-statement CSV for spending patterns; step counts from the phone.
 
-Without AI, each stage is a guided form with the same halts. With AI, Claude (over MCP) or the
-on-device model runs the conversation, but the halts and the saved, versioned plan are enforced by
-the app, not left to the model.
+**Friction targets** (become acceptance criteria, measured by the hidden UI tests on a scripted
+persona):
+
+- first plan in **≤ 5 minutes**;
+- **≤ 25 taps**;
+- **≤ 2 typed sentences**;
+- every question has a "skip / ask later".
+
+**Where the framework is used:** onboarding (stages 0–5); any new problem the person brings ("I
+keep missing my morning lessons"); Shift postmortems and capstone planning (stages 2–4).
 
 ### 7.1 Day 0
 
 1. Sign-up, then a join code (links him to Meera's batch).
-2. **Onboarding conversation** using the §7.0 framework. Stage 1 asks: goals, why they matter.
-   Stage 2 asks: wake and sleep times, fixed commitments, commute, income and fixed costs, height,
-   weight and activity, diet, social energy, weekly learning hours, biggest time-waster, coaching
-   tone; then names risks. Stage 3 proposes. Stage 4 saves **Plan v1**.
+2. **Onboarding conversation** using the §7.0 framework, mostly taps:
+   - stage 0: domain cards;
+   - stage 1: predicted goals;
+   - stage 2: time windows on a day strip, sliders for budget and learning hours, chips for diet,
+     social energy, coaching tone and predicted pitfalls;
+   - stage 3: Light / Standard / Intense cards;
+   - stage 4: saves **Plan v1**.
+
+   Questions marked "ask me later" come back in context.
 3. **Placement test**: sectioned, points per section (from the readiness assessment upload).
 4. Result:
    - a **profile**;
@@ -431,8 +538,10 @@ The mechanics are identical; only presentation changes.
 | M-25 | **Content conversion**: MarkItDown on the hub, cleanup pass, OCR route for scans | 1 (convert + cleanup), 2 (OCR) |
 | M-26 | **Package import**: skill-template v1.2 folders → lessons, quizzes, cards, teleprompter, whiteboard exercises; the 8-point content gate | 1 |
 | M-27 | **Notebook board**: modified Excalidraw (ruled paper, 16:9 pages, pen palette, stamps, trace-table tool, PDF export, QR share, live follow) | 2 (needs Excalidraw as a dependency; see OQ-4) |
-| M-28 | **Trace viewer**: pyviz_tutor traces with offline-bundled libraries; predict-then-reveal trace tables | 2 |
-| M-29 | **Coaching framework engine**: 4 stages with enforced halts; versioned plans | 1 |
+| M-28 | **Trace viewer**: one trace format; Python and JavaScript (phase 2), Java, C and C++ (phase 3); offline libraries; predict-then-reveal; send to board | 2–3 |
+| M-29 | **Coaching framework engine**: stages 0–5, enforced halts, predicted options (rule tables), Light/Standard/Intense plan cards, versioned plans, friction targets | 1 |
+| M-30 | **Trainer management** (Spark-inspired): profiles, compliance review (masked data), sites with QR or GPS check-in, schedules, delivery reports, expenses, payroll runs, quotations and invoices, approvals inbox, audit | 2 (proposed) |
+| M-31 | **Visualizer framework**: algorithm player, predict-the-next-step quizzes, e-Lecture mode, graph and tree editor, send to board | 2 |
 
 **Phase-1 size is deferred** until the owner approves (OQ-1).
 
@@ -452,7 +561,7 @@ The mechanics are identical; only presentation changes.
 
 ---
 
-## 12. Resource coverage: all 45 items placed
+## 12. Resource coverage: all 53 items placed
 
 Status column:
 - **verified** = I read the repo or the official page;
@@ -505,6 +614,14 @@ Status column:
 | U6 | Skill template v1.2 + faulty-first-instructions (upload) | verified (read) | The authoring engine: 7-artifact set + companions, teleprompter scripts, validation checklist, prompt library | T-2, T-3, T-5, M-26 | 1 |
 | U7 | package5 (upload) | verified (1,074 files inventoried; samples read) | Real example package; import target for M-26; `lab-repo/` template | T-4, T-8 | 1 |
 | U8 | Coaching framework prompt (pasted) | verified (read) | The 4-stage conversation with halts and versioned plans | §7.0, M-29 | 1 |
+| U9 | Spark — Trainer Management (upload, website mirror) | verified (bundle text read; no source) | Trainer HR, compliance review, sites, attendance, expenses, payroll, invoices, approvals | §5.1, M-30 | 2 |
+| V1 | David Galles visualizations (USF) | searched (site blocked) | Coverage list; canvas animation | §6.6 | 2 |
+| V2 | VisuAlgo | searched (site blocked) | e-Lecture mode; randomised auto-graded questions | §6.6 | 2 |
+| V3 | DSA Visualizer (dsavisualizer.in) | searched (site blocked) | Custom input, metrics, code snippets | §6.6 | 2 |
+| V4 | visualizedsa.com (BFS) | **name only** (site blocked, not found) | Graph editor, queue/visited panels (assumed) | §6.6 | 2 |
+| + | Python Tutor | searched | Multi-language trace approach (C/C++ via Valgrind, Java, JS) | §6.5 | 2–3 |
+| + | Svelte 5 / SvelteKit | verified (npm 5.57.1) + searched | UI framework | §4.2 | 1 |
+| + | Effect v4 (`effect@rc`) | verified (npm rc.118) + searched | Hub and pipelines | §4.2 | 1 |
 | + | Laya | verified (repo) | Decide/route/guard: choice, score, yes-no in 100+ languages; moderation; triage scoring | M-14, M-20, §8, §9 | 2 |
 
 **Note on 24, 25, 27:** I could not find these repos by name. Similar tools exist (Git Reporter,
@@ -543,11 +660,15 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 | ID | Question | Owner's input needed |
 |---|---|---|
 | OQ-1 | Phase-1 size: all 15 phase-1 modules, or a smaller first cut? | **Deferred by owner until approval** |
-| OQ-2 | Is the pasted 4-stage framework the "personal OS prompt", or is there a separate one for the timeline itself? | Confirm |
+| OQ-2 | ~~Is the pasted framework the personal OS prompt?~~ **Resolved**: yes; completed in §7.0 (DEC-16) | — |
 | OQ-3 | Links for classroom-analytics, TCH-Github_Evaluator, open-source-pulse-wall | Links |
-| OQ-4 | Stack. Excalidraw is React, and MarkItDown is Python. Proposal: zero-dependency core (testable), plus two isolated, declared exceptions: the Notebook board bundle (React/Excalidraw) and the hub's converter service (Python/MarkItDown). Alternative: React for the whole UI | Choose |
+| OQ-4 | ~~Stack~~ **Resolved** by Claude at the owner's request: §4.2 (DEC-13) | — |
 | OQ-5 | Should Heading Strike move into phase 1 as a small, testable game core? | Yes/no |
-| OQ-7 | Should the Notebook board support **C** traces (the reference PDF uses C) in phase 2, or stay Python-only with hand-drawn tables for other languages? | Choose |
+| OQ-7 | ~~C traces?~~ **Resolved**: Python, JavaScript, Java, C, C++ (DEC-14, §6.5) | — |
+| OQ-8 | Trainer management (M-30) in phase 2, or is it needed in phase 1 for your academy? | Choose |
+| OQ-9 | Attendance check-in default: site QR code (privacy-friendly) or GPS + photo like Spark? | Choose |
+| OQ-10 | Licences of Galles' visualizations, dsa-visualizer and Python Tutor backends must be checked before reusing any code; until then they are inspiration only | Accept |
+| OQ-11 | Onboarding friction targets (≤ 5 min, ≤ 25 taps, ≤ 2 sentences): right numbers? | Confirm or change |
 | OQ-6 | Calorie and money "direct" coaching tone: acceptable as default, or default to "gentle"? | Choose |
 
 ## 16. Decision log
@@ -566,8 +687,22 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 | DEC-10 | The skill template (v1.2) is the authoring engine; package5 is the reference output | Owner, iteration 6 |
 | DEC-11 | pyviz_tutor visualises Python files | Owner, iteration 6 |
 | DEC-12 | The 4-stage framework prompt governs coaching conversations | Owner, iteration 6 |
+| DEC-13 | Stack: TypeScript; plain-TS core with zero dependencies; Effect v4 for hub and pipelines; Svelte 5 / SvelteKit offline web app; Excalidraw only on the board; Capacitor companion; node:sqlite; MarkItDown sidecar | Owner delegated to Claude, iteration 7 |
+| DEC-14 | Trace viewer covers Python, JavaScript, Java, C and C++ | Owner, iteration 7 |
+| DEC-15 | Algorithm visualizers inspired by Galles, VisuAlgo, DSA Visualizer, visualizedsa, Treelab | Owner, iteration 7 |
+| DEC-16 | Coaching framework completed: stages 0 and 5, predicted options, plan cards, friction targets | Owner asked; Claude proposed, iteration 7 |
+| DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## Changelog
+
+- **v6**:
+  - Added §4.2 stack (DEC-13), §5.1 trainer management from Spark (DEC-17), §6.5 multi-language
+    traces (DEC-14), §6.6 algorithm visualizers (DEC-15).
+  - Completed §7.0 coaching framework: stages 0 and 5, predicted options, Light/Standard/Intense
+    plan cards, friction targets (DEC-16).
+  - Added modules M-30 and M-31; resources U9, V1–V4, Python Tutor, Svelte, Effect.
+  - OQ-2, OQ-4 and OQ-7 resolved; new OQ-8 to OQ-11. Admin steps A-13 to A-17, trainer steps T-22
+    to T-26.
 
 - **v5**:
   - Added §6.4 Notebook board (modified Excalidraw matching the owner's PDF, QR sharing).
