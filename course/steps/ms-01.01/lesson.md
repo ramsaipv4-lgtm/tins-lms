@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 6
 skills: [core-crypto, feature-switches, version-compat]
-source_refs: []
+source_refs: [{ path: packages/core/src/util.ts, commit: c5b7bff }, { path: packages/core/src/switches.ts, commit: c5b7bff }]
 next: end
 ---
 
@@ -95,25 +95,86 @@ When a client and hub have different schema versions, they need to decide what t
 
 ### util.ts: AES-GCM encryption
 
-The `aesGcmSeal` function encrypts a plaintext and returns the sealed output (IV + ciphertext + tag). Key design decisions:
-- **Fresh random IV every call:** Each encryption generates a new 12-byte random IV
-- **IV front-loaded:** The IV is prepended to the output, so decryption knows which IV was used
-- **Async operation:** Uses Web Crypto, which runs safely on a background thread
-- **Web Crypto details:** imports the key, calls encrypt with GCM mode, returns the result
+```ts packages/core/src/util.ts
+export async function aesGcmSeal(key: Uint8Array, plaintext: Uint8Array): Promise<Uint8Array> {
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const cryptoKey = await globalThis.crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, ['encrypt']);
+  const ciphertext = await globalThis.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv },
+    cryptoKey,
+    plaintext
+  );
+  // Return IV + ciphertext
+  const result = new Uint8Array(iv.length + ciphertext.byteLength);
+  result.set(iv);
+  result.set(new Uint8Array(ciphertext), iv.length);
+  return result;
+}
 
-The `aesGcmOpen` function decrypts by extracting the IV from the first 12 bytes and passing it to the decrypt operation. If the key is wrong or the data is tampered with, an error is thrown.
+export async function aesGcmOpen(key: Uint8Array, sealed: Uint8Array): Promise<Uint8Array> {
+  const iv = sealed.slice(0, 12);
+  const ciphertext = sealed.slice(12);
+  const cryptoKey = await globalThis.crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, ['decrypt']);
+  const plaintext = await globalThis.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: iv },
+    cryptoKey,
+    ciphertext
+  );
+  return new Uint8Array(plaintext);
+}
+```
 
-### switches.ts: Precedence example
+Key design: Fresh random IV per call (line 2), front-loaded in output (lines 11–12).
 
-The `switchDefaults` function returns a Record of 18 boolean switches (secretScan on, planVsActual off, etc.). The `isOn` function implements layered precedence:
+### switches.ts: Precedence
 
-1. Check if the switch name exists in defaults; throw if unknown (catches typos)
-2. Check the class layer; if set, return that value
-3. Check the program layer; if set, return that value
-4. Check the org layer; if set, return that value
-5. Return the default value
+```ts packages/core/src/switches.ts
+export function switchDefaults(): Record<string, boolean> {
+  return {
+    secretScan: true,
+    planVsActual: false,
+    pairProgramming: false,
+    googleForms: false,
+    storyMode: false,
+    teamBadges: true,
+    githubPass: true,
+    printedQrFallback: true,
+    certificates: true,
+    diskEncryptionCheck: false,
+    calendarSync: false,
+    explainBackAi: false,
+    meetLinks: false,
+    headingStrike: true,
+    celebrationWall: true,
+    jira: false,
+    voiceFollow: false,
+    gradedShifts: true,
+  };
+}
 
-Why this order? Because class is most specific (one learner's class), program is broader (all learners in one program), org is broadest (the whole organization), and defaults are the fallback. Each layer can override the ones below it.
+export function isOn(name: string, layers: { class?: Record<string, boolean>; program?: Record<string, boolean>; org?: Record<string, boolean> }): boolean {
+  const defaults = switchDefaults();
+
+  // Check if the name exists in defaults, throw if not
+  if (!(name in defaults)) {
+    throw new Error(`Unknown switch: ${name}`);
+  }
+
+  // Precedence: class > program > org > default
+  if (layers.class && name in layers.class) {
+    return layers.class[name];
+  }
+  if (layers.program && name in layers.program) {
+    return layers.program[name];
+  }
+  if (layers.org && name in layers.org) {
+    return layers.org[name];
+  }
+  return defaults[name];
+}
+```
+
+Precedence: class checks first (most specific), then program, org, and defaults (fallback).
 
 ## Your turn: faulty first
 
