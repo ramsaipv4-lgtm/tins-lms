@@ -1,4 +1,4 @@
-# Coach LMS — Plan v12 (consolidated)
+# Coach LMS — Plan v13 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -781,7 +781,11 @@ Status column:
 | OQ-16 | ~~Answer FAILURE-QUESTIONS.md~~ **Resolved** in iteration 12: all 46 answered (§18, DEC-36 to DEC-52) | — |
 | OQ-17 | ~~Second opinion~~ **Resolved** in iteration 13 (§19). Was: An independent reviewer proposes a different design ([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)): cloud-first PWA, borrowed sync/forge/labs, Hono+Zod+React instead of Effect+Svelte, a 4-week pilot first, Coach split out. Adopt which rows, if any? | **Owner decides before SPEC.md** |
 | OQ-18 | ~~Rotating QR~~ **Resolved**: yes, the code changes every 60 s (120 s allowed as a setting). Was: F-04: keep the rotating site QR as the anti-proxy control (your answer covered where attendance lives, not proxying)? | Confirm |
-| OQ-19 | Which ideas from [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) go into 1a, 1b or later? | **Owner picks** |
+| OQ-19 | ~~Pick features~~ **Resolved** (DEC-68) except C-2. Was: Which ideas from [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) go into 1a, 1b or later? | **Owner picks** |
+| OQ-20 | Waydroid experiment (§20.3): run it, then decide whether Coach on a computer uses it | Owner, after the results |
+| OQ-21 | C-2 estimation poker: keep or drop (explained in FEATURE-IDEAS.md) | Owner |
+| OQ-22 | A-3/A-2 automatic WhatsApp sending costs money (WhatsApp Business API); accept the free "tap to send" queue? | Owner |
+| OQ-23 | A-8 plan-vs-actual in the daily report: on or off by default? | Owner |
 | OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
 | OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
@@ -853,9 +857,11 @@ Status column:
 | DEC-61 | No paid lab VM: hub containers, students' own Codespaces, Colab notebooks, optional Oracle free VM | Owner, iteration 13 |
 | DEC-62 | GitHub Projects for sprints; Shift engine for ITSM practice; optional Jira week on the free plan | Owner + Claude, iteration 13 |
 | DEC-63 | Coach (personal OS) is a separate app; integrates data via Health Connect, calendar, imports and launcher tiles | Owner, iteration 13 |
-| DEC-64 | Build target 1a is the pilot slice, run with one real batch with a measurement plan before 1b | Owner unsure; Claude, iteration 13 |
+| DEC-64 | ~~Superseded by DEC-67~~ Build target 1a is the pilot slice, run with one real batch with a measurement plan before 1b | Owner unsure; Claude, iteration 13 |
 | DEC-65 | Real-browser user-journey scripts (screenshots, video, throttled phone) are a hard gate | Owner, iteration 13 |
 | DEC-66 | Trainer prep packs and mastery gates in generated content; passkey/Google login via join QR; embargoed encrypted content released in class; export/import zip; college-format reports; free observability; release channels; AI-resilient assessment | Owner, iteration 13 |
+| DEC-67 | No pilot: build full 1a + 1b, run a live batch, note issues, then v2 (replaces DEC-64) | Owner, iteration 14 |
+| DEC-68 | Feature picks from FEATURE-IDEAS.md: all accepted except C-2 (pending) and C-15 (Jira, off by default, phase 2); designs in that file's "Owner's picks" section | Owner, iteration 14 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## 17. Real-world changes the plan must absorb (iteration 11)
@@ -1191,7 +1197,102 @@ The review deliberately listed alternatives, not new features. A separate list o
 ideas**, grouped by who they help and sized, is in [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) for the
 owner to pick from (OQ-19).
 
+## 20. Follow-up decisions (iteration 14)
+
+| Topic | Owner's answer | Decision |
+|---|---|---|
+| Board sharing (1.5) | Board goes to the **projector**; Google Meet streams it to phones as an option | Laptop → projector is the primary. "Stream to phones" is an option through the Meet link (DEC-59). The one-way phone broadcast from §19.1 is **dropped** |
+| Pilot (2.0) | No pilot: build everything, run it live, note issues, then v2 | **DEC-64 is replaced by DEC-67:** build the full 1a + 1b, run a live batch, record notes, then v2. Modules stay separate, so v2 can change any one of them alone |
+| Sync | CouchDB | Confirmed (DEC-53/54) |
+| HTTPS sidegrade | Free DuckDNS + Let's Encrypt, in a container? | Yes: a small **`acme.sh` container** (it supports DuckDNS's TXT records for the DNS-01 check) renews the certificate while online and hands it to the hub. Without Docker, `acme.sh` also runs as a plain shell script. The hub's own CA stays primary |
+| Jira (1.9, C-15) | No Jira now; maybe later once the owner learns it | Jira is an **optional switch, off by default**, in phase 2. Everything else uses free GitHub features |
+| Practice forge (1.9) | A simulated "bootleg" run before the real GitHub, for what GitHub does and doesn't do | See 20.1 |
+| Google Forms (1.11) | Just an extra option for trainer and admin | An option in the trainer and admin menus, off until someone connects a Google account |
+
+### 20.1 Practice forge, then real GitHub
+
+Every forge exercise runs **twice**: first on the practice forge, then on real GitHub.
+
+- **Practice forge = Forgejo on the hub, plus the app's own sprint and ITSM screens.**
+  - Forgejo's pull requests, reviews, issues and Actions-compatible CI look and behave much like
+    GitHub's, so the skills carry over.
+  - Forgejo's project boards have no iterations or custom fields, so sprints, story points,
+    burn-up charts, stand-ups, estimation and retros (C-1 to C-3) run in the app.
+  - Things GitHub doesn't do at all (incidents, on-call, change approval, SLAs) also run in the
+    app (the Shift engine), on both passes.
+- **Real GitHub pass:** the same exercise against the class's GitHub organisation, set up by the
+  GitHub App (§19.2).
+
+### 20.2 Students without a GitHub account
+
+- Automation needs only the student's **GitHub username**. Once they have one, the GitHub App does
+  everything else (invite, team, repos, branch protection, project board).
+- **No account yet:** the student works on the practice forge, which needs no GitHub account
+  because the hub creates their Forgejo login. The app then walks them through GitHub sign-up
+  (about 5 minutes, part of the Day −1 setup check, F-45) and moves their practice repos to GitHub
+  once they link the account.
+- **Never get an account** (refuses, or GitHub is blocked at the college): they stay on the practice
+  forge for the whole course. Grading is the same, and the report notes "practice forge only".
+- What cannot be automated: creating the account itself (GitHub's terms, §19.2), and the email
+  verification step.
+
+### 20.3 Coach in Waydroid: can it sync with the phone?
+
+- **Our own Coach app does not need Waydroid.** It is a PWA, so it already runs in any browser,
+  desktop or phone. Every copy of it (phone, browser, Waydroid) is just another device that
+  **syncs through CouchDB replication**, like any other.
+- **Waydroid is only useful for other people's Android apps** (a diet app, a banking app) shown on
+  a computer. Those apps sync with the phone only through **their own** accounts (e.g. logging in
+  to the same diet app on both). Our app can't sync their data directly; it reads their data on the
+  phone through Health Connect.
+- **Limits to know before trying:**
+  - Waydroid needs a **Linux** computer running a Wayland desktop session, with the kernel's
+    "binder" modules.
+  - It does not run on Windows laptops or on phones.
+  - Apps that check Play Integrity (most **banking apps**) typically refuse to run in it.
+  - Streaming it to a browser adds noVNC or ws-scrcpy and a server per user.
+- **Decision:** a small, scored **Waydroid experiment** like the handwriting test, before anything is
+  built on it:
+  1. our APK plus one diet app in Waydroid on a Linux laptop;
+  2. streamed to a phone browser;
+  3. measure setup steps, RAM, latency, and which apps run.
+
+  The owner decides on the results (OQ-20).
+
+### 20.4 Content released in step with the teleprompter (7.8)
+
+- Each day's bundle is split into **sections that match the teleprompter script** (warm-up,
+  concept 1, demo, lab, quiz…), each encrypted with its own key.
+- **Live release:** when the trainer's teleprompter moves to a section, the hub pushes that
+  section's key to the class, so notes and labs appear on students' phones exactly when the
+  trainer reaches them.
+- **Fallback when the hub can't reach a phone:** each section also unlocks at its **scheduled time**
+  (the class start plus the script's planned timings). The trainer can release everything with one
+  tap, and the rotating attendance QR carries the keys released so far.
+- **Graded material is never released by the clock alone**; it needs the hub or the trainer's tap
+  (fairness, F-17).
+- Late joiners and absentees get everything through the catch-up gate (DEC-37).
+
+### 20.5 Students who don't want to be on any hub (7.12)
+
+Three levels, the student's choice:
+
+1. **Cloud only:** no hub at all. They sync with the cloud profile (DEC-54).
+2. **Phone only:** their data lives only on their phone, backed up to a target **they** pick (their
+   own Google Drive, USB or R2). Course content arrives as downloadable bundles (link or QR).
+3. **File exchange (no server at all):** submissions and attendance confirmations are exported as
+   small signed files, which the student shares with the trainer by WhatsApp or USB. The trainer's
+   app imports them.
+
+Whichever they choose, **"Export my data"** gives them the portable zip (§19.8) at any time. The
+college still needs a minimum record (attendance, grades), which reaches the trainer by one of
+the three routes; nothing else leaves their phone.
+
 ## Changelog
+
+- **v13**:
+  - Added §20: projector + optional Meet streaming; full build instead of a pilot (DEC-67); acme.sh container for DuckDNS certificates; practice forge then GitHub; students without GitHub accounts; Waydroid limits and an experiment (OQ-20); teleprompter-paced content release; no-hub options for students.
+  - FEATURE-IDEAS.md: owner's picks recorded with designs (DEC-68).
 
 - **v12**:
   - Added §19: the owner's decisions on the second-opinion review. New stack (React + Vite PWA, Hono + Zod, CouchDB/PouchDB sync, ts-fsrs, trimmed Excalidraw fork, n8n); cloud/hub/hybrid deployment profiles sharing data; GitHub App automation; free lab paths; Coach split into a separate app; journey gate; export/import; embargoed content; trainer prep packs.

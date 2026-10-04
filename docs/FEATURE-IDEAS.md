@@ -111,3 +111,47 @@ rest of what a junior engineer meets in the first 6 months, mostly inside the Sh
 If the owner wants a short list: **A-1, A-2, A-5, A-13, B-1, B-2, B-12, C-7, D-2, E-5** fit the 1a
 pilot, because each is small and saves time or produces evidence from day one. Then **A-3, A-4,
 A-8, A-10, C-1 to C-5, D-1, E-1, E-3** for 1b. The rest can wait for phase 2.
+
+## Owner's picks (iteration 14)
+
+**Accepted:** every idea except **C-2** (waiting on the explanation below, OQ-21). **C-15 Jira** is a
+switch, off by default, in phase 2. Where the owner added a condition or asked a question, the
+design is below; every other idea is accepted as written above.
+
+| ID | Owner's note | Design |
+|---|---|---|
+| A-3 | Same WhatsApp message, and send it to their WhatsApp | The at-risk digest drafts one message per student. Sending is the **free "tap to send" queue**: the app opens WhatsApp with each message prefilled and you tap send, then the next opens. **Fully automatic sending needs the paid WhatsApp Business API** (in India about ₹0.35 per utility message in 2026, and service messages became chargeable on 1 Oct 2026, with 1,000 free a month). Unofficial WhatsApp-Web automation breaks WhatsApp's terms and risks your number being banned, so it is not offered (OQ-22). The same applies to A-2 |
+| A-8 | In the daily report, with a switch | Plan vs actual appears as a section of the daily report, with an on/off switch. *Default: on* (Claude's reading of "toggled on off by default"; OQ-23 to confirm) |
+| A-9 | How does it track time: voice, or rules and scrolling? | **Rules first:** each script section has a planned duration; the teleprompter knows the current section from your taps or "next" swipes and its auto-scroll position, and shows ahead/behind per section. **Voice-follow is an option:** on-device speech recognition matches what you say to the script and scrolls by itself. It works offline only on phones that have offline speech packs; the browser's built-in speech recognition sends audio to Google and needs internet. Rehearsal reports show planned vs actual per section |
+| A-10 | During rehearsals | Teach-back runs inside rehearsal mode |
+| A-11 | Expand: cheat sheets and more | Each day's **trainer pack**: your card deck, a one-page cheat sheet, a command and syntax reference, "explain it in 30 seconds" lines for each concept, and likely student questions with answers |
+| A-12 | Opt-in only | Calendar sync off until you or a student turns it on |
+| A-13 | Different timings per class; degrade gracefully on internet | The checklist runs a set time **before each class's own start** (per class, per day). **Offline checks first:** hub running, local backup age, the day's content bundle and keys present, laptop power, projector output, network check. **Online checks when available:** cloud backup, sync lag, GitHub reachable, holidays. Without internet it shows each item's last-known state with its time, and suggests the fallback (hotspot, USB backup, practice forge) |
+| B-1 | Options from the FAQ or generated during content creation | Each exit ticket offers **pre-generated choices** ("which part was unclear?": the day's subtopics plus likely confusions written during content generation and refreshed from the FAQ, A-6) and an optional free-text box |
+| B-2 | Per day, per subtopic | The error notebook is organised by day → subtopic |
+| B-3 | Can System 1 do it if the strong AI makes rules? | **Partly, yes.** During content generation the strong AI writes a **concept checklist** per subtopic (key terms, relations, common wrong statements). On the phone, offline: speech-to-text, then a rule check of which concepts were covered or misstated, giving instant feedback like "you didn't mention X; you said Y, which is a common mistake". Feedback on *how well* it was explained needs the connected AI when online |
+| B-4 | Not sure how in reality; nice-to-have switch | Off by default. When on: the app pairs students for a lab, runs a 15-minute timer on both phones that says "swap driver", and both names go on each commit (`Co-authored-by`) |
+| B-7 | With a template on the hub? | Yes: a portfolio template repo on the hub (and copied to GitHub), filled from their repos, badges and certificates |
+| B-8 | Resume gets too long; keep in portfolio? | All evidence-linked bullets live in the **portfolio**; the resume takes only the top 3–5, chosen by the student |
+| B-11 | Automatic or manual, with override? | **Automatic by default**, from the mastery map (pairs a student strong in a skill with one weak in it, mixing across teams), re-formed weekly. **The trainer can always override**, or switch to manual |
+| C-1 | Only if System 1 can run it locally | **Yes, it runs locally with no AI at all:** the stand-up bot asks 3 fixed questions, detects "blocked" and similar words, and posts a summary. The AI manager's follow-up is optional when online |
+| C-13 | During group member changes | Triggered whenever teams are reshuffled or a member drops (F-03) |
+| D-3 | Downloadable PDF, a temporary link, or a shareable Google Sheet? | All three. The certificate PDF carries an ID and a QR. The QR opens a static verify page, or a **Google Sheet** (one row per certificate) that you share; temporary links expire after a set time |
+| E-3 | As a self-check for the trainer during rehearsal | Runs during rehearsal (and nightly if the hub is on) |
+| E-4 | Manual override always | Every automatic misconception update is a suggestion you accept, edit or reject |
+| E-5 | Also rehearse, and Anki cards so I don't forget | The package library links each package to its rehearsal history and your trainer card deck (A-11), so revisiting a track also refreshes your memory |
+
+### C-2 estimation poker, explained (OQ-21)
+
+Before a sprint the team must guess **how big each task is**.
+
+1. Everyone privately picks a card: 1, 2, 3, 5, 8 or 13 "points" (bigger = more work or more
+   unknowns).
+2. All cards are revealed at once, so nobody copies the loudest person.
+3. If the numbers differ a lot, the lowest and highest explain their reasoning ("I forgot about the
+   database migration"), then everyone votes again.
+4. The agreed number goes on the GitHub issue (story points field). After the sprint, the
+   burn-up chart shows whether the team's guesses were realistic.
+
+It teaches estimating, speaking up, and spotting hidden work; many software teams do it in every
+sprint. In the app it is a 2-minute screen per issue on each phone. **Keep or drop?**
