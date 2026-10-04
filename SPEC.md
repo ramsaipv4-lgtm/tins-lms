@@ -255,7 +255,7 @@ async sectionKey(dayKey: Uint8Array, sectionIndex: number): Promise<Uint8Array> 
 async sealSection(key: Uint8Array, plaintext: Uint8Array): Promise<Uint8Array>  // AES-GCM, IV prefixed
 async openSection(key: Uint8Array, sealed: Uint8Array): Promise<Uint8Array>     // throws on wrong key or tampering
 releasePlan(classStart: number, sections: readonly { id: string; plannedSec: number; graded: boolean }[]):
-  { id: string; at: number | null }[]          // at = start + sum of earlier plannedSec; null when graded
+  { id: string; at: number | null }[]          // at = start + 1000 × (sum of earlier plannedSec); null when graded
 isReleased(section: { id: string; graded: boolean }, plan: { id: string; at: number | null }[],
   ctx: { now: number; reachedIds: readonly string[]; releaseAll: boolean }): boolean
 ```
