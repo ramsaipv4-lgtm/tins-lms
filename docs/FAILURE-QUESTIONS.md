@@ -1,4 +1,4 @@
-# Failure questions to answer before SPEC.md (iteration 11)
+# Failure questions to answer before SPEC.md (iteration 11, answered in iteration 12)
 
 These 46 scenarios were found by a separate reviewing agent. It read PLAN v9 and SIMULATED-RUN v3,
 and skipped everything already covered there (§4.4, Part J) or answered in PLAN v10 §17.
@@ -6,6 +6,10 @@ and skipped everything already covered there (§4.4, Part J) or answered in PLAN
 **How to answer:** for each row, reply "accept" (the suggested default becomes a locked SPEC row),
 "change: …", or "defer". Rows marked *verify* rest on laws or platform behaviour that must be
 checked before they become D-rows; neither Claude nor the reviewer verified them.
+
+**Status:** all 46 answered by the owner in iteration 12. The answers and the resulting designs
+are in [Owner decisions](#owner-decisions-iteration-12) at the end; PLAN v11 §18 carries them
+into the plan as DEC-36 to DEC-52.
 
 **Top 10 to answer first:** F-11, F-36, F-37, F-35, F-17, F-08, F-01, F-42, F-18, F-24 (reasons at
 the end).
@@ -99,3 +103,200 @@ the end).
 8. **F-42** The real class-size ceiling sets the hub hardware and network design.
 9. **F-18** Phone-only and no-admin-PC learners may be the majority, but labs assume a desktop.
 10. **F-24** Deletion vs append-only ledgers needs crypto-shredding designed in from the start.
+
+## Owner decisions (iteration 12)
+
+"Default" means the suggested default in the table above becomes a locked SPEC row as written.
+Where the owner changed or extended a row, the design Claude derived from the answer follows.
+Each design is a proposal until SPEC.md locks it.
+
+| ID | Owner's answer | Becomes |
+|---|---|---|
+| F-01 | Change: add a substitute role. A human substitute needs knowledge transfer; in self-learn mode the AI runs the session on the trainer's behalf | Substitute role + handover pack + AI-delivered session (A below) |
+| F-02 | Change: missed classes unlock through a gate (read quick-learn, pass the 8 questions); clear the backlog day by day, then continue | Catch-up gate (B below) |
+| F-03 | Default, triggered by a switch if possible | "Mark as dropped" switch (C below) |
+| F-04 | Change: attendance and other necessary records live on the hosted site; teaching content stays on the hubs, so cloud storage is not exhausted and several cohorts fit | Split storage (D below) |
+| F-05 | Default for the Coach space, but course content must never be behind a PIN | PIN/biometric only on Coach and on graded attempts |
+| F-06 | Change: users accept Terms & Conditions to use the service | T&C acceptance at signup, versioned and logged; the default visibility rules stay as the content of the T&C |
+| F-07 | Default; Claude to design the solution | Appeals design (E below) |
+| F-08 | Change: AI may be allowed during graded work at the trainer's discretion; its use is logged in the report submitted to the college | AI policy per graded item (F below) |
+| F-09 | Change: accommodations are opt-in at profile creation, or the student escalates to the admin who enables them | Accommodation record with two entry paths |
+| F-10 | Not supported | English only; UI strings still externalised (cheap, keeps the door open) |
+| F-11 | Default (hub's own certificate authority). Owner is considering buying a router for colleges without internet | Default + network kit guidance (G below) |
+| F-12 | Default, but design for about **200 students at a time** | Network kit sized for 200 (G below); load target in F-42 |
+| F-13 | Default | Locked as written |
+| F-14 | Change: iOS not supported natively; maybe a PWA only | iOS = home-screen web app in sync-required mode; no native iOS app planned |
+| F-15 | Default | Locked as written |
+| F-16 | Default, plus a companion alarm or alarms created in the phone's own clock app if possible | Alarm hand-off (H below) |
+| F-17 | Default | Locked as written |
+| F-18 | Change: use Google Colab's VMs so labs cost the owner nothing | Colab notebook labs (I below) |
+| F-19 to F-28 | Default | Locked as written |
+| F-29 | Change: no licence field; uploads are tagged with the trainer's or admin's name | Uploader tag (name, date); generation still records its sources |
+| F-30 | Default | Locked as written |
+| F-31 | Change (owner unsure): trainers will mostly make their own content elsewhere and add it to the catalog, not generate it through the service's MCP | Import-first catalog; MCP generation optional, keeps the spend cap when used |
+| F-32 to F-35 | Default | Locked as written |
+| F-36 | Default: build **both** the 18+ path and the minor profile | Date of birth at signup; minor profile as in the table |
+| F-37 | Default, but the lawyer review is deferred until a few dry runs or live runs are done | Template agreement, privacy notice, consent log and grievance email ship; legal review is a gate before the first paid college |
+| F-38 | Default | Locked as written |
+| F-39 | Change: secret scanning can be switched on or off | Feature switch (P-14), **on by default**; turning it off is logged; GitHub mirrors stay private regardless |
+| F-40 | Default | Locked as written |
+| F-41 | Change: not required; optionally enabled by the account holder | Disk-encryption check is an opt-in switch; the one-tap remote key revoke stays |
+| F-42 | Change: stress test it, maybe with Google Colab as the gate; if it fails, lower the class size or optimise | Load test at 200 (J below) |
+| F-43 | Default | Locked as written |
+| F-44 | Default, and the report could live on the hosted site | Health digest page on the hosted site plus the daily push/email |
+| F-45 | Default | Locked as written |
+| F-46 | Default; owner unsure about "no cloud" but keeps it | Brand pack + "no cloud" switch, as written |
+
+### A. Substitute trainer and AI-delivered sessions (F-01)
+
+- **Substitute role**, scoped to one class and a date range, granted by the admin or the trainer.
+  Can run the teleprompter, board and attendance; cannot sign off grades or change the syllabus.
+- **Handover pack**, generated with one tap ("I can't take Day 4"):
+  - the day's teleprompter script, board pages and quick-learn;
+  - where the class is (last day covered, open tickets, students flagged at risk);
+  - the hub's address and a one-time substitute pairing QR;
+  - the trainer's own notes for that day.
+  The substitute marks it "read"; the report records who taught.
+- **Self-learn mode** (no human substitute): the class runs as an **AI-delivered session**:
+  - the teleprompter script is played as a narrated lesson (text plus optional text-to-speech),
+    section by section, with the board pages shown in order;
+  - the live quiz runs automatically at the scripted points;
+  - questions from students go to the class's AI with the day's content only, and anything it
+    cannot answer from that content is queued for the trainer;
+  - the delivery report marks the day **"AI-delivered"**, so the college sees it.
+- **Hub independence:** any class can start from the latest backup on the cloud hub or a second
+  laptop (F-01 default), so the substitute does not need the trainer's laptop.
+
+### B. Catch-up gate for late joiners and missed classes (F-02)
+
+1. Every missed day is **locked** until caught up; days are unlocked **in order**.
+2. To unlock a missed day the student reads its quick-learn, then takes that day's **8-question
+   diagnostic** (the same one from D1–3). Pass mark: 6 of 8 (trainer can change it). A failed attempt
+   shows what was wrong; the retry uses a different seed.
+3. Passing unlocks that day's full resources (notes, labs, board pages, recordings) and the next
+   missed day's gate.
+4. **Live classes stay open.** A behind student can still attend today's class; the new day's
+   *self-study* material unlocks once the backlog is cleared.
+5. Graded items from missed days: due with an extended deadline (default 7 days after the gate is
+   passed); the trainer can still waive them ("excused").
+6. Card backlog: spread over 7 days, at most 30 a day (F-02 default).
+7. The trainer sees "catching up: day 2 of 3" in the progress grid instead of red.
+
+### C. "Mark as dropped" switch (F-03)
+
+One switch on the student's row (trainer or admin), with a confirmation that lists what will
+happen. It then, automatically:
+
+- returns their tickets to the backlog and reassigns review requests;
+- stops bots from opening PRs on their repos; archives the repos read-only;
+- offers the team seat to an AI persona (DEC-2 mixed team), if the trainer accepts;
+- removes them from live quizzes and the attendance roll from that date;
+- writes a ledger entry. **Switching it off restores everything** except reassigned tickets, which
+  stay where they are.
+
+### D. Hosted site for records, hubs for content (F-04)
+
+- **Hosted site** (cloud, small): accounts, enrolment, attendance, grades, the college report,
+  health digests, appeals. These are small rows, so many cohorts fit in a free tier.
+- **Hubs** (trainer laptop, class hub or personal hub): lesson content, board pages, labs, repos,
+  media. Large files never go to the hosted site; backups go to R2/Drive/USB as in P-15.
+- **Attendance** is written to the hosted site when online, or queued on the hub and synced later.
+- **Anti-proxy (not answered directly, so kept as proposed):** the site QR rotates every 30–60 s
+  on the hub screen; the printed QR is a fallback marked "unverified". *Owner to confirm.*
+
+### E. Appeals (F-07)
+
+1. **Appeal button** on any graded result, open for 7 days after results are published. The student
+   writes what they think is wrong (one paragraph).
+2. The appeal arrives in the trainer's approval inbox with an **evidence pack**: the seed, the mode
+   (live/recorded/emulated), every event and timestamp, the rubric rows, who confirmed each AI
+   suggestion and whether it was opened before confirming.
+3. **Mode-normalised rubric:** a graded step run in a different mode is scored on that mode's own
+   rubric row, and the result view shows "run in recorded mode" next to the score.
+4. **Unread confirmations:** if a rubric suggestion was confirmed without being opened, the appeal is
+   upheld for a re-mark automatically.
+5. **Second reviewer:** if the student is not satisfied, the appeal escalates to the admin (or a
+   second trainer). Their decision is final.
+6. **Ledger:** the original score is kept; the corrected score is a new ledger entry citing the
+   appeal. Deadline for the trainer: 7 days, then it escalates by itself.
+
+### F. AI during graded work (F-08)
+
+- Each graded item has an **AI policy**: `off` (default), `allowed`, or `allowed with limits`
+  (e.g. explain only, no tool calls into the repo).
+- The trainer chooses per item; the choice is shown to the student before they start.
+- When allowed, every AI call during the graded window is logged (count, tool used, time).
+- The **college report** gets a column per graded item: AI policy and usage summary
+  ("AI allowed; used 14 times").
+
+### G. Network kit for a college without internet (F-11, F-12)
+
+The hub needs no internet; it needs a local network that every phone can join and that does not
+isolate devices from each other. Prices are from web search in October 2026 (INFERRED); check them
+before buying.
+
+| Class size | Kit | Approximate cost |
+|---|---|---|
+| Up to about 30 | The laptop's own hotspot, or a pocket travel router (e.g. GL.iNet Mango class) | ₹0 to about ₹3,000 |
+| 30 to 60 | One business access point (e.g. TP-Link Omada EAP610, rated 250+ clients) plus any home router for DHCP | about ₹8,000 + ₹2,000 |
+| About 200 | 3 to 4 access points of the EAP610 class (spread across the room), an 8-port PoE switch, a small router for DHCP, cables | about ₹40,000 to ₹55,000 (switch, router and cable prices ASSUMED) |
+
+Why 3–4 access points for 200 even though one is "rated 250+": rated client counts are maximums;
+for live quizzes and board follow-along, plan for about 50–70 active phones per access point
+(ASSUMED rule of thumb; confirmed or corrected by the F-42 load test).
+
+Setup, once:
+
+1. Router: set a fixed LAN range (e.g. `10.42.0.0/22`, room for about 1,000 devices) and DHCP.
+2. Access points: one network name for the class, **client isolation off**, no login page.
+3. Laptop: plugged into the switch by Ethernet, with a **fixed IP** (e.g. `10.42.0.2`); the hub
+   setup creates its certificate authority (F-11) for that address.
+4. The day's QR carries the hub's address and certificate fingerprint (F-13).
+
+The hub installer gets a "network check" that tells the trainer whether phones can reach the hub,
+and whether the network isolates devices.
+
+### H. Alarms in the phone's own clock app (F-16)
+
+- **Option 1 (default for reminders):** the app's own notifications, with the per-brand battery
+  guide.
+- **Option 2 (new, for blocks the student cares about most):** "Add to my clock app". The app asks
+  Android's default clock app to create a repeating alarm (Android's `ACTION_SET_ALARM` intent with
+  hour, minutes, label and days; needs the normal `SET_ALARM` permission, no exact-alarm
+  permission). The clock app rings even if our app is killed.
+  - The student can create several at once ("all Tue/Thu class alarms") with one confirmation.
+  - Our app cannot later edit or delete those alarms; it shows a list of what it created so the
+    student can remove them in the clock app.
+- Exact alarms inside our own app stay out: Android 13+ denies them by default and restricts the
+  automatic permission to alarm and calendar apps (verified via web search, October 2026).
+- iOS (PWA) has no equivalent; it gets web notifications only.
+
+### I. Google Colab as the no-cost lab path (F-18)
+
+- **What works:** a lab packaged as a **notebook** opened in Colab. The notebook installs its tools
+  (e.g. Python packages, Azure CLI, Azurite through npm) and runs the steps in cells; the student's
+  answers are checked by a grading cell that reports to the hub with a one-time token.
+- **What does not (Colab's terms, checked October 2026):** the free tier disallows SSH, remote
+  desktops and remote-access tools; no tier allows hosting web services or proxies. So Colab cannot
+  be a remote VM that our browser terminal connects into, and it cannot host the hub.
+- **Consequences:**
+  - Each lab gets a "Colab" variant generated from the same lab source; the hub checks that the
+    notebook still runs (part of the F-27 gate).
+  - Long or container-heavy labs (Cosmos emulator, Docker) stay on the hub; Colab variants are for
+    the lighter labs.
+  - Sessions end when idle and resources are not guaranteed, so labs must be resumable cell by cell.
+- *Verify before SPEC:* that Azurite and Azure CLI install and run inside a current Colab runtime.
+
+### J. Load test for 200 students (F-42)
+
+- **Target:** 200 simulated phones on one class hub: pairing, attendance, live quiz (200 answers
+  within 10 s), board follow-along, sync. Pass if 95% of requests finish within 1 s and nothing is
+  lost.
+- **Load generator:** a script in the repo (Node, no dependencies) run from a second laptop on the
+  same network. Colab can run the same script against the **cloud** hub only (it cannot reach a
+  LAN hub). Whether sending test load from Colab is within its terms is not verified; the second
+  laptop is the primary.
+- **Gate:** the test is an acceptance row for 1b. If it fails, the hub reports the size it *did*
+  sustain, the recommended class size is lowered to that, and the bottleneck is fixed.
+- Containers are not part of the 200-student test: labs for 200 use Colab variants or shared
+  emulators with per-student namespaces (F-42 default).

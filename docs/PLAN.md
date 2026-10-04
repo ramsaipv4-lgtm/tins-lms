@@ -1,4 +1,4 @@
-# Coach LMS — Plan v10 (consolidated)
+# Coach LMS — Plan v11 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -781,7 +781,9 @@ Status column:
 | OQ-10 | Licences of Galles' visualizations, dsa-visualizer and Python Tutor backends must be checked before reusing any code; until then they are inspiration only | Accept |
 | OQ-11 | ~~Friction targets~~ **Accepted** (≤ 5 min, ≤ 25 taps, ≤ 2 sentences) | — |
 | OQ-15 | Handwriting recognition sidegrade on the phone (on-device ink recognition) must be verified before relying on it | Accept as a research item |
-| OQ-16 | Answer FAILURE-QUESTIONS.md (accept / change / defer per row), top 10 first | Owner |
+| OQ-16 | ~~Answer FAILURE-QUESTIONS.md~~ **Resolved** in iteration 12: all 46 answered (§18, DEC-36 to DEC-52) | — |
+| OQ-17 | An independent reviewer proposes a different design ([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)): cloud-first PWA, borrowed sync/forge/labs, Hono+Zod+React instead of Effect+Svelte, a 4-week pilot first, Coach split out. Adopt which rows, if any? | **Owner decides before SPEC.md** |
+| OQ-18 | F-04: keep the rotating site QR as the anti-proxy control (your answer covered where attendance lives, not proxying)? | Confirm |
 | OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
 | OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
@@ -825,6 +827,23 @@ Status column:
 | DEC-33 | Hub installs seamlessly (single file / npx / script) on trainer and student computers; containers optional | Owner, iteration 10 |
 | DEC-34 | Verbal syllabus → draft + confirmation PDF; change requests with a cohort change log; cohort → classes model; per-class seeds for graded items; Play Store distribution with a 4-way first-run choice | Owner raised, Claude proposed, iteration 11 |
 | DEC-35 | Handwriting → text requires a strong vision model via MCP; only freehand strokes are recognised; trainer review | Experiment, iteration 11 |
+| DEC-36 | Substitute role + one-tap handover pack; AI-delivered session in self-learn mode, marked in the report (F-01) | Owner, iteration 12 |
+| DEC-37 | Catch-up gate: missed days unlock in order after quick-learn + 8-question diagnostic (6/8); live classes stay open (F-02) | Owner, iteration 12 |
+| DEC-38 | Reversible "mark as dropped" switch runs all dropout automation (F-03) | Owner, iteration 12 |
+| DEC-39 | Hosted site holds small records (accounts, attendance, grades, reports, health); hubs hold content and media (F-04) | Owner, iteration 12 |
+| DEC-40 | PIN/biometric only for the Coach space and graded attempts; course content never behind a PIN (F-05) | Owner, iteration 12 |
+| DEC-41 | Versioned Terms & Conditions accepted at signup (F-06) | Owner, iteration 12 |
+| DEC-42 | Appeals: 7-day window, evidence pack, mode-normalised rubric, second reviewer, ledger entry (F-07) | Owner asked Claude to design, iteration 12 |
+| DEC-43 | AI policy per graded item (off by default; trainer may allow); usage logged in the college report (F-08) | Owner, iteration 12 |
+| DEC-44 | Accommodations opt-in at profile creation or via admin escalation (F-09) | Owner, iteration 12 |
+| DEC-45 | English only (F-10); iOS only as a home-screen web app, no native iOS (F-14) | Owner, iteration 12 |
+| DEC-46 | Hub's own CA for HTTPS; network kit guidance; design target 200 students per class hub (F-11, F-12) | Owner, iteration 12 |
+| DEC-47 | "Add to my clock app" alarms via Android `ACTION_SET_ALARM`, alongside app notifications (F-16) | Owner, iteration 12 |
+| DEC-48 | Colab notebook variants as the no-cost lab path (not a remote VM; Colab terms) (F-18) | Owner, iteration 12 |
+| DEC-49 | No licence field: uploads tagged with uploader name; catalog is import-first, MCP generation optional (F-29, F-31) | Owner, iteration 12 |
+| DEC-50 | Build both 18+ and minor profiles; lawyer review deferred until after dry runs, before the first paid college (F-36, F-37) | Owner, iteration 12 |
+| DEC-51 | Secret scanning is a switch (on by default, turning off is logged); disk-encryption check is opt-in (F-39, F-41) | Owner, iteration 12 |
+| DEC-52 | 200-student load test is a 1b acceptance gate; health digest on the hosted site; "no cloud" switch kept; all other F-rows' defaults locked (F-42, F-44, F-46) | Owner, iteration 12 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## 17. Real-world changes the plan must absorb (iteration 11)
@@ -924,7 +943,62 @@ A reviewing agent produced **46 further failure scenarios**, each with a suggest
 ([`FAILURE-QUESTIONS.md`](FAILURE-QUESTIONS.md)). **SPEC.md waits for the owner's answers**,
 starting with the top 10 (OQ-16).
 
+## 18. Owner's answers to the failure questions (iteration 12)
+
+All 46 rows of [`FAILURE-QUESTIONS.md`](FAILURE-QUESTIONS.md) are answered. 29 take the suggested
+default as written; 17 were changed or extended. The full designs (substitute and AI-delivered
+sessions, catch-up gate, dropout switch, hosted/hub split, appeals, AI policy for graded work,
+network kit, clock-app alarms, Colab labs, load test) are in that file's "Owner decisions" section,
+sections A to J. Summary of what changes in this plan:
+
+| Area | Change | DEC |
+|---|---|---|
+| Roles (§5, §6) | New **substitute** role; **AI-delivered session** when no human substitute exists | DEC-36 |
+| Learner flow (§7) | **Catch-up gate** for late joiners and missed days | DEC-37 |
+| Admin/trainer (§5, §6) | "Mark as dropped" switch; appeals inbox; per-item AI policy in the college report | DEC-38, 42, 43 |
+| Architecture (§4.3) | **Hosted site** (small records) + **hubs** (content); class size target **200** | DEC-39, 46 |
+| Privacy/security (§11) | PIN on Coach only; T&C at signup; both age profiles; secret scan and disk-encryption as switches | DEC-40, 41, 50, 51 |
+| Devices (§4.3) | iOS = web app only; English only; clock-app alarms | DEC-45, 47 |
+| Labs (M-32) | **Colab notebook variant** of light labs; heavy labs stay on the hub | DEC-48 |
+| Content (§6.1) | Import-first catalog; uploads tagged with uploader name | DEC-49 |
+| Operations | 200-student load test as a gate; health digest on the hosted site | DEC-52 |
+
+### 18.1 Network kit (owner asked how and how much)
+
+| Class size | Kit | Approximate cost (INFERRED from web search, Oct 2026; check before buying) |
+|---|---|---|
+| ≤ 30 | Laptop hotspot or a pocket travel router | ₹0 – about ₹3,000 |
+| 30 – 60 | One business access point (TP-Link Omada EAP610 class) + a home router for DHCP | about ₹10,000 |
+| ≈ 200 | 3–4 such access points, 8-port PoE switch, small router, cables | about ₹40,000 – ₹55,000 (switch/router/cables ASSUMED) |
+
+Setup steps (fixed laptop IP on Ethernet, one network name, client isolation off, no login page)
+are in FAILURE-QUESTIONS.md section G. The hub installer gains a **network check**.
+
+### 18.2 Limits found while answering
+
+- **Colab** cannot be used as a remote lab VM: its free tier disallows SSH and remote-access tools,
+  and no tier allows hosting web services (Colab terms, checked Oct 2026). Labs therefore run *as
+  notebooks inside Colab*. Whether Azurite and Azure CLI run in a current Colab runtime is
+  unverified.
+- **Colab as the load-test gate** works only against the cloud hub (it cannot reach a LAN hub);
+  the primary load generator is a second laptop on the class network.
+- **Exact alarms** in our own app stay out (denied by default on Android 13+); the clock-app hand-off
+  avoids that permission, but our app cannot edit or delete those alarms afterwards.
+
+### 18.3 A second opinion is waiting (OQ-17)
+
+At the owner's request an independent agent reviewed the plan from a different angle
+([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)). Its top proposals conflict with several locked
+decisions (local-first P-1, Effect/Svelte DEC-13, Forgejo primary, one app with Coach inside).
+**SPEC.md waits for the owner's decision on OQ-17.**
+
 ## Changelog
+
+- **v11**:
+  - Recorded the owner's answers to all 46 failure questions (§18, DEC-36 to DEC-52); designs in
+    FAILURE-QUESTIONS.md sections A to J.
+  - Network kit for 200 students; Colab notebook labs; clock-app alarms; appeals design.
+  - Added ALT-DESIGN-REVIEW.md (independent second opinion); OQ-16 resolved; new OQ-17, OQ-18.
 
 - **v10**:
   - Added §17: verbal syllabus, mid-cohort changes, multiple classes per cohort (cohort → classes
