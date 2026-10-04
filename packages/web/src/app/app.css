@@ -1,0 +1,29 @@
+:root { --bg:#fff; --fg:#1a1a1a; --muted:#4a4a4a; --accent:#1d4ed8; --accent-fg:#fff; --line:#767676; --ok:#0b6b2e; --bad:#b00020; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+.app { min-height:100vh; }
+.bar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; padding:8px 16px; border-bottom:1px solid var(--line); }
+.bar ul { display:flex; flex-wrap:wrap; gap:4px 12px; list-style:none; margin:0; padding:0; }
+.bar a, .bar button { min-height:44px; display:inline-flex; align-items:center; }
+.spacenav { order:3; width:100%; } .spaces { order:2; }
+.brand { font-weight:700; text-decoration:none; color:var(--fg); }
+.grow { flex:1; }
+a { color:var(--accent); } a[aria-current=page] { font-weight:700; }
+button, .btn { font:inherit; background:var(--accent); color:var(--accent-fg); border:0; border-radius:6px; padding:8px 16px; min-height:44px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+button:disabled { background:#595959; cursor:default; }
+.bar button { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+main { max-width:720px; margin:0 auto; padding:16px; }
+main:focus { outline:none; }
+:focus-visible { outline:3px solid #000; outline-offset:2px; }
+.skip { position:absolute; left:-9999px; } .skip:focus { left:8px; top:8px; background:#fff; padding:8px; z-index:5; }
+.field { margin:12px 0; display:flex; flex-direction:column; gap:4px; }
+.field.check { flex-direction:row; align-items:center; gap:8px; }
+.field.check input { width:24px; height:24px; }
+input:not([type=checkbox]) { font:inherit; padding:8px; border:1px solid var(--line); border-radius:6px; min-height:44px; }
+.tnc { max-height:200px; overflow:auto; border:1px solid var(--line); border-radius:6px; padding:8px; white-space:pre-wrap; }
+.err { color:var(--bad); margin:0; } .help { color:var(--muted); margin:0 0 12px; }
+.chip { color:var(--fg); background:#ffe58f; padding:2px 8px; border-radius:12px; }
+.row { display:flex; gap:12px; flex-wrap:wrap; }
+.checks { list-style:none; padding:0; } .checks li { padding:8px 12px; margin:6px 0; border-left:6px solid; background:#f3f3f3; }
+.checks .pass { border-color:var(--ok); } .checks .fail { border-color:var(--bad); }
+.checks .pass strong { color:var(--ok); } .checks .fail strong { color:var(--bad); }
