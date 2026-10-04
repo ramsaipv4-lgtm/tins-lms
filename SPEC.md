@@ -1480,3 +1480,64 @@ Accessible names used: nav /teleprompter|today|class/ (trainer); /today|day 0/ (
   /board.*pdf|board pdf/ and /quick.?learn/; nav /attendance|check in/; nav /reports?|delivery reports?/.
 After one tap: learners get the board PDF and quick-learn links and day-0 cards; attendance is closed;
 the trainer has a draft delivery report for day 0.
+
+---
+
+## Appendix E. Seed document shapes and seed files (part of the contract)
+
+Field names and types found in the synthetic seeds (values omitted). Every document also has `id`,
+`type`, `schema`, `updatedAt` and `updatedBy` (§3). Teams are `class.teams: { <teamId>: [personId] }`.
+
+| Database | Type | Fields |
+|---|---|---|
+| `class` | `attempt` | `aiPolicy`: string, `aiUsage`: list, `answers[].correct`: boolean, `answers[].given`: null, `answers[].given`: string, `answers[].itemId`: string, `answers`: list, `answers`: object, `failing`: list, `itemId`: string, `max`: number, `mode`: string, `personId`: string, `publishedAt`: number, `score`: number, `seed`: string, `timing.durationMs`: number, `timing.flags`: list, `timing`: object, `unreadConfirmations`: number |
+| `class` | `attendance` | `at`: number, `dayIndex`: number, `method`: string, `personId`: string, `verified`: boolean |
+| `class` | `badge` | `at`: number, `name`: string, `teamId`: string |
+| `class` | `checklist` | `concepts[].anyOf`: list, `concepts[].label`: string, `concepts`: list, `dayIndex`: number, `misconceptions[].anyOf`: list, `misconceptions[].label`: string, `misconceptions`: list |
+| `class` | `class` | `cohortId`: string, `name`: string, `passMark`: number, `schedule[].date`: string, `schedule[].end`: string, `schedule[].start`: string, `schedule`: list, `seedSalt`: string, `switches`: object, `teams.team-a`: list, `teams.team-b`: list, `teams`: object, `trainerIds`: list |
+| `class` | `day` | `date`: string, `index`: number, `released`: list, `sections[].body`: string, `sections[].graded`: boolean, `sections[].kind`: string, `sections[].plannedSec`: number, `sections[].title`: string, `sections`: list |
+| `class` | `enrolment` | `joinedAt`: number, `personId`: string, `profile`: string, `status`: string |
+| `class` | `review` | `author`: string, `checklist[].text`: string, `checklist`: list, `prRef`: string, `reviewer`: string, `title`: string |
+| `class` | `shiftRun` | `finishedAt`: number, `packId`: string, `personIds`: list, `scorePct`: number, `seed`: string, `state.finished`: boolean, `state`: object, `teamId`: string |
+| `class` | `ticket` | `assignee`: string, `iteration`: number, `points`: null, `points`: number, `status`: string, `title`: string |
+| `org` | `certificate` | `certId`: string, `issuedAt`: number, `personId`: string, `programId`: string |
+| `org` | `cohort` | `classIds`: list, `name`: string, `programId`: string |
+| `org` | `org` | `brand.colours.primary`: string, `brand.colours.text`: string, `brand.colours`: object, `brand.logo`: null, `brand`: object, `name`: string, `switches`: object |
+| `org` | `parseRules` | `app`: string, `approvedBy`: string, `author`: string, `fields[].anchor`: string, `fields[].name`: string, `fields[].pick`: string, `fields[].unit`: string, `fields`: list |
+| `org` | `person` | `consent.at`: number, `consent.by`: string, `consent`: object, `dob`: string, `minor`: boolean, `name`: string, `phone`: string, `roles`: list |
+| `org` | `program` | `name`: string, `packageRef`: null, `packageRef`: string, `switches`: object, `timezone`: string |
+| `person` | `card` | `back`: string, `deck`: string, `front`: string, `fsrs.difficulty`: number, `fsrs.due`: number, `fsrs.elapsed_days`: number, `fsrs.lapses`: number, `fsrs.last_review`: null, `fsrs.learning_steps`: number, `fsrs.reps`: number, `fsrs.scheduled_days`: number, `fsrs.stability`: number, `fsrs.state`: number, `fsrs`: object, `sourceRef`: string |
+| `person` | `errorNote` | `correct`: string, `dayIndex`: number, `given`: string, `question`: string, `subtopic`: string |
+
+### Seed files (`/__test/seed { fixture }`)
+
+| Fixture | What it sets up |
+|---|---|
+| `api/base.json` | Synthetic seed for the API tests (SPEC §5.9 /__test/seed). Ids are <type>:<key>; class and person keys are used in routes, sessions and database names (class-c1, person-l1). Section 'body' is the plaintext the server must serve sealed until release (AC-68). |
+| `journeys/appeal.json` | Published day-0 quiz attempts: l1 scored 5/8 (seed "seed-c1-l1-day0-quiz"), l2 scored 7/8; l2 also has a private error note. Clock: day 1. |
+| `journeys/attendance-day0.json` | Only l1 attended day 0 (l2 and l3 are absent). |
+| `journeys/base.json` | Org, staff, learners l1-l4 (l1-l3 enrolled) in class c1 (4 days from Mon 2 Nov 2026, 09:00-13:00 IST, teams team-a/team-b), the fixture package (3 days) published to c1, two join codes. Day 3 is a class day with no package content. Also: packages, joinCodes. |
+| `journeys/cards.json` | Learner l1 has 3 cards due before day 0 and 2 error-notebook entries for day 0 (subtopics Commands, Folders). |
+| `journeys/coach.json` | Approved screenshot parsing rules for the synthetic diet app (SPEC §4.18); matches fixtures/journeys/diet-screenshot.png. |
+| `journeys/digest.json` | Friday digest data: l3 has 50 overdue cards and a last Shift score of 25%; day-1 lab submissions with failing checks (l1 and l2 share the cluster [check-port, check-readme]). Use with late-joiner (l4 has locked missed days). |
+| `journeys/explain.json` | Offline concept checklist for day 0 explain-it-back (SPEC §4.17). |
+| `journeys/items.json` | 12 synthetic learners answered the day-0 diagnostic; item day0:diag:8 is answered correctly by everyone (planted weak question); on item 4 the wrong answer "kettle make" repeats. |
+| `journeys/late-joiner.json` | Learner l4 joins class c1 on day 3 (missed days 0-2); l1-l3 attended days 0-2. |
+| `journeys/org-only.json` | Org with staff only; no program, cohort or class (AC-80 creates them). |
+| `journeys/peer.json` | Learner l1 is assigned to review the PR of l2 with a checklist. |
+| `journeys/portfolio.json` | Learner l1 has a certificate and team-a has a badge. |
+
+### People in `journeys/base.json` (ids and roles only)
+
+| Person id | Roles | Minor |
+|---|---|---|
+| `person:admin1` | admin | False |
+| `person:tr1` | trainer | False |
+| `person:sub1` | substitute | False |
+| `person:coord1` | coordinator | False |
+| `person:l1` | learner | False |
+| `person:l2` | learner | False |
+| `person:l3` | learner | False |
+| `person:l4` | learner | False |
+
+Class `class:c1`: 4 scheduled days, pass mark 6, teams team-a, team-b.
