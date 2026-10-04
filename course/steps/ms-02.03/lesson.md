@@ -23,6 +23,12 @@ You already understand:
 - Basic time operations in JavaScript (milliseconds, 24-hour durations)
 - How to work with arrays and sorting in TypeScript
 
+## You already understand this
+
+- Why a synchronous class (meeting every day) helps some learners stay on track and leaves others behind
+- Why formative assessments (like diagnostics) help identify readiness for graded material
+- Why peer learning works better when people have complementary skills
+
 ## The detective question
 
 **Problem:** In a synchronous class, some learners miss days and need to catch up. When are they ready to proceed with graded material, and how do we form study groups based on skill proficiency? We need two mechanisms: (1) a **catch-up gate** that ensures missed days are unlocked in the right order, and (2) a **mastery map** that shows which skills a learner has truly mastered vs. still developing.
@@ -98,6 +104,9 @@ export function catchUpState(input: CatchUpInput): CatchUpState {
   }
 
   // Determine which missed days are unlocked
+  // A missed day is unlocked when:
+  // 1. Its best score >= pass mark
+  // 2. All earlier missed days are unlocked
   const unlockedMissed = new Set<string>();
   for (const missedDayId of missed) {
     const score = input.bestScores[missedDayId] ?? 0;
@@ -116,8 +125,6 @@ export function catchUpState(input: CatchUpInput): CatchUpState {
       }
     }
   }
-  // ... rest of function
-}
 ```
 
 Key pattern: Loop through missed days in order, unlock each one only if its score passes AND all earlier ones are unlocked.
@@ -139,19 +146,27 @@ export function masteryMap(checks: readonly MasteryCheck[]): Record<string, 'mas
   const result: Record<string, 'mastered' | 'not-yet'> = {};
   for (const skill in skillChecks) {
     const skillCheckList = skillChecks[skill];
-    skillCheckList.sort((a, b) => a.at - b.at); // Sort by time
+    // Sort by timestamp, most recent last
+    skillCheckList.sort((a, b) => a.at - b.at);
 
     if (skillCheckList.length < 2) {
-      result[skill] = 'not-yet'; // Need at least 2 checks
+      // A skill with only one check is not-yet
+      result[skill] = 'not-yet';
     } else {
+      // Get the two most recent checks
       const latest = skillCheckList[skillCheckList.length - 1];
       const secondLatest = skillCheckList[skillCheckList.length - 2];
-      
+
+      // Check if both are >= 0.8 and at least 24h apart
       const minScoreOk = latest.score >= 0.8 && secondLatest.score >= 0.8;
       const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
       const timeOk = latest.at - secondLatest.at >= twentyFourHoursInMs;
 
-      result[skill] = (minScoreOk && timeOk) ? 'mastered' : 'not-yet';
+      if (minScoreOk && timeOk) {
+        result[skill] = 'mastered';
+      } else {
+        result[skill] = 'not-yet';
+      }
     }
   }
 
