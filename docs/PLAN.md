@@ -1,4 +1,4 @@
-# Coach LMS — Plan v9 (consolidated)
+# Coach LMS — Plan v10 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -781,6 +781,7 @@ Status column:
 | OQ-10 | Licences of Galles' visualizations, dsa-visualizer and Python Tutor backends must be checked before reusing any code; until then they are inspiration only | Accept |
 | OQ-11 | ~~Friction targets~~ **Accepted** (≤ 5 min, ≤ 25 taps, ≤ 2 sentences) | — |
 | OQ-15 | Handwriting recognition sidegrade on the phone (on-device ink recognition) must be verified before relying on it | Accept as a research item |
+| OQ-16 | Answer FAILURE-QUESTIONS.md (accept / change / defer per row), top 10 first | Owner |
 | OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
 | OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
@@ -822,9 +823,114 @@ Status column:
 | DEC-31 | Notebook board: pages not infinite canvas, auto-hiding sidebar, tables, shapes, drag-in `.mmd`/images, handwriting → Markdown alongside PDF/images | Owner, iteration 10 |
 | DEC-32 | Cloudflare R2 added as a storage and backup target ("too many options is never wrong") | Owner, iteration 10 |
 | DEC-33 | Hub installs seamlessly (single file / npx / script) on trainer and student computers; containers optional | Owner, iteration 10 |
+| DEC-34 | Verbal syllabus → draft + confirmation PDF; change requests with a cohort change log; cohort → classes model; per-class seeds for graded items; Play Store distribution with a 4-way first-run choice | Owner raised, Claude proposed, iteration 11 |
+| DEC-35 | Handwriting → text requires a strong vision model via MCP; only freehand strokes are recognised; trainer review | Experiment, iteration 11 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
+## 17. Real-world changes the plan must absorb (iteration 11)
+
+### 17.1 The syllabus is only given verbally
+
+**Program from conversation** (admin):
+
+1. The admin picks *New program → From a conversation*.
+2. They speak or type what the coordinator said ("8 days, Azure cloud, AZ-204 level, they want a
+   capstone"). Phone speech-to-text or the connected AI turns it into a draft topic list. Without
+   AI, the admin builds the topic list from catalog chips (skills, days, hours).
+3. The draft is matched to the catalog as usual (§6.1). Missing days are generated via MCP + skill
+   template + gate.
+4. **Confirmation loop:** the app produces a one-page syllabus PDF and sends it to the coordinator
+   ("please confirm or correct by <date>"). The program's syllabus status is shown as
+   **verbal → sent → confirmed**.
+5. Teaching may start while the status is "verbal" or "sent", but graded items are pinned only from
+   the version the coordinator confirmed. If they never confirm, the PDF that was sent is the record,
+   which protects you in disputes.
+
+### 17.2 The class changes mid-cohort
+
+Every change is a **change request** in the cohort's change log: who asked (college, trainer,
+admin), why, when, and what it affects.
+
+| Change | What happens |
+|---|---|
+| **Schedule** (date, time, venue) | Sessions move. Every learner's and trainer's timeline re-plans and shows the re-plan diff (M-3), with a notification. A new venue gets a new site QR |
+| **Content: topic added, removed or swapped** | A new **minor program release** (v1 → v1.1). Lessons update with a "changed" banner (F-34). Cards from removed topics are **suspended, not deleted**. Already-pinned graded items stay pinned unless the admin explicitly re-pins them (logged; affected learners notified) |
+| **Graded-item change** (e.g. capstone scope cut) | Needs admin approval. Learners who already sat it keep their result; the rest get the new version. The report says which version each learner took |
+| **Trainer change** | A substitute or new trainer is assigned (F-01). The teleprompter, board pages and batch board move with the batch, not with the person |
+| **Pace change** ("finish two days early") | The planner compresses the remaining days. It proposes which lessons become self-study and which stay in class; the admin accepts. Learner plans re-plan accordingly |
+
+### 17.3 Multiple classes per cohort
+
+**Data model:** Program (syllabus) → **Cohort** (one college intake, e.g. "Riverside Sem 5, Aug
+2026") → **Classes / sections** (A, B, a lab group, a different track such as Sem 3 vs Sem 5) →
+Sessions.
+
+- Each class has its own schedule, trainer, room/site QR and, optionally, its own track.
+- A learner belongs to one cohort and one or more classes.
+- A trainer can run several classes. Their timeline flags clashes and travel time between sites.
+- **Commons:** one cohort channel plus one channel per class.
+- **Graded items are seeded per class by default.** Sections sitting at different times get
+  different papers and Shift seeds, so answers can't be passed from Section A to Section B. The
+  admin can choose one seed per cohort instead.
+- **Reports** roll up by class, then by cohort, for the coordinator.
+
+### 17.4 Distributing the app through Google Play (owner has a developer account)
+
+- **Build:** the companion app (Capacitor build of the same Svelte app, DEC-13) is published on
+  Google Play under the owner's developer account. A signed APK for sideloading stays as a
+  sidegrade (P-13).
+- **First run asks one question with four answers:**
+  1. **Use on this phone only:** personal Coach, no hub; phone-only mode; backups to R2/Drive.
+  2. **Join a class:** scan the pairing QR or enter the join code (class hub or cloud hub).
+  3. **Connect to a hosted hub:** enter a URL or scan its QR (the owner's cloud hub, or a college's).
+  4. **Set up a hub on my computer:** a phone can't install software on a PC, so the app shows a
+     link and QR to the hub download (§4.5), offers to share or email it, then waits to pair when
+     the computer's setup page shows its QR.
+
+  Any of these can be added later from Settings, and a phone can pair with several hubs.
+- **Play Store obligations to verify before release** (not checked here):
+  - the **Data safety** form must declare finance/health-type data (money and food trackers);
+  - target API level requirements;
+  - permission policies: camera (QR), notifications, **exact alarms** (avoid; F-16);
+  - a privacy policy URL (F-37);
+  - an age rating / children's policy (F-36).
+- **iOS** is not covered by a Play Store app (F-14).
+
+### 17.5 Handwriting recognition: tested (DEC-35)
+
+Tested on the owner's real whiteboard page; full results in
+[`experiments/handwriting/RESULTS.md`](../experiments/handwriting/RESULTS.md).
+
+| Method | Clean page (out of 22 checkpoints) |
+|---|---|
+| Sonnet-class vision model | 21–22 |
+| Haiku-class | 11–15 (misreads code) |
+| Tesseract OCR (no AI) | **0** |
+
+- A shape behind the writing, or a translucent shape over it, did not hurt the strong model.
+- An opaque shape hides text. No model invented the hidden text, but one run misread nearby lines.
+- **Conclusion:** handwriting → text **requires the connected AI (MCP) with a strong vision model.**
+  The board will:
+  1. pass typed text, stamps, tables and Mermaid to Markdown directly, with no recognition;
+  2. send only the freehand strokes (shapes removed, strokes under shapes restored), per section, to
+     the AI;
+  3. offer recognition only above a model floor;
+  4. always require trainer review.
+- **Untested:** mouse-written strokes; stroke-based (on-device) recognition (OQ-15).
+
+### 17.6 Failure questions
+
+A reviewing agent produced **46 further failure scenarios**, each with a suggested default
+([`FAILURE-QUESTIONS.md`](FAILURE-QUESTIONS.md)). **SPEC.md waits for the owner's answers**,
+starting with the top 10 (OQ-16).
+
 ## Changelog
+
+- **v10**:
+  - Added §17: verbal syllabus, mid-cohort changes, multiple classes per cohort (cohort → classes
+    data model, per-class seeds), Google Play distribution with a 4-way first-run choice,
+    handwriting test results (DEC-35).
+  - Added FAILURE-QUESTIONS.md (46 scenarios); OQ-16.
 
 - **v9**:
   - Added P-13 to P-15 (degradation, switches, backup) and §4.4 degradation matrix.
