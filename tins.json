@@ -8,5 +8,8 @@
     "course"
   ],
   "gate_timeout_s": 3600,
-  "kit": "7df3c1605570"
+  "kit": "7df3c1605570",
+  "setup": [
+    "node scripts/setup.mjs"
+  ]
 }
