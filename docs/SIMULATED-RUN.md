@@ -1,8 +1,8 @@
-# Simulated run — one syllabus, one college, one student, one capstone
+# Simulated run (v2) — one syllabus, one college, one student, one capstone
 
 Purpose: let the owner decide the phase-1 scope (PLAN.md OQ-1) by watching one realistic run end to
-end, and seeing which modules actually get used. Companion to `PLAN.md` (v7); IDs (M-n, T-n, A-n,
-DEC-n) refer to it.
+end. **v2 applies the owner's corrections from iteration 9** (marked ✎). Companion to `PLAN.md` (v8);
+IDs (M-n, T-n, A-n, DEC-n) refer to it.
 
 **Everything here is simulated, except:**
 
@@ -13,11 +13,20 @@ DEC-n) refer to it.
 
 **Cast:**
 
-- **You** are both admin and trainer, as today.
-- **Kavya** is the only student enrolled from *Riverside Institute of Technology* (a fictional
-  college), 5th semester.
-- **Mr Rao** is the college's placement coordinator (fictional).
-- AI teammates appear as **Ravi (AI, tech lead)** and **Fatima (AI, QA)**, always labelled.
+- **You**: admin and trainer.
+- **Kavya**: the only student, from *Riverside Institute of Technology* (fictional), 5th semester.
+- **Mr Rao**: the college's placement coordinator (fictional).
+- **Ravi (AI, tech lead)** and **Fatima (AI, QA)**: always labelled as AI.
+
+**Where things run in this run:**
+
+| Thing | Runs on |
+|---|---|
+| **Hub** | Your laptop on the college Wi-Fi (works without internet), syncing to a cloud copy when online |
+| **Your phone** | Companion app in *trainer mode*: teleprompter and check-in scanner |
+| **Kavya's phone** | Companion app in *learner mode*, with its own local store, so it works fully offline |
+| **Self-hosted Forgejo** (✎ V5) | Next to the hub, for her lab repo and the AI teammates' pull requests |
+| **Lab containers** (✎ B7) | Docker or Podman on the hub, including **Azurite** |
 
 ---
 
@@ -28,23 +37,46 @@ DEC-n) refer to it.
 Mr Rao emails `University Training Sem 5 Syllabus.xlsx`: "We need a trainer for the Sem 5 Azure
 cloud elective, 8 days, starting in two weeks. One student has registered so far."
 
-### A2. Upload and convert (M-25)
+### A2. Upload and convert (M-25) ✎
 
-1. Admin → *Programs* → *New from syllabus* → drop the `.xlsx`.
-2. The hub runs **MarkItDown** and shows the Markdown side by side with the original. One sheet per
-   track (AWS, Azure…).
-3. The **cleanup pass** removes the `NaN` cells left by merged rows **[real]: the raw conversion of
-   this file is full of them**, and turns the table into a topic list:
-   *Day 1 Overview of ML concepts → subtopics…*
-4. You tick the sheet you need: **Azure Cloud** (it lives in the same workbook).
+1. Admin → *Programs* → *New from syllabus* → drop the `.xlsx`. The hub runs **MarkItDown** and
+   shows the Markdown beside the original. **[real]: the raw output of this file is full of `NaN`
+   cells from merged rows.**
+2. ✎ **Cleanup through your connected AI.** The website asks the AI you connected over MCP (Claude
+   Code, or another harness) to clean the table. The AI returns a **proposed cleanup as a diff**:
+   - `NaN` rows removed;
+   - merged "Day N" cells filled down;
+   - subtopics nested under their day.
+3. You accept it (or edit, then accept); nothing changes until you do (P-2).
+4. **If no AI is connected,** the built-in rule-based cleanup does the same job, less smartly
+   (P-3).
+5. You tick the sheet you need: **Azure Cloud**.
 
-### A3. Match to existing content (M-26, M-6)
+### A3. Match against the content catalog, or generate what is missing (M-26, M-6) ✎
 
-1. The topic list is matched against the **content catalog**. Best match: package5 track
-   `sem5_azure_cloud`, 9 of 9 days covered, with per-day confidence. Nothing needs generating
-   from scratch.
-2. **The content gate runs on the package before you can publish it.** It flags **[real]** that
-   `COURSE-MAP.md` disagrees with the day folders:
+**Where the catalog lives (✎):**
+
+- **Text content** (Markdown, question banks, scenario packs, about 90% of package5 by file count)
+  goes in a **git repository on the self-hosted Forgejo**. That gives history, review and pinned
+  releases.
+- **Large files** (slide decks, videos, PDFs) go to **pluggable file storage**. The default adapter
+  is **Google Drive** as you suggested; alternatives are any S3-compatible store (a self-hosted
+  MinIO/Garage box, or a cloud bucket).
+
+Why not Drive for everything: Drive is not versioned the way exam pinning needs (P-7). It also has
+quotas (15 GB free, then paid plans) and API rate limits, so "never run out" still means paying for
+a plan or adding a second store. See PLAN §4.3.
+
+**What happens:**
+
+1. The cleaned topic list is matched against the catalog. Best match: package5
+   `sem5_azure_cloud`, 9 of 9 days covered, with per-day confidence.
+2. ✎ **If a day were missing,** the website asks your connected AI (over MCP) to **generate it
+   with the skill template**: the 7 artifacts, 3 companion files and student guide, plus the new
+   **Shift scenario pack** (✎ B6). The output lands in the catalog as a draft and must pass the
+   content gate like everything else.
+3. **The content gate** runs on the package. It flags **[real]** that `COURSE-MAP.md` disagrees
+   with the day folders for this track:
 
    | Day | COURSE-MAP | Day README |
    |---|---|---|
@@ -53,274 +85,309 @@ cloud elective, 8 days, starting in two weeks. One student has registered so far
    | 7 | CI/CD for AI | Capstone InvoiceFlow |
    | 8 | Capstone | AZ-204 Exam Cram |
 
-3. You choose **"day folders are the truth"**. The gate regenerates the program schedule from the
-   folders, records the decision in the program's change log, and passes.
+4. You choose "day folders are the truth"; the gate regenerates the schedule, logs the decision and
+   passes.
 
-   *(This is exactly the class of drift the gate exists for. Without it, the student's timeline
-   would have told her Day 7 is CI/CD while the class did the capstone.)*
+### A4. Program, site, trainer, batch (M-1, minimal M-30) ✎
 
-### A4. Program, site, trainer, batch (M-1, minimal M-30)
+1. **Program:** "Sem 5 Azure Cloud Engineer (AZ-204 aligned)", **pinned as release v1** (P-7).
+2. **Site:** Riverside Institute. ✎ Check-in is **scanned with the companion app**. Two QR codes
+   exist:
+   - **Pairing QR** (once per device): shown by the website or hub. Scanning it in the companion
+     app links that phone to your account and to this hub (laptop on the LAN, or the cloud copy).
+     After pairing, the phone syncs with the hub whenever it can reach it, and keeps working
+     offline in between.
+   - **Site QR** (each visit): printed once and taped to the lab door. Scanning it records a
+     check-in on the phone; the phone syncs it later if it is offline.
+3. **Trainer:** search by skill ("Bicep", "Functions", "Cosmos DB") → only **you** → assign.
+   Minimal trainer management only (DEC-18).
+4. **Batch:** "Riverside Sem 5 Cloud — Batch 1". 9 sessions, 6 h each, Mon–Fri 09:30–15:30.
+5. **Syllabus rules:** practice Shifts on Days 5–6; **graded capstone Shift on Day 7** (DEC-1); a
+   graded, seeded, pinned practice exam on Day 8.
+6. **Commons:** one required channel `#batch1` (you + Kavya); the team channel is simulated (Ravi,
+   Fatima).
+7. **AI policy:** System 1 on; System 2 allowed (Kavya may connect her own AI).
+8. Send the join code to Mr Rao for Kavya.
 
-1. **Program:** "Sem 5 Azure Cloud Engineer (AZ-204 aligned)", built from the gated package,
-   **pinned as release v1** (P-7).
-2. **Site:** Riverside Institute, address, check-in method **QR code** (you print the site's QR
-   code once and tape it to the lab door).
-3. **Trainer:** search trainers by skill ("Bicep", "Functions", "Cosmos DB"). Only one result:
-   **you**. Assign yourself. *(Minimal trainer management, as you asked: profile with skills,
-   assignment, schedule. Payroll, expenses and invoices stay out for now; OQ-8.)*
-4. **Batch:** "Riverside Sem 5 Cloud — Batch 1". 9 sessions (Day 0 + Days 1–8), 6 h each,
-   Mon–Fri 09:30–15:30, starting week 0.
-5. **Syllabus rules:**
-   - Shifts: practice on Days 5–6; **graded on Day 7** (the capstone Shift). This is DEC-1, with you
-     as the admin setting it.
-   - Day 8 practice exam: graded; seeded and pinned.
-6. **Commons policy** (DEC-2): one real channel is required, `#batch1` (you + Kavya). The team
-   channel is **simulated**: with one student there is no team, so Ravi and Fatima (AI) fill it.
-7. **AI policy:** System 1 on (on-device) + System 2 allowed (Kavya may connect her own AI over
-   MCP).
-8. You send the **join code + QR code** to Mr Rao for Kavya.
-
-**Admin time spent: about 25 minutes**, most of it reading the gate's mismatch report.
+**Admin time: about 25 minutes**, most of it reviewing the AI's cleanup diff and the gate's report.
 
 ---
 
-## Part B — Trainer preparation (you, as trainer), week −1
+## Part B — Trainer preparation (you), week −1
 
 | Step | What you do | Module |
 |---|---|---|
-| B1 | Open the **skill map** generated from the package: Azure basics → AI services → Bicep → security → multi-region → capstone; each node lists its tasks | M-6 |
-| B2 | Read Day 0–1 **teleprompter scripts** (from `instructor_script.md`): `[SAY]`/`[DO]` lines, running clock, cross-question callouts | M-26 |
-| B3 | Prepare **Notebook board** pages for Day 1 from `whiteboard_day01.md`: ruled paper, 16:9 pages, the "four-portal tour" diagram roughed in | M-27 |
-| B4 | Create Kavya's **lab repo** from the package's `lab-repo/` template. One student, so one repo; the same command would create 40 | M-17 (RepoBee-style) |
-| B5 | Add the **Git warm-up** for Day 0: the class forks the *pulse wall* repo and opens a PR adding her profile card (fork → branch → commit → PR → review → merge in one session) | open-source-pulse-wall |
-| B6 | Write one **Shift scenario pack** from the capstone: *"InvoiceFlow on-call"*: 5 seeded tickets (duplicate invoice, a blob trigger not firing, a Cosmos throttling alert, a Key Vault access denial, a customer asking where her invoice is) | M-10 |
-| B7 | Check the **lab environment**: see *Gap 1* below | — |
+| B1 | Open the **skill map** generated from the package | M-6 |
+| B2 | Skim the Day 0–1 **teleprompter scripts** on your phone (§D0 below) | M-26 |
+| B3 | Prepare Day 1 **Notebook board** pages from `whiteboard_day01.md` | M-27 |
+| B4 | Kavya's **lab repo** is created on Forgejo from the package's `lab-repo/` template; the bot accounts for Ravi and Fatima are added as collaborators | M-17, Forgejo |
+| B5 | Day 0 Git warm-up: the **pulse wall** repo is mirrored to Forgejo, so the fork → PR → merge exercise works on the college Wi-Fi without GitHub | open-source-pulse-wall |
+| B6 ✎ | The **Shift scenario pack** is **generated by the skill template** together with the rest of the day's content (new artifact: `shift_pack_dayNN/`: seeded ticket schedule, requester scripts, auto-checks), and it passed the same content gate. You only review it. It is viewable in both the companion app and the desktop | M-10, M-26 |
+| B7 ✎ | **Labs run in containers** (Docker or Podman): one container image per day from the package's `lab/` files, plus **Azurite** (Blob on 10000, Queue on 10001, Table on 10002), the Cosmos DB emulator and Functions Core Tools. Auto-checks run inside the same containers | new M-32 |
 
-**Gap 1 [design]: emulators.** floci emulates **AWS**, but this track is **Azure**. For offline
-practice, the hub needs the Azure equivalents:
-
-- **Azurite** (Blob, Queue, Table);
-- the **Cosmos DB emulator**;
-- **Functions Core Tools** running locally;
-- **Document Intelligence** has no simple offline emulator, so that step uses recorded sample
-  responses offline and the real service online.
-
-The real deployment (Day 7 evening onward) needs an Azure subscription; the plan assumes the
-*Azure for Students* credit. **Not verified here:** whether each emulator runs on the classroom
-laptop.
+**Gap 1 (still open):** Azurite does not emulate Azure Files or Data Lake. Document Intelligence has
+no offline emulator, so that step uses recorded sample responses offline and the real service
+online. Not verified here: that the Cosmos emulator container runs well on the classroom laptop.
 
 ---
 
-## Part C — Kavya's onboarding (Day 0, 09:30)
+## Part C — Kavya's onboarding (Day 0, 09:30) ✎
 
-She scans the join code. The coaching framework (§7.0) runs in low-friction mode:
+She installs the companion app and scans the **pairing QR** on the projector. Her phone is now
+linked to the batch, and from here on it works offline.
 
 | Stage | What appears | What she does |
 |---|---|---|
-| 0 Context | Domain cards | Taps *Career / Learning* and *Money* |
-| 1 Goals | 4 predicted goals for "Sem 5 cloud elective" | Taps "Pass the course with a capstone I can show in interviews" and edits a predicted money goal to "Save ₹2,000/month from pocket money" |
-| 2 Constraints | Day strip + sliders + pitfall chips | Drags college hours 09:30–15:30, a commute of 50 min each way, self-study 1 h/day; ticks pitfalls "I start late on assignments" and "phone in bed" |
-| 3 Pathway | Light / Standard / Intense cards | Picks **Standard**: 6 h/week self-study, review daily, capstone prep from Day 5 |
-| 4 Plan | "Adopted: 1 h/day self-study after 19:00; added a 22:30 phone-down block" | **Save and start → Plan v1** |
-| — | Placement test (sectioned, from the readiness assessment) | 12 min; strong on programming, weak on networking: the arc adds a networking primer card set |
+| 0 Context | Domain cards, **Career / Learning pre-selected because she joined via a course** | Adds *Money* |
+| 1 Goals ✎ | **A default goal derived from the syllabus**: "Complete the Sem 5 Azure Cloud elective and ship the InvoiceFlow capstone (AZ-204 aligned) by <end date>". The pre-filled wording adapts to her stage-0 choices | ✎ **Taps "Use this"**, or customises it (she adds "…that I can show in interviews") |
+| 2 Constraints ✎ | Day strip pre-filled with the **batch timetable**; commute and self-study defaults | ✎ **"Accept defaults"** in one tap; she changes only the commute to 50 min |
+| 3 Pathway | Light / Standard / Intense, with **Standard pre-selected** | Accepts |
+| 4 Plan | Summary of adopted choices | **Save and start → Plan v1** |
+| — | Placement test (readiness assessment) | 12 min |
 
-**Measured (simulated): 4 min 50 s, 21 taps, 1 typed sentence**, within the OQ-11 targets. Diet,
-fitness and relationship questions were answered "ask me later".
-
-Her phone now shows tonight's plan: commute audio (Day 1 summary), a 19:00 self-study block (Day 1
-`quicklearn`), a 21:30 Anki block (12 cards), and a 22:30 phone-down block.
+**Simulated: about 2 min 40 s, 9 taps, 0 typed sentences** using defaults (targets: ≤ 5 min, ≤ 25
+taps, ≤ 2 sentences). Customising everything stays within target.
 
 ---
 
 ## Part D — Delivery, day by day
 
-### Day 0 — triage primer (you + Kavya, in the lab)
+### Day 0 — triage primer ✎
 
-**You:**
+**Your phone: the teleprompter (✎ D0)**
 
-- Teleprompter on the laptop; Notebook board on the projector.
-- "Share" puts a **QR code** on screen; Kavya scans it and follows the board live on her phone.
-- Check-in: you scan the site QR code at the door (no GPS, no photo).
+- **Launch** today's script from the phone. Options:
+  - **pacing mode**: running clock vs. auto-scroll;
+  - **speed** (words per minute, adjustable while running);
+  - **text size**;
+  - **mirror** (for a glass prompter).
+- **Pause anywhere** (tap), and **jump between sections** from a section list, e.g. *00:00
+  Welcome → 00:12 Az CLI check → …*.
+- **Summary view** for any section: 3–5 bullet points with the key idea, the mistake you planned to
+  show, and the likely cross-question, so you can **improvise** instead of reading.
+- **Behind schedule:** the phone shows how far behind you are and which later sections are marked
+  optional.
 
-**Kavya:**
+**Your laptop: the screen (✎)**
 
-- Azure CLI and Codespaces setup (the package's Day 0 checks).
-- **Pulse wall warm-up:** she forks, adds her profile JSON, opens a PR. You review on the
-  projector; the merge lights up her card on the wall.
-- *With one student the wall has one card. Ravi (AI) "opens" a second PR so she can practise
-  reviewing, clearly labelled as an AI PR.*
-
-**After class:**
-
-- The **class delivery report** is prefilled (6 h, attendance 1/1, quiz results, wall activity);
-  you add one remark.
-- Your own coach timeline marks tomorrow's prep block.
-
-### Days 1–3 — Azure AI services (the 90-minute block, every day)
-
-| Step | Kavya | System behaviour |
-|---|---|---|
-| Read | `quicklearn` + 8-question diagnostic | Diagnostic answers go to drill stats; misses become **Anki cards** |
-| Board | 3 timed exercises from `whiteboard_dayNN.md` on her own copy of the board | Saved to the Day N skill node |
-| Lab | Lab files in her repo (SDK calls, Bicep) | Commits appear on your **Git signals** view |
-| Live coding | Replays your recorded session (an intentional bug at about 18:00); for the Python Function she opens the **trace viewer** | The trace can be sent to the board as a trace table |
-| Recall | 5 closed-book exercises | Recite and Feynman answers become cards |
+- The laptop shows the **Notebook board** on the projector.
+- When you tap *Share*, a **QR code appears on the board**. Kavya scans it with the companion app,
+  and **that is the moment the board is added to her account**: it appears under Day 0 in her
+  content, linked to the skill node.
+- She can follow live and annotate her own copy.
 
 **In class:**
 
-- A **live PIN quiz** with one player becomes *Kavya vs. ghost* (last cohort's anonymised scores,
-  or a target score), so the game still works.
-- **Day 2 visualizer moment:** you open the hashing visualizer to explain partition keys before
-  Cosmos DB, and Kavya does "predict the next step" twice.
+- Azure CLI and container check (the Day 0 lab image runs on the hub).
+- **Pulse wall warm-up** on Forgejo: she forks, adds her profile JSON, opens a PR; you review on the
+  projector; her card lights up. Ravi (AI) opens a second PR so she can practise reviewing (how
+  this works: Day 4 box below).
+- You check in by scanning the site QR with your phone.
 
-**Coach:**
+**After class:** the prefilled delivery report (6 h, 1/1 attendance); you add one remark.
 
-- Day 2 she misses the 19:00 block. The app asks "Did it happen?" → "No".
-- The **re-plan diff** moves it to 07:30 the next morning and keeps the week total.
-- She logs ₹180 lunch, ₹40 chai; the money tracker shows ₹1,250 left for the week.
+### Days 1–3 — Azure AI services ✎
 
-### Day 4 — Bicep modules (ticket work begins)
+**In class:** your teleprompter plus the board; the board QR adds each day's pages to her account.
+The live PIN quiz is *Kavya vs. ghost score*.
 
-- You create a **sprint** in the batch board: "Sprint 1: InvoiceFlow infrastructure" with 4
-  tickets from the capstone's ticket templates.
-- Assignees: Kavya, **Ravi (AI)** and **Fatima (AI)**. One student means the team is mostly AI
-  (PACA-style).
-- Ravi "takes" the Key Vault module ticket and posts a draft PR. Kavya must **review it** and
-  request one change. Fatima files a bug against Kavya's storage module when its auto-check fails
-  (a missing soft-delete flag).
+**After class, at home (✎ D1–3):**
 
-### Days 5–6 — security, multi-region; practice Shifts
+1. **Quick learn + the 8-question diagnostic** (moved to after class): reading the 10-minute
+   summary, then answering the diagnostic, both scheduled into her evening block.
+2. **Default Anki cards are created automatically** from the day's `::card` facts, recall
+   exercises and missed diagnostic questions (about 15–25 cards per day).
+3. ✎ **Describe-a-card:** she types "a card about the difference between system-assigned and
+   user-assigned managed identity".
+   - *With her own AI connected:* it drafts the card (front, back, tags), she accepts or edits.
+   - *Without AI:* she gets a two-field form (front, back) pre-filled with her sentence.
+4. Board exercises (3 per day) on her own copy; lab in the day's container image; live-coding
+   replay (the Python Function opens in the **trace viewer**); memory recall.
 
-**Day 5, 14:00: practice Shift, 30 min**, on emulators:
+**Coach:** Day 2 she misses the 19:00 block → "Did it happen?" → "No" → the re-plan diff moves it to
+07:30 and keeps the week total.
 
-- 3 tickets arrive on the seeded schedule.
-- Kavya fixes a Key Vault access-denied ticket (missing RBAC role) inside the SLA. Laya scores her
-  triage "correct, P2".
-- She misses the SLA on a throttling ticket.
-- Practice mode, so there's no grade. The **postmortem** runs as coaching-framework stages 2–4 and
-  produces one action: "check Cosmos RU/s alerts first".
+### Day 4 — Bicep modules: sprint with AI teammates ✎
 
-**Day 6:** a second practice Shift with the failover scenario. She meets both SLAs.
+You create "Sprint 1: InvoiceFlow infrastructure" with 4 tickets; assignees: Kavya, Ravi (AI),
+Fatima (AI).
+
+**✎ How an AI teammate "posts a PR".** Ravi and Fatima are **bot accounts on the self-hosted
+Forgejo** (on GitHub it would be a GitHub App or bot user). There are two modes:
+
+| Mode | How the PR gets made | When |
+|---|---|---|
+| **Scripted** (no AI needed) | The Shift/sprint pack contains a **prepared branch**: correct code plus one deliberate, documented flaw for her to catch in review. The hub pushes it as the bot account and opens the PR through Forgejo's API. Comments are scripted too ("Can you check the soft-delete setting?") | Always available; deterministic, so it can be graded |
+| **AI-driven** | The connected AI works through the hub's MCP tools (`create_branch`, `commit_files`, `open_pr`, `comment`). The hub performs the git operations as the bot account. The AI can only act inside the bot's repos and ticket scope; every action is logged and labelled "AI" | When the batch's AI policy allows System 2 |
+
+**In this run:**
+
+- Ravi's PR (scripted) for the Key Vault module has a hard-coded secret name. Kavya catches it in
+  review and requests a change; Ravi's bot pushes the prepared fix.
+- Fatima (scripted) files a bug when the auto-check on Kavya's storage module fails (missing
+  soft-delete).
+
+### Days 5–6 — practice Shifts
+
+- **Day 5 practice Shift** (30 min), generated pack, running in the lab containers with Azurite:
+  - Kavya fixes a Key Vault access-denied ticket within its SLA;
+  - she misses the SLA on a throttling ticket;
+  - postmortem via coaching-framework stages 2–4 → one action item.
+- **Day 6:** the failover Shift; both SLAs met.
+- Both Shifts are visible on her **phone and desktop** (✎ B6). On the phone: ticket list, timers,
+  requester chat, status posts. Hands-on fixes need the desktop or laptop.
 
 ### Day 7 — capstone InvoiceFlow (graded)
 
-**Morning: plan the capstone with the coaching framework (stages 0–4):**
-
-- **Stage 1:** predicted goal "Ship InvoiceFlow end-to-end: Blob upload → Document Intelligence →
-  Logic Apps → Function validation → Cosmos → Power BI, all in Bicep". She confirms.
-- **Stage 2 (risks):**
-  - "Document Intelligence quota on student subscriptions" *(flagged as unknown: check before
-    deploying)*;
-  - "Power BI needs a work/school account";
-  - "Logic Apps cost".
-- **Stage 3:** Light (local + recorded Doc Intel responses) / Standard (real Azure, no Power BI;
-  local chart instead) / Intense (everything). She picks **Standard**.
-- **Stage 4:** **Capstone plan v1** saved. The app turns it into 6 tickets with acceptance checks,
-  in the same format as a SPEC: numbered decisions + acceptance rows.
-
-**Build:**
-
-- Local first, on the emulators.
-- **Ravi (AI)** reviews each PR, e.g. "the Function retries forever on a malformed invoice; add a
-  dead-letter path".
-- The app's auto-checks verify each ticket against the local environment.
-- **Evening:** she deploys to her Azure for Students subscription with one `az deployment`
-  command; the check runs against the real resources.
-
-**Graded capstone Shift (45 min), syllabus-pinned:**
-
-- Scenario "InvoiceFlow on-call", seed 4471, integrity log on (observe-only).
-- P1 at minute 6: "duplicate invoices in Cosmos". She finds the missing idempotency key, fixes
-  it, posts status in `#incident` (simulated).
-- Score: SLAs 4/5, checks 5/5, triage 5/5, communication 3/4.
-- **Postmortem:** Laya suggests rubric scores (e.g. "rollback plan mentioned: yes, 0.82"). **You
-  confirm** two and lower one.
+1. **Plan:** coaching framework stages 0–4. The default goal comes from the syllabus (✎ C1), and
+   she accepts the defaults with one change (✎ C2). Risks shown: Document Intelligence quota on
+   student subscriptions, Power BI needs a work/school account, Logic Apps cost. She picks
+   **Standard** (real Azure, local chart instead of Power BI).
+2. **Capstone plan v1** → 6 tickets with acceptance checks.
+3. **Build:** first in the lab containers (Azurite + Cosmos emulator + Functions Core Tools), with
+   Ravi's scripted reviews. Then she deploys to her Azure for Students subscription with one
+   `az deployment`.
+4. **Graded capstone Shift** (45 min, seed 4471, pinned, integrity log observe-only). P1:
+   duplicate invoices → idempotency key. Score: SLAs 4/5, checks 5/5, triage 5/5, communication
+   3/4. Laya suggests postmortem scores; **you confirm**.
 
 ### Day 8 — AZ-204 exam cram
 
-- Exam-forge mode: 100 questions, 150 min, 5 domains, seeded and pinned.
-- Report shows the seed and the integrity events (one fullscreen exit, 4 s; noted, not accused).
-- **Retest on the placement paper** shows the growth: networking 35% → 78%.
+- Seeded practice exam (100 questions, 150 min).
+- Integrity events noted, never accused.
+- Placement retest: networking 35% → 78%.
+- Certificate.
 
 ---
 
-## Part E — How the capstone actually came together (the thread)
+## Part E — How the capstone came together
 
-| Day | Artefact added to her repo / profile |
+| Day | Artefact |
 |---|---|
-| 0 | Fork + PR to the pulse wall (Git workflow proven) |
-| 1–3 | AI-service labs (SDK calls) + 3 whiteboards per day + about 60 Anki cards |
-| 4 | Bicep modules (storage, Key Vault) via sprint tickets; reviewed an AI teammate's PR |
-| 5–6 | Security hardening + DR; two practice Shifts with postmortem actions applied |
-| 7 | Capstone plan v1 → 6 tickets → local build → real Azure deploy → graded Shift |
-| 8 | Exam report + placement retest |
+| 0 | Fork + PR on the pulse wall (Forgejo) |
+| 1–3 | AI-service labs in containers; 9 board pages added via QR; about 60 default cards + 4 described cards |
+| 4 | Bicep modules via sprint; reviewed and corrected an AI teammate's PR |
+| 5–6 | Two practice Shifts (generated packs), postmortem actions applied |
+| 7 | Capstone plan v1 → 6 tickets → container build → real Azure deploy → graded Shift |
+| 8 | Exam report + retest + certificate |
 
-**Final evaluation (your view):**
+**Your final view:**
 
-- **Repo report** (TCH-Github_Evaluator-style weights): commit frequency, commit message quality,
-  branch strategy, documentation; *individual contribution* compares her commits with the AI
-  teammates' commits, which are labelled.
-- **Capstone score** = Shift + checks + postmortem + repo report.
-- **Certificate** issued.
-- Her **portfolio page** lists the deployed endpoint, the repo, the board pages and the Shift
-  report, ready for interviews (her stage-1 goal).
+- the repo report (commit frequency, commit quality, branch strategy, documentation, contribution
+  vs. AI bots, which are labelled);
+- the capstone score;
+- her portfolio page (endpoint, repo, board pages, Shift report).
 
 ---
 
 ## Part F — After the course
 
 - **Kavya:**
-  - the coach keeps running (money goal, Anki review, next learning arc: "AZ-204 exam in 6
-    weeks");
-  - her data stays on her phone, plus an encrypted backup in her private repo.
+  - coach continues (money goal, Anki, next arc: AZ-204 exam in 6 weeks);
+  - data on her phone + encrypted backup.
 - **You:**
-  - `collect-homework summary` (one line per student repo) → archived;
-  - the batch delivery report goes to Mr Rao;
-  - the gate's package fix is kept for the next batch;
-  - the pinned exam stays pinned for Batch 1.
+  - `collect-homework summary` over the Forgejo repos;
+  - the delivery report to Mr Rao;
+  - the package fix (COURSE-MAP) committed to the catalog repo for Batch 2.
 
 ---
 
 ## Part G — What this run used: input for OQ-1
 
-| Module | Used in this run? | Minimum this run needed | Proposed phase |
+| Module | Used? | Minimum this run needed | Proposed phase |
 |---|---|---|---|
-| M-1 Org, roles, accounts | Yes | Admin, trainer, learner; join code | **1** |
-| M-2/M-29 Coaching framework + onboarding | Yes, heavily | Stages 0–5, chips and cards, versioned plans | **1** |
-| M-3 Planner, re-plan, reminders | Yes | Timeline, missed-block re-plan, local notifications | **1** |
-| M-4 Trackers | Yes (money only) | Money ledger; tasks; food and quests can be "ask later" | **1** (money + tasks), food/quests 1.5 |
-| M-5/M-25 Content conversion + cleanup | Yes | XLSX syllabus → topics | **1** |
-| M-26 Package import + content gate | Yes, and it caught real drift | Mapping table + mismatch check | **1** |
-| M-6 Skill template / skill map | Yes | Skill map from the package | **1** |
-| M-7 Study / drill / exam | Yes | Quick quiz, drill, seeded exam, report | **1** |
-| M-8 Anki | Yes | Cards from diagnostics and recall; scheduler | **1** |
+| M-1 Org, roles, accounts; **device pairing QR** ✎ | Yes | Admin/trainer/learner, join code, pairing | **1** |
+| M-2/M-29 Coaching framework + onboarding (**syllabus-derived defaults, "accept defaults"** ✎) | Yes | Stages 0–5, defaults, cards | **1** |
+| M-3 Planner, re-plan, reminders | Yes | Timeline, re-plan diff, local notifications | **1** |
+| M-4 Trackers | Money only | Money ledger, tasks | **1** (food, quests 1.5) |
+| M-5/M-25 Conversion + **AI cleanup via MCP with rule fallback** ✎ | Yes | XLSX → topics, diff review | **1** |
+| M-26 Package import + content gate (+ **Shift packs from the skill template** ✎) | Yes; caught real drift | Mapping, gate | **1** |
+| **Catalog storage: Forgejo repo + file-storage adapter (Drive default)** ✎ | Yes | Git catalog + Drive adapter | **1** (Drive), other adapters 2 |
+| **Generate missing content via MCP** ✎ | Not needed in this run | Request → draft → gate | **1.5** |
+| M-6 Skill map | Yes | From package | **1** |
+| M-7 Study / drill / exam | Yes | Quick quiz (after class), drill, seeded exam | **1** |
+| M-8 Anki (+ **default cards, describe-a-card** ✎) | Yes | Scheduler, auto cards, form/AI card | **1** |
 | M-9 Tickets and sprints | Yes | Board, assignment, auto-checks | **1** |
-| M-10 Shift engine | Yes | Seeded scenarios, SLA timers, practice/graded | **1** (mock checks) |
-| M-11 Commons + AI personas | Yes | One real channel + scripted AI teammates | **1** (scripted) |
-| M-12 Knowledge graph | Lightly | "Related" panel | 1.5 |
-| M-13/M-14 MCP + tool/decision interfaces | Optional in this run | Interfaces + rule implementations | **1** (interfaces only) |
-| M-15 Offline app, sync, backup | Yes | Offline web app; backup can wait | **1** (backup 2) |
-| M-16 Live PIN quiz | Yes (vs. ghost) | Single-player ghost mode | 2 |
-| M-17 Git analytics + per-student repos | Yes | Repo from template; commit stats; summary | 1.5 |
-| M-18 Story mode / Heading Strike | No | — | 2 |
-| M-19/M-20 Native app; Needle/Laya in browser | No (rules sufficed) | — | 2 |
-| M-23 Paper / Google Forms export | No | — | 2 |
-| M-27 Notebook board | Yes, every day | Board + QR follow; PDF export | 2 (heavy dependency) — **or 1.5 if you consider it essential** |
-| M-28 Trace viewer | Once (Python Function) | Python only | 2 |
-| M-30 Trainer management (minimal) | Yes | Profile with skills, site with QR check-in, schedule, delivery report | **1 (minimal)**; payroll/expenses/invoices 2 |
-| M-31 Visualizers | Once (hashing) | One algorithm player | 2 |
-| Azure emulators (Gap 1) | Yes | Azurite + Cosmos emulator + Functions Core Tools on the hub | New item, **1.5** |
+| M-10 Shift engine (phone + desktop views ✎) | Yes | Seeded packs, SLA timers, modes | **1** |
+| M-11 Commons + scripted AI personas | Yes | One real channel, scripted bots | **1** |
+| **Forgejo + bot accounts (scripted PRs)** ✎ | Yes | Self-hosted forge, bot users, API PRs | **1** |
+| **M-32 Lab containers (Docker/Podman) + Azurite + Cosmos emulator** ✎ | Yes | Per-day images, checks in containers | **1** |
+| **Teleprompter on the trainer's phone** ✎ | Yes, daily | Launch, pacing, speed, pause, section jump, section summaries | **1** |
+| M-27 Notebook board + **QR-adds-to-account** ✎ | Yes, daily | Board on laptop, QR share, ownership on scan | **1** (✎ promoted: the run depends on it daily) |
+| M-12 Knowledge graph | Lightly | Related panel | 1.5 |
+| M-13/M-14 MCP + tool/decision interfaces | Yes (cleanup ✎, cards ✎, optional AI PRs) | MCP server + rule implementations | **1** |
+| M-15 Offline app + sync (phone runs its own store ✎) | Yes | Offline store on phone, hub sync (LAN or cloud) | **1** (backup 2) |
+| M-16 Live PIN quiz | Yes (ghost) | Single-player ghost | 2 |
+| M-17 Git analytics | Yes | Repo from template, stats, summary | 1.5 |
+| M-28 Trace viewer | Once (Python) | Python only | 2 |
+| M-30 Trainer mgmt (minimal) | Yes | Profile, site QR, schedule, delivery report | **1 (minimal)** |
+| M-31 Visualizers | Once | One player | 2 |
 
-**Reading of the table:** this run needed about 15 modules in a minimal form. Everything visual or
-model-heavy (board, traces, visualizers, on-device AI) improved the experience but was not on the
-critical path. The proposed **phase 1 = the 15 modules marked "1"**, each at its listed minimum.
+**Phase-1 proposal after v2:** 21 items at their minimum form. The Notebook board moved into phase
+1, because the corrected run depends on it every day. **Honest size warning:** this is about
+**twice** the v7 proposal. For the model-build experiment, OQ-1 can be split into **1a**, the
+testable core (accounts, coaching framework, planner, trackers, package import + gate, Anki, exam,
+tickets, Shift engine, MCP interfaces), and **1b**, the integrations (Forgejo bots, containers,
+board, teleprompter, pairing).
 
-## Problems this simulation surfaced
+---
 
-| # | Problem | Status |
+## Part H — Planned but NOT in this simulated run (✎ owner asked)
+
+Everything below is in PLAN.md but was not exercised by this one-student cloud run:
+
+| Area | Not exercised | Why it didn't appear | Phase |
+|---|---|---|---|
+| Personal OS | **Food/calorie tracker**, **relationship micro-quests**, **"where did I keep it"** items | Kavya answered "ask me later" | 1.5 / 2 |
+| Personal OS | **Encrypted backup to a private repo**, native push notifications | Not needed in 8 days | 2 |
+| AI | **System 1 on device** (Needle via needle-rs/Cactus, Laya in the browser) beyond Laya rubric suggestions; **native companion with Cactus** | Rules were enough | 2 |
+| AI | **UiPath via MCP**, **Node-RED automations** (trainer nudges, personal automations, automation tickets) | Not in this syllabus | 2 / 3 |
+| Learning | **Story mode (manhua)**, **Heading Strike** game, e-Lecture mode | Optional presentation layers | 2 |
+| Learning | **Multi-language traces** (JavaScript, Java, C, C++), most **visualizers**, graph/tree editor | Only one Python trace and one visualizer were needed | 2–3 |
+| Learning | **Electives**: RAISE Playground, Treelab, Sucre4Stem, Flowboard, ROSBLOCKS, "build an MCP tool" | Not in this syllabus | 3 |
+| Learning | **Placement-to-arc for personal goals** (fitness arc, money arc) | Cloud course only | 2 |
+| Classroom | **Multiplayer live quiz**, real multi-member **Commons** channels and teams, mixed human/AI teams, class **leaderboards** | One student | 1.5 (works, but untested by this run) |
+| Classroom | **Paper exam / Google Forms export**, **OCR import** of printed questions | Everyone had devices; content existed | 2 |
+| Classroom | **Exam camera tier** (face presence) | Not enabled | 2 |
+| Classroom | **Video stand-ups**, AFFiNE-style notes editor, mind maps | Not needed | 2 |
+| Classroom | **Cloud labs on AWS (floci)** | Azure track used Azurite instead | 1.5 |
+| Admin | **Payroll, expenses, quotations, invoices, compliance documents, approvals inbox, academy dashboard, assets with QR (homebox)**, certificates templates beyond default | DEC-18: minimal trainer management for now | 2 |
+| Admin | **Multiple trainers**, trainer matching, multi-batch / multi-track programs, cohort pinning across batches (Batch 2 reuse) | Only you, one batch | 1.5 |
+| Integrations | **GitHub/GitLab adapters** (instead of Forgejo), **S3/MinIO** storage adapters, PACA integration | Forgejo + Drive sufficed | 2 |
+| Experiment | The tins-kit **model builds** (Haiku/Sonnet) and **carry-over measurement** | That happens after you approve the plan | after OQ-1 |
+
+---
+
+## Part I — One app or several? (✎ owner asked)
+
+**Recommendation: one app, one account, with role-based spaces, and two shells.** Plus two
+background services that are not "apps" to the user.
+
+| What | Form | Who sees it |
 |---|---|---|
-| S-1 | **[real]** package5 `COURSE-MAP.md` disagrees with the day folders for the cloud track | Gate must check it; the owner should fix the package |
-| S-2 | **[design]** floci is AWS-only; the Azure track needs Azurite, the Cosmos emulator and Functions Core Tools | New item; verify on the classroom laptop |
-| S-3 | **[design]** one student breaks group mechanics (live quiz, wall, teams) | Ghost players and AI teammates, labelled |
-| S-4 | **[unknown]** Document Intelligence and Power BI availability on student subscriptions | Check before Day 7; Light/Standard plans avoid them |
-| S-5 | **[licence]** classroom-analytics is GPL-3.0: use its ideas, not its code. TCH-Github_Evaluator's README says MIT but the repo has no LICENSE file | Ask the author, or re-implement |
+| **Coach LMS app** | One codebase (Svelte), installed as the **companion app** on phones (Capacitor) and opened as the **website** on laptops | Everyone; the spaces shown depend on role |
+| Spaces inside it | **Coach** (personal OS: plan, trackers, notes), **Learn** (courses, cards, Shifts, tickets), **Teach** (teleprompter, board, batch board, reports), **Admin** (programs, sites, trainers, catalog) | Coach + Learn: learners. Teach: trainers. Admin: admins. You see all four |
+| **Hub** | A server process (laptop on LAN, or cloud) | Nobody "uses" it; it syncs, hosts classes, runs MCP |
+| **Forgejo + lab containers** | Separate services next to the hub | Seen only through the app's links |
+
+**Why one app:**
+
+1. **One identity:** your trainer schedule and your own coach plan are the same timeline.
+2. **One sync engine and one offline store.**
+3. **One set of notifications,** instead of several apps competing.
+4. **Shared building blocks:** the board, Anki, the Shift viewer and the teleprompter are used
+   across roles.
+5. **One thing to install** at a college with weak Wi-Fi.
+
+**What would justify splitting later:**
+
+- **App-store and branding:** "Coach" as a personal product for people who never join a course, and
+  "Academy" for institutions. The same codebase could still ship two builds with different spaces
+  enabled.
+- **A display-only kiosk build** for classroom screens (board + live quiz only).
+- **Privacy positioning:** an institution may want the personal Coach space disabled entirely on
+  managed devices; a build flag handles this.
+
+**Privacy rule that makes one app safe (P-5):** the Coach space's data (money, food, plan,
+relationships) is stored and synced **separately** from Learn/Teach data. Joining a batch never
+grants the trainer or admin access to it.
