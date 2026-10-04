@@ -1,4 +1,4 @@
-# Coach LMS — Plan v11 (consolidated)
+# Coach LMS — Plan v12 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -190,26 +190,23 @@ A phone can be paired with **several hubs** (her own and the class's).
 - class data lives on the class hub;
 - each syncs to the other only what P-5 allows.
 
-### 4.2 Technology stack (DEC-13, chosen by Claude at the owner's request)
+### 4.2 Technology stack (DEC-53, replaces DEC-13 after the second-opinion review)
 
 | Layer | Choice | Why | Checked |
 |---|---|---|---|
-| Language | **TypeScript** everywhere | One language for phone, browser, hub and tests | Node 22.22 runs `.ts` files directly (no build step for core tests): verified |
-| Core logic (planner, scheduler, ledgers, Shift engine, exam assembly, graph) | **Plain TypeScript pure functions, zero runtime dependencies**, tested with `node --test` | Keeps the TINS gate honest; easiest for weaker models to build correctly; runs identically on phone, browser and hub | — |
-| Hub and pipelines (server, sync, import and convert pipeline, MCP server, payroll runs) | **Effect v4** (`effect@rc`, version pinned exactly) | Typed errors, schema validation, retries, and the detailed error messages the owner asked for. The core `effect` package has no external dependencies | `4.0.0-rc.118` is on npm: verified. RC since 12 Aug 2026, no broad breaking changes planned (search) |
-| UI | **Svelte 5 + SvelteKit** (static adapter), installable offline web app via `@vite-pwa/sveltekit` | Small bundles for 2021-era phones; explicit state (runes) suits offline-first | `svelte` 5.57.1 on npm: verified |
-| Notebook board | **Excalidraw 0.18 (MIT, React)**, loaded only on the board page | The only React in the app, kept separate | 0.18.1, MIT: verified |
-| Native companion app | **Capacitor** shell around the same Svelte app (Android first). System 1 runs as WebAssembly inside it (needle-rs, laya-ts); a Cactus native plugin comes later for speed | One codebase for web and phone | Not verified here |
-| Hub storage | **SQLite via built-in `node:sqlite`**; ledgers stay append-only | No database server to install | Works on Node 22.22 (prints an "experimental" warning): verified |
-| Content converter | **Microsoft MarkItDown** as a Python sidecar on the hub | The npm package named `markitdown` is a different, proprietary package and must not be used | Verified (npm metadata; Python MarkItDown run on package5) |
-| Tests | `node --test` for core + the hidden acceptance suite; **Playwright** for UI flows | Both work offline; Chromium is available in the build environment | — |
+| Language | **TypeScript** everywhere | One language for phone, browser, hub and tests | Node 22.22 runs `.ts` files directly: verified |
+| Core logic (planner, scheduler, ledgers, Shift engine, exam assembly) | **Plain TypeScript pure functions, zero runtime dependencies**, `node --test` | Unchanged; the review called this the best decision in the plan | — |
+| Server (hub and cloud, same code) | **Hono** + **Zod** schemas + a small `Result` type | Models write these reliably; replaces Effect v4 RC | Not yet checked against npm |
+| UI | **React + Vite**, installable offline web app (PWA) first; **Capacitor** shell in 1b for native-only features (clock alarms, reliable notifications, QR camera) | One UI framework (the board is React anyway); most-written stack | — |
+| Data and sync | **CouchDB replication protocol**: PouchDB in the browser/phone and on the hub (Node), CouchDB on the cloud. One database per learner + one per class | Leaderless replication phone ↔ hub ↔ cloud in any combination (§19.3); per-learner databases make export and crypto-shredding simple | PouchDB 9.0 (2024), now an Apache incubator project, maintained but slow-moving (search) |
+| Scheduler | **ts-fsrs** (FSRS) | Tested library instead of a hand-written SM-2 | Licence to verify |
+| Board | **Hard fork of Excalidraw 0.18 (MIT)**, vendored into the repo, trimmed (§19.5) | Fast on low-end phones; no upstream drift | 0.18.1 MIT: verified earlier |
+| Content converter | **MarkItDown** Python sidecar | Unchanged | Verified earlier |
+| Automations | **n8n** (self-hosted; free for internal use under its Sustainable Use License) | Replaces Node-RED | Licence terms: search, Oct 2026 |
+| Tests | `node --test` for core; **Playwright user-journey scripts** with screenshots and video as a hard gate (§19.6) | The owner's requirement | Chromium available: verified |
 
-Every dependency above becomes a locked D-row in `SPEC.md`; the tins-kit gate rejects any
-dependency not named in one.
-
-**Risk.** Models know Effect v3 better than v4 (v4 renamed core APIs, e.g. `Context.Tag` became
-`Context.Service`). Mitigation: Effect is confined to the hub and pipelines, the version is pinned,
-and a short v4 API crib ships as a tins-kit pattern.
+**Every version is pinned exactly** (lockfile committed, no `^`/`~`); each dependency is a locked
+D-row in `SPEC.md` and the tins-kit gate rejects anything not named.
 
 ---
 
@@ -624,14 +621,14 @@ The mechanics are identical; only presentation changes.
 | M-5 | Content pipeline: exam-forge schema and validator; imports (MCQ-Mastery, eduplay); OCR import | 1 (OCR 2) |
 | M-6 | Skill template, generator, skill map | 1 |
 | M-7 | Study, drill (commit-before-reveal), exam (seeded, weighted), integrity log (observe-only), report | 1 (camera tier 2) |
-| M-8 | Anki: decks; basic, reversed and cloze cards; SM-2 scheduler; Anki text import/export; due reviews become timeline blocks | 1 (`.apkg` 2) |
+| M-8 | Anki: decks; basic, reversed and cloze cards; **ts-fsrs** scheduler (was SM-2, DEC-53); Anki text import/export; due reviews become timeline blocks | 1 (`.apkg` 2) |
 | M-9 | Tickets and sprints (board, points, assignment) | 1 |
 | M-10 | **Shift engine**: seeded scenarios, SLA timers, scoring, grading mode (DEC-1) | 1 (mock checks), 2 (floci checks) |
-| M-11 | **Commons**: channels, threads, hub, scripted AI personas (DEC-2) | 1 |
+| M-11 | ~~**Commons**~~ **Cut to the Shift's simulated channel** (DEC-57); class chat stays on WhatsApp etc. | 1 (Shift only) |
 | M-12 | Knowledge graph (tags + text similarity; Needle embeddings later) and node-graph visual | 1 (visual 2) |
 | M-13 | MCP server exposing the tool layer | 1 |
 | M-14 | Tool and decision interfaces with rule-based implementations (Needle and Laya plug in later) | 1 |
-| M-15 | Offline web app shell, sync, encrypted backup to a private repo | 1 (backup 2) |
+| M-15 | Offline web app shell (PWA), **CouchDB/PouchDB sync across cloud/hub/hybrid profiles** (DEC-54), encrypted backup | 1 (backup 2) |
 | M-16 | Live classroom PIN quiz | 2 |
 | M-17 | Git analytics: per-learner repos, stats, rubric, contribution wall | 2 |
 | M-18 | Story mode, Heading Strike, story panels | 2 (Heading Strike could move to 1) |
@@ -646,12 +643,12 @@ The mechanics are identical; only presentation changes.
 | M-27 | **Notebook board**: pages, auto-hiding sidebar, tables, shape packs, drag-in `.mmd` and images, quick-class mode, PDF + images + Markdown (handwriting → text), QR adds to account | 1b |
 | M-28 | **Trace viewer**: one trace format; Python and JavaScript (phase 2), Java, C and C++ (phase 3); offline libraries; predict-then-reveal; send to board | 2–3 |
 | M-29 | **Coaching framework engine**: stages 0–5, enforced halts, predicted options (rule tables), Light/Standard/Intense plan cards, versioned plans, friction targets | 1 |
-| M-30 | **Trainer management** (Spark-inspired): profiles, compliance review (masked data), sites with QR or GPS check-in, schedules, delivery reports, expenses, payroll runs, quotations and invoices, approvals inbox, audit | 2 (proposed) |
-| M-32 | **Lab containers**: Docker/Podman images per day, Azurite, Cosmos DB emulator, Functions Core Tools, floci; checks run in containers | 1 |
+| M-30 | **Trainer management** (Spark-inspired; HR, expenses and invoices via ERPNext, DEC-56): profiles, compliance review (masked data), sites with QR or GPS check-in, schedules, delivery reports, expenses, payroll runs, quotations and invoices, approvals inbox, audit | 2 (proposed) |
+| M-32 | **Labs** (DEC-61: hub containers, Codespaces, Colab, optional free VM). **Lab containers**: Docker/Podman images per day, Azurite, Cosmos DB emulator, Functions Core Tools, floci; checks run in containers | 1 |
 | M-33 | **Teleprompter (trainer phone)**: launch, pacing modes, speed, pause, section jump, per-section summary for improvising, behind-schedule indicator | 1 |
 | M-35 | **Capability check + Health screen + fallbacks** (§4.4) and the hub installer (§4.5): single-file download, setup page, personal-hub mode | 1b |
 | M-36 | **Backup and sync targets**: R2, Drive, git repo, S3, local export; tested restore | 1b (R2 + local export), others 2 |
-| M-34 | **Forgejo integration + AI teammate bot accounts**: scripted PRs from prepared branches; AI-driven PRs via MCP tools, scoped and labelled | 1 |
+| M-34 | **GitHub organisation automated by a GitHub App; AI teammates as GitHub Apps; Forgejo offline sidegrade** (DEC-60). Was: Forgejo integration + AI teammate bot accounts: scripted PRs from prepared branches; AI-driven PRs via MCP tools, scoped and labelled | 1 |
 | M-31 | **Visualizer framework**: algorithm player, predict-the-next-step quizzes, e-Lecture mode, graph and tree editor, send to board | 2 |
 
 **Phase-1 size is deferred** until the owner approves (OQ-1).
@@ -782,8 +779,9 @@ Status column:
 | OQ-11 | ~~Friction targets~~ **Accepted** (≤ 5 min, ≤ 25 taps, ≤ 2 sentences) | — |
 | OQ-15 | Handwriting recognition sidegrade on the phone (on-device ink recognition) must be verified before relying on it | Accept as a research item |
 | OQ-16 | ~~Answer FAILURE-QUESTIONS.md~~ **Resolved** in iteration 12: all 46 answered (§18, DEC-36 to DEC-52) | — |
-| OQ-17 | An independent reviewer proposes a different design ([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)): cloud-first PWA, borrowed sync/forge/labs, Hono+Zod+React instead of Effect+Svelte, a 4-week pilot first, Coach split out. Adopt which rows, if any? | **Owner decides before SPEC.md** |
-| OQ-18 | F-04: keep the rotating site QR as the anti-proxy control (your answer covered where attendance lives, not proxying)? | Confirm |
+| OQ-17 | ~~Second opinion~~ **Resolved** in iteration 13 (§19). Was: An independent reviewer proposes a different design ([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)): cloud-first PWA, borrowed sync/forge/labs, Hono+Zod+React instead of Effect+Svelte, a 4-week pilot first, Coach split out. Adopt which rows, if any? | **Owner decides before SPEC.md** |
+| OQ-18 | ~~Rotating QR~~ **Resolved**: yes, the code changes every 60 s (120 s allowed as a setting). Was: F-04: keep the rotating site QR as the anti-proxy control (your answer covered where attendance lives, not proxying)? | Confirm |
+| OQ-19 | Which ideas from [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) go into 1a, 1b or later? | **Owner picks** |
 | OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
 | OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
@@ -805,7 +803,7 @@ Status column:
 | DEC-10 | The skill template (v1.2) is the authoring engine; package5 is the reference output | Owner, iteration 6 |
 | DEC-11 | pyviz_tutor visualises Python files | Owner, iteration 6 |
 | DEC-12 | The 4-stage framework prompt governs coaching conversations | Owner, iteration 6 |
-| DEC-13 | Stack: TypeScript; plain-TS core with zero dependencies; Effect v4 for hub and pipelines; Svelte 5 / SvelteKit offline web app; Excalidraw only on the board; Capacitor companion; node:sqlite; MarkItDown sidecar | Owner delegated to Claude, iteration 7 |
+| DEC-13 | ~~Superseded by DEC-53~~ Stack: TypeScript; plain-TS core with zero dependencies; Effect v4 for hub and pipelines; Svelte 5 / SvelteKit offline web app; Excalidraw only on the board; Capacitor companion; node:sqlite; MarkItDown sidecar | Owner delegated to Claude, iteration 7 |
 | DEC-14 | Trace viewer covers Python, JavaScript, Java, C and C++ | Owner, iteration 7 |
 | DEC-15 | Algorithm visualizers inspired by Galles, VisuAlgo, DSA Visualizer, visualizedsa, Treelab | Owner, iteration 7 |
 | DEC-16 | Coaching framework completed: stages 0 and 5, predicted options, plan cards, friction targets | Owner asked; Claude proposed, iteration 7 |
@@ -814,7 +812,7 @@ Status column:
 | DEC-20 | Spreadsheet cleanup is proposed by the user's connected AI over MCP as a diff (rule-based fallback) | Owner, iteration 9 |
 | DEC-21 | Catalog: text in Forgejo git, large files in pluggable storage with Google Drive as default; missing content generated via MCP + skill template + gate | Owner + Claude, iteration 9 |
 | DEC-22 | Check-in via the companion app; phones pair to a hub by QR and run offline with their own store | Owner, iteration 9 |
-| DEC-23 | Self-hosted Forgejo for repos and AI teammate bots | Owner suggested, iteration 9 |
+| DEC-23 | ~~Superseded by DEC-60~~ Self-hosted Forgejo for repos and AI teammate bots | Owner suggested, iteration 9 |
 | DEC-24 | Shift scenario packs are generated by the skill template and pass the content gate; viewable on phone and desktop | Owner, iteration 9 |
 | DEC-25 | Labs in Docker/Podman containers; Azurite added | Owner, iteration 9 |
 | DEC-26 | Default learner goal derived from the syllabus; "accept defaults" everywhere, customise optional | Owner, iteration 9 |
@@ -844,6 +842,20 @@ Status column:
 | DEC-50 | Build both 18+ and minor profiles; lawyer review deferred until after dry runs, before the first paid college (F-36, F-37) | Owner, iteration 12 |
 | DEC-51 | Secret scanning is a switch (on by default, turning off is logged); disk-encryption check is opt-in (F-39, F-41) | Owner, iteration 12 |
 | DEC-52 | 200-student load test is a 1b acceptance gate; health digest on the hosted site; "no cloud" switch kept; all other F-rows' defaults locked (F-42, F-44, F-46) | Owner, iteration 12 |
+| DEC-53 | Stack: TypeScript; plain-TS core; Hono + Zod server; React + Vite PWA, Capacitor in 1b; CouchDB/PouchDB sync; ts-fsrs; trimmed Excalidraw fork; n8n; every version pinned (replaces DEC-13) | Owner on the review, iteration 13 |
+| DEC-54 | One codebase, deployment profiles cloud / hub / hybrid; data replicates between any of them | Owner asked for both; Claude designed, iteration 13 |
+| DEC-55 | Per-learner databases; Turso not used (watch item) | Owner unsure; Claude, iteration 13 |
+| DEC-56 | Borrow Frappe LMS's data model and certificates; ERPNext + Frappe HR for HR, expenses, invoices in phase 2 | Owner, iteration 13 |
+| DEC-57 | Commons cut to the Shift's simulated channel; class chat on WhatsApp or similar | Owner, iteration 13 |
+| DEC-58 | Board: plain background while drawing, notebook look only in PDF export; one-way live broadcast; hard fork trimmed with a performance budget | Owner + Claude, iteration 13 |
+| DEC-59 | Google Meet: "start class on Meet" link in phase 1; Meet add-on later; Google Forms export optional | Owner, iteration 13 |
+| DEC-60 | GitHub organisation primary, automated by a GitHub App; students create their own accounts (GitHub terms); AI personas are GitHub Apps; Forgejo offline sidegrade (replaces DEC-23) | Owner + Claude, iteration 13 |
+| DEC-61 | No paid lab VM: hub containers, students' own Codespaces, Colab notebooks, optional Oracle free VM | Owner, iteration 13 |
+| DEC-62 | GitHub Projects for sprints; Shift engine for ITSM practice; optional Jira week on the free plan | Owner + Claude, iteration 13 |
+| DEC-63 | Coach (personal OS) is a separate app; integrates data via Health Connect, calendar, imports and launcher tiles | Owner, iteration 13 |
+| DEC-64 | Build target 1a is the pilot slice, run with one real batch with a measurement plan before 1b | Owner unsure; Claude, iteration 13 |
+| DEC-65 | Real-browser user-journey scripts (screenshots, video, throttled phone) are a hard gate | Owner, iteration 13 |
+| DEC-66 | Trainer prep packs and mastery gates in generated content; passkey/Google login via join QR; embargoed encrypted content released in class; export/import zip; college-format reports; free observability; release channels; AI-resilient assessment | Owner, iteration 13 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## 17. Real-world changes the plan must absorb (iteration 11)
@@ -992,7 +1004,199 @@ At the owner's request an independent agent reviewed the plan from a different a
 decisions (local-first P-1, Effect/Svelte DEC-13, Forgejo primary, one app with Coach inside).
 **SPEC.md waits for the owner's decision on OQ-17.**
 
+## 19. Decisions on the second-opinion review (iteration 13)
+
+The owner answered [`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md) section by section (OQ-17).
+Where the owner said "not sure" or "confirm it yourself", Claude researched it and decided; those
+rows are marked **(Claude)** and the owner can still overrule them. Facts from web search in
+October 2026 are INFERRED unless marked verified.
+
+**Two things found while checking change earlier decisions:**
+
+- **GitHub Classroom has shut down.** Sign-ups stopped in May 2026, and the service was
+  decommissioned on 28 August 2026. GitHub accounts, organisations and repos are unaffected. A
+  free open-source replacement, *Classroom 50*, was announced in July 2026 (not evaluated). The
+  plan therefore does its own "repo per student from a template" through the GitHub API.
+- **PocketBase cannot replicate between servers.** It is single-node by design (community sync
+  add-ons exist but are early). Hub and cloud versions that share data (owner's 3.0) need
+  replication, so the borrowed sync layer is the **CouchDB protocol** instead (§19.3).
+
+### 19.1 Borrow or build (review §1)
+
+| Row | Owner's answer | Decision |
+|---|---|---|
+| 1.1 Org, batches, certificates | Borrow from Frappe LMS where needed | Borrow Frappe LMS's **data model** (course → chapter → lesson, batch, certificate, quiz) and certificate templates. Frappe LMS is AGPL-3.0; copying code is fine as long as this repo stays open source under a compatible licence (owner is not selling) |
+| 1.2 Cards | ts-fsrs | **ts-fsrs** replaces SM-2; `.apkg` export kept |
+| 1.3 Chat | Only the Shift chat in the service; real chat on WhatsApp etc. | **Commons (M-11) is cut** to the simulated channel inside the Shift. Class chat lives in WhatsApp or similar; the app only sends deep links into it |
+| 1.4 Board | Notebook look only in the PDF; plain colour background while drawing; trim for speed | Drawing canvas uses Excalidraw's background colour picker; the ruled-notebook look is applied **only when exporting the PDF**. Trimmed hard fork (§19.5) |
+| 1.5 Live board sharing | Claude to decide | **(Claude)** The PDF/pages after class is the primary. Live follow-along is a **one-way broadcast** from the trainer's board to students over the hub's existing connection (trainer → students only; students annotate their own copy). No `excalidraw-room` server needed. It needs HTTPS (`crypto.subtle`), which the hub's own certificate authority provides (F-11) |
+| 1.6 Video | A built-in Google Meet plugin | Phase 1: **"Start class on Meet"** creates a Meet link and posts it to the class. Later: a **Meet add-on** (Google's Meet add-ons SDK, npm `@googleworkspace/meet-addons`, side panel + main stage) that shows the board, quiz or teleprompter inside Meet. Whether add-ons work for free personal Google accounts is unverified |
+| 1.7 Forge | GitHub org, but automate the account and setup work | See §19.2 |
+| 1.8 Labs | No money | **No paid VM.** Free lab paths in order: (1) Docker/Podman on the hub, (2) **GitHub Codespaces** on each student's *personal* account (120 free core-hours a month; 180 for verified students). Codespaces opened from an organisation's classroom repos bill the organisation, so students open them from their own copy. (3) Colab notebook variants (DEC-48), (4) one **Oracle Cloud Always Free** VM for a small shared lab. Oracle halved its free Arm allowance to 2 cores and 12 GB from 15 June 2026, without announcing it, so the plan does not depend on it |
+| 1.9 Tickets/sprints | Link issues and projects to sprints and other corporate exposure; does GitHub cover it? | GitHub Projects covers sprints (iteration fields), story points (custom fields), sub-issues, organisation-wide issue types, board and roadmap views, and burn-up charts. It does **not** cover ITSM (incidents, SLAs, on-call, change approval). The **Shift engine provides that**. Optional "Jira week" on Jira's free plan (up to 10 users per site, so one site per team) for students headed to Jira shops. Full list of corporate practices: FEATURE-IDEAS.md §C |
+| 1.10 Sync | Borrow | Borrow, but **CouchDB/PouchDB instead of PocketBase** (§19.3) |
+| 1.11 Live quiz | Integrate eduplay, restyled; can Google Forms be automated? | eduplay is integrated as the live-quiz module and restyled. **Google Forms export** is optional (§19.4) |
+| 1.12 Payroll, invoices | Borrow ERPNext | **ERPNext (+ Frappe HR)** for HR, expenses and invoices, in phase 2, run in Docker only when needed. It is heavy (Python, MariaDB, Redis) and GPL-3.0. The LMS only exports delivery reports to it |
+| 1.13 Automations | n8n | **n8n** replaces Node-RED (free self-hosted for your own use; reselling or hosting it for others needs a paid licence) |
+| 1.14 Conversion | Same | MarkItDown, unchanged |
+| 1.15 Personal OS | Integrate somehow, or run apps in the browser? | See §19.7 |
+
+### 19.2 GitHub organisation with automation (1.7)
+
+- **Students create their own GitHub accounts; nothing can create them automatically.** GitHub's
+  terms require a human to create each account and forbid accounts registered by bots or other
+  automated methods. Browser automation that signs students up would break the terms and risk
+  the whole organisation. Each person may also own only **one** free machine account.
+- **Everything after sign-up is automated** by a **GitHub App** installed on the organisation:
+  1. the student taps "Connect GitHub" (sign in with GitHub) in the app, so it learns their
+     username;
+  2. the app invites them to the organisation and their team;
+  3. it creates their repo from the day's template, sets branch protection, creates the
+     project board with iterations, and adds starter issues;
+  4. it removes access at batch end (or archives).
+- **AI teammates (Ravi, Fatima) are GitHub Apps, not user accounts.** Each persona is its own App
+  (shown as `ravi-bot[bot]`) that opens branches and PRs with short-lived installation tokens.
+  This avoids the one-machine-account limit and expires tokens at batch end (F-40). *Verify:*
+  that App-authored PRs look right in the students' review flow.
+- Forgejo stays as the **offline sidegrade** (no internet at the site); the same steps run against
+  its API.
+
+### 19.3 Two deployment versions that share data (3.0, 3.2, 3.3, 3.4)
+
+The owner wants both the **cloud-first** and the **local-first (hub)** designs built, wants to
+choose between them, and wants them to share data.
+
+- **One codebase, three deployment profiles**, chosen in the installer and switchable later:
+  - **Cloud**: the PWA talks to the cloud server; offline cache plus outbox on the phone.
+  - **Hub**: the PWA talks to the LAN hub; works with no internet.
+  - **Hybrid** (DEC-39): small records to the cloud, content on hubs.
+- **Why the CouchDB protocol makes this possible:** every node (phone, hub, cloud) holds databases
+  that replicate both ways with any other node, with no leader. A class can start on the hub,
+  move to the cloud, and come back without an export/import step. PouchDB runs in the browser and
+  in Node (so the hub stays a single Node install); CouchDB runs on the cloud VM.
+- **Per-learner database** (review 3.3): each learner's Coach data is its own database, encrypted
+  with their key. Export is "copy the database"; deletion is "destroy the key" (F-24).
+  **Turso is not needed.** Turso Sync's local-first push/pull is attractive, but it syncs to Turso
+  Cloud, which conflicts with the hub and "no cloud" modes. It stays a watch item.
+- **Risk:** PouchDB is maintained but slow-moving (9.0 in June 2024; Apache incubator since).
+  Mitigation: versions pinned (3.2), with the sync layer behind an adapter interface plus
+  contract tests, so it can be swapped.
+- **PWA first for both profiles** (3.4). The Capacitor shell comes in 1b only for what a PWA
+  cannot do: clock-app alarms (F-16), reliable notifications, and on-device models.
+- **The build experiment** (§14) can now compare cloud and hub builds of the same SPEC.
+
+### 19.4 Google Forms (1.11): what can be automated, and how to set it up
+
+- The **Forms API** can create a form, switch it to quiz mode, add questions with point values,
+  answer keys and feedback, and read responses. Choice and short-answer questions grade
+  automatically.
+- **Catch:** forms created through the API after 31 January 2026 are **unpublished by default**,
+  so the app must publish them explicitly.
+- **Use:** "Send this quiz as a Google Form" for colleges that require Forms, with responses
+  pulled back into the grade ledger. eduplay stays the primary live quiz.
+- **One-time setup (free):**
+  1. In Google Cloud Console, create a project and enable the **Google Forms API** and
+     **Google Drive API**.
+  2. Configure the OAuth consent screen as *External*, in *Testing* mode, and add your own Gmail
+     as a test user.
+  3. Create an OAuth client (type *Desktop* or *Web*).
+  4. Paste the client ID into the hub's Google settings and sign in once.
+  5. Scopes requested: `forms.body` (create and edit) and `forms.responses.readonly` (read
+     answers).
+  6. *Simplest alternative:* an **Apps Script** using `FormApp`, run from your Google account, with
+     no Cloud project needed. The hub can generate that script for you.
+
+### 19.5 The board: trimmed hard fork (1.4, 6.3)
+
+- Excalidraw 0.18 is copied once into `vendor/board/` as a **hard fork**: renamed, never updated
+  from upstream, MIT notice kept.
+- **Removed:** every language except English (F-10), the AI/text-to-diagram features that call
+  external services, collaboration UI, and unused export formats. **Loaded on demand:** Mermaid
+  import and the handwriting export.
+- **Performance budget**, enforced by the journey gate (§19.6): the board opens in under 3 s on
+  a throttled low-end Android profile (4× CPU slowdown, slow-4G network). Exact numbers become
+  AC rows.
+
+### 19.6 Hard gate: real browser user journeys (6.1)
+
+- Every feature ships with **user-journey scripts** (`journeys/*.mjs`, Playwright on Chromium):
+  "student scans join QR → passes catch-up gate → answers quiz", and so on.
+- Each run records **a screenshot per step, a video and a trace**. It runs on desktop and on an
+  emulated low-end phone (small viewport, CPU throttling, slow network).
+- **A failing journey fails the gate.** No flag skips it (consistent with tins-kit's gate rule),
+  and the report lists which steps passed and failed, with screenshots.
+- The review's other build advice is adopted too:
+  - frozen interface files written before a weak model starts a task;
+  - golden tests from package5;
+  - property tests for ledgers, scheduler and merge;
+  - vertical-slice tasks;
+  - a visible smoke subset of the hidden suite;
+  - Sonnet for stateful parts (sync, timers, crypto) and Haiku for pure functions and screens.
+- **Carry back to tins-kit:** the journey gate (screenshots, video, throttled phone profile) is
+  a candidate tins-kit feature, measured in the build experiment.
+
+### 19.7 Personal OS as a separate app (1.15, 7.14)
+
+- **Running other phone apps inside a browser is not viable here.** It is technically possible
+  (Waydroid or redroid run Android in a Linux container; ws-scrcpy streams a phone screen to a
+  browser), but it needs a Linux server per user stream, costs money, is laggy on campus networks,
+  and conflicts with many apps' terms. Wayland itself is a Linux display protocol, not a way to run
+  apps in a browser.
+- **What achieves "everything controlled from one app" instead:**
+  - **Coach becomes a separate app** (same codebase, separate build and Play listing), so the
+    college product carries no money, food or relationship data (DPDP, minors: F-36, F-38).
+  - **Integrate data, not apps.** The phone's **Health Connect** gives food, steps and sleep from
+    whatever apps the student already uses, with their permission per data type. The calendar
+    comes from the phone's calendar. Money comes from a CSV or bank-statement import or the
+    share sheet.
+  - **Launcher tiles** deep-link into the student's existing apps (open the banking app, open the
+    diet app), and the Coach shows the summaries it read.
+  - The learning plan (the learning part of §7.0) stays in the LMS. Coach reads it so study
+    blocks appear in the day timeline. One account links both apps.
+
+### 19.8 Pilot, pedagogy, purpose and missing pieces (review §2, §4, §5, §7)
+
+| Row | Owner's answer | Decision |
+|---|---|---|
+| 2.0 4-week pilot | Not sure | **(Claude)** Build target **1a is the pilot slice**: import + gate, daily quiz + cards, teleprompter, one Shift, trainer grid, attendance. Run it with one real batch before 1b. Pre/post and delayed retests are defined before the batch (7.1). This costs nothing extra because 1a was already the core |
+| 3.6 Real-domain HTTPS on LAN | Not sure but okay | **Sidegrade** to the hub's own certificate authority (which stays primary because it works fully offline). Free route: a DuckDNS subdomain pointed at the hub's LAN IP, with a Let's Encrypt certificate by DNS-01 obtained while online. Limits: phones must resolve the name (offline sites need a local DNS entry on the router), and some routers block private-IP DNS answers |
+| 4 Pedagogy | Put it into the content generated by the skill template; assume the trainer must self-learn first | Each generated day gains a **trainer prep pack**: prerequisites, a 45-minute self-study path, worked → faded examples, top misconceptions, "questions students will ask" with answers, and a private mastery check for the trainer. Student content gains **mastery gates** per skill (re-check after remediation, "not yet" rather than fail), faded examples in labs, interleaved card decks after week 1, peer-instruction quiz blocks (vote → discuss → re-vote), a **daily minimum path** (40 minutes), and a delayed retest 3–4 weeks after the course. Story mode off by default; no leaderboards (personal bests and team views instead) |
+| 5 Business | Not selling; this is to make my life easier | Business sections dropped. The success metric becomes **trainer hours saved per week** (measured) alongside learning gains |
+| 7.1 Measurement plan | Agree | Added: pre/post test, delayed retest, card adherence, Shift improvement, trainer time saved, support messages per student |
+| 7.2 Sign-up and login | QR code? | **Yes:** the join QR (F-35 one-time code) → create a **passkey** on the phone (free, no SMS) or "Sign in with Google". No SMS OTP (it costs money). Recovery: 24-word key (F-20) or a trainer-approved reset (F-45) |
+| 7.4 College-format reports | Add | Attendance sheet, completion report, CO-PO attainment export, PDF on the college letterhead (brand pack, F-46) |
+| 7.5 Observability | Add | Free only: error capture to the hub's own log plus the daily health digest (F-44) pushed via a free push service; no paid error tracker |
+| 7.6 Release management | Add | Staging profile, release channels (F-43), rollback, migration tests |
+| 7.8 Low bandwidth | Preload when online and release during class | **Embargoed content:** each day's bundle downloads in advance whenever there is internet, **encrypted**. The day's key is released at class start (in the rotating attendance QR or by the hub/cloud at the scheduled time), so content opens offline exactly on time. Text-first lessons, compressed images, no video by default |
+| 7.9 No subject-matter expert | I am alone | Replace the SME with: runnable checks (every code block runs in the lab container, F-27); a **second-model cross-check** of facts against the sources the generator cited; the trainer's own mastery check (row 4); learners' "report error" button |
+| 7.10 AI-resilient assessment | Agree | Oral viva questions generated from the student's own repo; live Shift explanation; capstone defence |
+| 7.11 Trainer scale-out | Hopefully capable | Kept minimal: the substitute handover pack (DEC-36) doubles as onboarding for any future trainer |
+| 7.12 Data portability | Agree, but how? | **"Export everything"** (admin) and **"Export my data"** (student) produce one zip: `manifest.json` with checksums; CSV for rosters, attendance and grades (column layout modelled on the OneRoster CSV standard); Markdown for content and notes; JSON for events and ledgers; `.excalidraw` + PDF for boards; `.apkg` for cards; git bundles for repos; attachments. An **import** tool rebuilds a hub from the zip, and the restore test (F-25) uses the same format |
+| 7.13 Cloud VM | Agree (with 1.8: no money) | Free options only (§19.1 row 1.8) |
+| 7.14 Separate the Coach | Yes | §19.7 |
+
+### 19.9 What this removes or moves
+
+- **Cut:** M-11 Commons as a chat product (only the Shift channel remains); SM-2; Effect v4; Svelte;
+  Node-RED; the "hub on every student laptop" idea is now **optional** (students use Codespaces,
+  Colab or the class hub instead).
+- **Moved out of the LMS:** Coach trackers (money, food, relationships) → separate Coach app.
+- **Moved to phase 2:** payroll, expenses and invoices via ERPNext; the Meet add-on.
+- **New:** GitHub App automation, deployment profiles, embargoed content, trainer prep packs,
+  journey gate, export/import, passkeys, Google Forms export.
+
+### 19.10 More features (owner: "I want to know what other features I could add")
+
+The review deliberately listed alternatives, not new features. A separate list of **feature
+ideas**, grouped by who they help and sized, is in [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) for the
+owner to pick from (OQ-19).
+
 ## Changelog
+
+- **v12**:
+  - Added §19: the owner's decisions on the second-opinion review. New stack (React + Vite PWA, Hono + Zod, CouchDB/PouchDB sync, ts-fsrs, trimmed Excalidraw fork, n8n); cloud/hub/hybrid deployment profiles sharing data; GitHub App automation; free lab paths; Coach split into a separate app; journey gate; export/import; embargoed content; trainer prep packs.
+  - Found: GitHub Classroom shut down (Aug 2026); PocketBase cannot replicate; Oracle's free tier was halved (June 2026); Forms API forms are unpublished by default.
+  - DEC-53 to DEC-66; OQ-17, OQ-18 resolved; new OQ-19 (pick features).
 
 - **v11**:
   - Recorded the owner's answers to all 46 failure questions (§18, DEC-36 to DEC-52); designs in

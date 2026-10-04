@@ -1,6 +1,6 @@
 <!-- Saved in iteration 12. Written by an independent reviewing agent at the owner's request
 ("look at the implementation from a different perspective"). It reviews PLAN v10, before the
-owner's F-answers (PLAN v11 §18). Nothing here is adopted until the owner decides (OQ-17).
+owner's F-answers (PLAN v11 §18). The owner's decisions on each row are in PLAN v12 §19.
 Claims marked *verify* or (A) were not checked. -->
 
 # Coach LMS, Plan v10: a contrarian second opinion
