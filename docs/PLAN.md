@@ -1,4 +1,4 @@
-# Coach LMS — Plan v13 (consolidated)
+# Coach LMS — Plan v14 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -47,6 +47,7 @@ a small hub server adds classes, chat and sync.
 | P-13 | **Nothing is mandatory except the core.** Every external dependency has a primary, at least one **sidegrade** (equal capability, different provider) and a **last resort** (reduced capability that still lets the class run). The hub detects what is available at start-up, picks automatically, shows what it picked, and lets the admin override (§4.4). |
 | P-14 | **Every feature beyond the core is a switch.** Programs and batches turn features on or off (certificates, graded Shifts, leaderboards, Commons, story mode, AI levels, check-in). A switched-off feature leaves no gap, only an alternative or nothing. |
 | P-15 | **Backup and sync are required, not optional.** Personal and class data are always synced to at least one other place and backed up (encrypted) to at least one target; restore is tested. |
+| P-16 | **The strong AI writes rules once; System 1 runs them every day.** Anything that must work offline on a phone (explain-it-back checks, screenshot reading, parsing) gets its rules or checklists from the connected AI at content-creation or first-use time; the phone then runs them without AI, and a person confirms the result. |
 | P-12 | **Agree before acting.** Coaching conversations follow the 4-stage framework (§7.0): confirm the goal, surface constraints and risks, propose a pathway, then produce a versioned, agreed plan. |
 
 ## 3. Cast used in the walkthroughs
@@ -782,10 +783,10 @@ Status column:
 | OQ-17 | ~~Second opinion~~ **Resolved** in iteration 13 (§19). Was: An independent reviewer proposes a different design ([`ALT-DESIGN-REVIEW.md`](ALT-DESIGN-REVIEW.md)): cloud-first PWA, borrowed sync/forge/labs, Hono+Zod+React instead of Effect+Svelte, a 4-week pilot first, Coach split out. Adopt which rows, if any? | **Owner decides before SPEC.md** |
 | OQ-18 | ~~Rotating QR~~ **Resolved**: yes, the code changes every 60 s (120 s allowed as a setting). Was: F-04: keep the rotating site QR as the anti-proxy control (your answer covered where attendance lives, not proxying)? | Confirm |
 | OQ-19 | ~~Pick features~~ **Resolved** (DEC-68) except C-2. Was: Which ideas from [`FEATURE-IDEAS.md`](FEATURE-IDEAS.md) go into 1a, 1b or later? | **Owner picks** |
-| OQ-20 | Waydroid experiment (§20.3): run it, then decide whether Coach on a computer uses it | Owner, after the results |
-| OQ-21 | C-2 estimation poker: keep or drop (explained in FEATURE-IDEAS.md) | Owner |
-| OQ-22 | A-3/A-2 automatic WhatsApp sending costs money (WhatsApp Business API); accept the free "tap to send" queue? | Owner |
-| OQ-23 | A-8 plan-vs-actual in the daily report: on or off by default? | Owner |
+| OQ-20 | ~~Waydroid~~ **Resolved**: not run; Waydroid dropped. Was: Waydroid experiment (§20.3): run it, then decide whether Coach on a computer uses it | Owner, after the results |
+| OQ-21 | ~~C-2~~ **Resolved**: added. Was: C-2 estimation poker: keep or drop (explained in FEATURE-IDEAS.md) | Owner |
+| OQ-22 | ~~WhatsApp~~ **Resolved**: prefilled queue + copy message. Was: A-3/A-2 automatic WhatsApp sending costs money (WhatsApp Business API); accept the free "tap to send" queue? | Owner |
+| OQ-23 | ~~A-8~~ **Resolved**: off by default. Was: A-8 plan-vs-actual in the daily report: on or off by default? | Owner |
 | OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
 | OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
@@ -862,6 +863,10 @@ Status column:
 | DEC-66 | Trainer prep packs and mastery gates in generated content; passkey/Google login via join QR; embargoed encrypted content released in class; export/import zip; college-format reports; free observability; release channels; AI-resilient assessment | Owner, iteration 13 |
 | DEC-67 | No pilot: build full 1a + 1b, run a live batch, note issues, then v2 (replaces DEC-64) | Owner, iteration 14 |
 | DEC-68 | Feature picks from FEATURE-IDEAS.md: all accepted except C-2 (pending) and C-15 (Jira, off by default, phase 2); designs in that file's "Owner's picks" section | Owner, iteration 14 |
+| DEC-69 | Phone-only is a full deployment profile; signed class package files for offline trainer ↔ student exchange | Owner, iteration 15 |
+| DEC-70 | P-16 "strong AI writes rules once, System 1 runs them": screenshot import for other apps' data (no Waydroid); B-3 offline by default | Owner + Claude, iteration 15 |
+| DEC-71 | After v1: a rebuild course in the format of the owner's course.zip, generated from code, commits and a build journal, verified by a fresh agent rebuilding from it | Owner, iteration 15 |
+| DEC-72 | Continuity: small tasks, push after each, wip branches, CONTINUE.md; hidden tests in a separate private repo | Owner asked, Claude designed, iteration 15 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## 17. Real-world changes the plan must absorb (iteration 11)
@@ -1288,7 +1293,122 @@ Whichever they choose, **"Export my data"** gives them the portable zip (§19.8)
 college still needs a minimum record (attendance, grades), which reaches the trainer by one of
 the three routes; nothing else leaves their phone.
 
+### 20.6 More follow-ups (iteration 15)
+
+| Topic | Owner's answer | Decision |
+|---|---|---|
+| No GitHub account | They do everything in Forgejo (or another alternative) | Confirmed (§20.2): the practice forge is a complete path, not a waiting room |
+| Corporate practice | A full corporate version inside our app | Every C-idea (C-1 to C-14) is built into the app and works on the practice forge; GitHub is the second pass where available (§20.1) |
+| Waydroid (OQ-20) | Don't run; drop Waydroid | **Dropped.** Other apps' data comes in by **screenshot import** instead (below) |
+| Phone | Full-fledged on its own: without hub or cloud it does the maximum possible | **Phone-only is a full profile** (DEC-54 gains a fourth profile): every learner feature that needs no other person works on the phone alone (content, cards, quizzes, labs' reasoning variants, Coach, error notebook, explain-it-back, mastery map). Anything needing others (attendance, grading, team work) uses file exchange (§20.5 level 3) |
+| Trainer offline sharing | WhatsApp, with the trainer updating manually | **Class package files:** the trainer exports a day's or the whole course's package (content + keys + roster changes) as one signed file and shares it by WhatsApp, USB, Bluetooth or Nearby Share; students import it. Students return submissions and attendance confirmations the same way. Signatures stop tampering |
+| B-3 | System 1 by default | The offline concept-checklist check is the **default**; AI feedback only when the student turns it on and is online |
+| C-1, C-2 (OQ-21) | OK, add | Both built |
+| WhatsApp (OQ-22) | Prefilled messages, plus a copy option for other apps | Tap-to-send queue **plus "Copy message"** (and "copy all" as one block) for Telegram, SMS, email or any group app |
+| A-8 (OQ-23) | Off; trainer or admin decides | Plan vs actual **off by default**; a switch for trainer and admin |
+
+#### Screenshot import instead of double tracking
+
+Students keep using their favourite apps (diet, steps, expenses, a bank app) and **upload or share a
+screenshot** to Coach, which reads the numbers out of it.
+
+- **System 1 by default (offline):** on-device text recognition of the screenshot (printed screen
+  text is far easier than handwriting; *verify* with real screenshots), then **per-app parsing
+  rules** that pick out the fields (calories, protein, steps, amount, merchant, date).
+- **Where the rules come from:** the first time a student imports a screenshot from an app Coach
+  doesn't know, the connected strong AI (if available) writes the parsing rules once from that
+  sample. They are reviewed and stored, so every later screenshot from that app is read offline.
+  Without AI, the student taps the numbers on the screenshot once to teach the layout.
+- **The student always confirms** the extracted values before they're saved; the screenshot is kept
+  only if they choose.
+- This follows the same pattern as B-3 and handwriting: **the strong AI writes rules once; System 1
+  runs them every day.** It becomes principle **P-16**.
+
+## 21. Rebuild guide: a course for re-developing the app yourself (iteration 15)
+
+The owner wants to rebuild the whole app from scratch by following a guide after v1 is finished.
+The deliverable follows the format of the owner's example (`course.zip`, "IncubOS"), which has:
+
+- a `README.md` listing every file, with settings and status;
+- `00-syllabus.md` (modules, objectives, assessment) and `01-strategy-planning.md` (the
+  method and full roadmap);
+- one file per **micro-step**, each with the same sections: Prerequisites · Introduction (the
+  **Detective question: Problem → Approaches considered → Approach selected → Why**) · Learning
+  objectives · Conceptual understanding · walkthrough of the real code · Practical demonstration ·
+  Technical glossary · Common questions · Reinforcement activity · Quick reference · Connection to
+  the bigger picture · Instructor talking points;
+- checkpoint assessments and a final project;
+- an appendix of **post-ship fixes** (real bugs and how they were found);
+- marketing material (plain text and `.pptx`).
+
+### What the rebuild course will contain
+
+- **Audience:** you, as a developer who knows the product but not every technique used. It also
+  works as a course you can teach.
+- **Order:** the same order the app is built in (the task list), so each micro-step ends with
+  something that runs and a test that passes. Following it from step 1 rebuilds the app.
+- **Each micro-step** points to the exact commits that built that part, so you can compare your
+  version with the original at any point.
+- **Appendices:** post-ship fixes from the live batch; the decision log (DEC-n with rejected options);
+  the dependency list with pinned versions; and "how to run the tins-kit gate on your rebuild".
+- **Format:** Markdown, plus `.pptx` overview decks, zipped like the example.
+
+### How it is made reliable: record during the build, write after
+
+Reconstructing "why" months later is where such guides go wrong. So the build records it as it goes:
+
+1. Every task's commit carries the tins-kit trailers **plus a short decision note**: the problem,
+   the options considered, what was chosen and why. Bugs found are noted the same way (`RF-n`).
+2. The build keeps `docs/build-journal/` with one entry per task: what was hard, what failed first,
+   and what a learner would trip on.
+3. After v1, the course is **generated from the code, commits and journal**, then checked: every
+   code excerpt in the course must match the repo at the referenced commit (a script verifies it).
+   Then a **fresh agent follows the course from step 1** in an empty folder and must reach a
+   passing gate. That proves the guide actually rebuilds the app.
+
+## 22. Continuity: if the credits run out before v1 is finished
+
+**What survives:** only what is pushed to GitHub. This cloud session's machine is temporary, and
+anything not pushed is lost when it is reclaimed. The build is therefore organised so that
+**stopping at any moment loses at most one small task**.
+
+### Rules the build follows
+
+1. **Small tasks:** each task is sized to finish in one sitting. It ends either green (gate passes,
+   committed and pushed) or reverted. There is no long-lived half-done state.
+2. **Push after every task**, with tins-kit's session ledger in the commit trailers.
+3. **Work in progress** that must pause mid-task is pushed to a `wip/<task-id>` branch with a note
+   of the exact next step.
+4. **`CONTINUE.md`** at the repo root is updated with every push: current phase, last green task,
+   next task, open problems, and the one command that checks the state.
+
+### How you resume
+
+- **Same account, once the limit resets or you add credits:** open a new session on
+  claude.ai/code (or Claude Code on your own computer) on the `tins-lms` repo and say *"Continue the
+  v1 build: read CONTINUE.md."* The new session starts on a fresh machine, clones the repo, runs
+  the gate to confirm the last green state, and continues with the next task.
+- **A different account, model or tool:** the same works. SPEC.md, the task list, the hidden tests'
+  public smoke subset and CONTINUE.md are plain files that any capable agent (or you) can follow.
+  The kit's gate decides whether a task is done, not the model.
+- **Yourself, by hand:** the task list and the gate are the same ones the models use; the rebuild
+  course (§21) covers finished parts, and SPEC.md covers the rest.
+
+### What to keep safe
+
+- The repos (`tins-lms`, `claude-code-cloud-session`) on GitHub. Optionally, a monthly
+  `git clone --mirror` to your laptop or Drive.
+- The hidden acceptance tests are kept in a **separate private repo** (so builders can't see them),
+  and that repo also needs a backup.
+- Nothing secret lives in the repos (tins-kit's secret scan blocks it), so a mirror copy is safe.
+
 ## Changelog
+
+- **v14**:
+  - §20.6: Forgejo as a full path; full corporate version in-app; Waydroid dropped; screenshot import (P-16); phone-only as a full profile; signed class package files for offline sharing; B-3 System 1 default; C-1/C-2 added; WhatsApp prefilled + copy; A-8 off by default.
+  - §21: rebuild guide in the format of the owner's course.zip, recorded during the build and verified by a fresh agent rebuilding from it.
+  - §22: continuity if credits run out; CONTINUE.md added.
+  - DEC-69 to DEC-72; OQ-20 to OQ-23 resolved.
 
 - **v13**:
   - Added §20: projector + optional Meet streaming; full build instead of a pilot (DEC-67); acme.sh container for DuckDNS certificates; practice forge then GitHub; students without GitHub accounts; Waydroid limits and an experiment (OQ-20); teleprompter-paced content release; no-hub options for students.
