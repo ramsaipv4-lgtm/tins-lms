@@ -945,8 +945,8 @@ starting with the top 10 (OQ-16).
 
 ## 18. Owner's answers to the failure questions (iteration 12)
 
-All 46 rows of [`FAILURE-QUESTIONS.md`](FAILURE-QUESTIONS.md) are answered. 29 take the suggested
-default as written; 17 were changed or extended. The full designs (substitute and AI-delivered
+All 46 rows of [`FAILURE-QUESTIONS.md`](FAILURE-QUESTIONS.md) are answered. 22 take the suggested
+default as written; 24 were changed or extended. The full designs (substitute and AI-delivered
 sessions, catch-up gate, dropout switch, hosted/hub split, appeals, AI policy for graded work,
 network kit, clock-app alarms, Colab labs, load test) are in that file's "Owner decisions" section,
 sections A to J. Summary of what changes in this plan:
