@@ -1,6 +1,7 @@
 // Builds the shared context handed to every route module (documented in routes/index.ts).
 import { createClock } from './clock.ts';
 import { createGuards } from './guard.ts';
+import { createPolicy } from './policy.ts';
 import { createSessions } from './sessions.ts';
 import { createStore } from './store.ts';
 import { ApiError, fieldError, parseWith, validateBody, validateQuery } from './http.ts';
@@ -23,6 +24,7 @@ export function createCtx(config: Config) {
     store,
     sessions,
     guard: createGuards(),
+    policy: createPolicy(),
     http: { ApiError, fieldError, parseWith, validateBody, validateQuery },
     ids: { randomCode, randomKey, sha256Hex, keyOf },
     people: { ORG_DB, currentTnc, ensureOrg, getPerson, savePerson, isMinor },

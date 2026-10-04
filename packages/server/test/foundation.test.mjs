@@ -84,6 +84,12 @@ test('AC-62 sessions and roles', async () => {
   assert.equal((await s.req('/api/admin/tnc', { method: 'POST', body: { version: '2', text: 'x' } })).status, 403);
   await s.req('/__test/login', { method: 'POST', body: { personId: 'sub', roles: ['substitute'] } });
   assert.equal((await s.req('/api/classes/c1/join-codes', { method: 'POST' })).status, 403);
+  // central policy answers 403 before the owning module exists
+  assert.equal((await s.req('/api/classes/c1/attempts/a1/grade', { method: 'POST', body: { score: 1 } })).status, 403);
+  assert.equal((await s.req('/api/packages', { method: 'POST' })).status, 403);
+  await s.req('/__test/login', { method: 'POST', body: { personId: 'tr', roles: ['trainer'] } });
+  assert.equal((await s.req('/api/classes/c1/attempts/a1/grade', { method: 'POST', body: { score: 1 } })).status, 404);
+  assert.equal((await s.req('/api/export')).status, 403);
   const bad = await s.req('/__test/clock', { method: 'POST', body: { now: 'x' } });
   assert.equal(bad.status, 400);
   assert.ok(bad.json.error.now);

@@ -13,6 +13,8 @@
 //   ctx.guard       auth (any session) and role(...roles) middleware, e.g. app.post(path, ctx.guard.role('trainer'), h).
 //                   admin always passes; list 'substitute' / 'coordinator' explicitly where they are allowed.
 //                   Every /api/* route already needs a session except health, join, sign-in and pairing claim.
+//   ctx.policy      add(method, pathPattern, roles) rows of the central role table (core/policy.ts); it runs before routing,
+//                   so listed routes give 403 to the wrong role even before their module exists.
 //   ctx.http        ApiError(status, body), fieldError(field,msg,status?), validateBody(c, zodSchema),
 //                   validateQuery(c, zodSchema), parseWith(schema, data): invalid input -> 400 { error: { field: message } }.
 //   ctx.ids         randomCode(n), randomKey(), sha256Hex(text), keyOf('person:l1') -> 'l1'.

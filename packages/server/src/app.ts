@@ -14,6 +14,7 @@ export function createApp(ctx: Ctx) {
     const s = ctx.sessions.get(c);
     c.set('session', s);
     if (!s && !isPublicApi(c.req.path)) throw new ApiError(401, { error: { session: 'required' } });
+    if (s) ctx.policy.check(c.req.method, c.req.path, s.roles);
     await next();
   });
 
