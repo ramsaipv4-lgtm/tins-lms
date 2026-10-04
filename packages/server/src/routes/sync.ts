@@ -78,11 +78,18 @@ export function register(_app: any, ctx: any): void {
 
   function watch(dbName: string): void {
     if (watchers.has(dbName)) return;
-    const feed = ctx.store.db(dbName).changes({ since: 0, live: true, conflicts: true, include_docs: true });
+    const db = ctx.store.db(dbName);
+    const feed = db.changes({ since: 0, live: true, conflicts: true, include_docs: true });
     feed.on('change', (ch: any) => { if (ch.doc?._conflicts?.length) enqueue(dbName, ch.id); });
     feed.on('error', () => { watchers.delete(dbName); });
+    // A reset (or any destroy) must not leave a live feed on the old handle: it blocks the next open of that name.
+    db.once('destroyed', () => { try { feed.cancel(); } catch { /* ignore */ } if (watchers.get(dbName) === feed) watchers.delete(dbName); });
     watchers.set(dbName, feed);
   }
+
+  // express-pouchdb caches database handles by name and never learns that /__test/reset destroyed one;
+  // the stale handle then hangs every request. Dropping the cache entry on destroy fixes that.
+  ctx.store.PouchDB.on('destroyed', (name: string) => { ctx.store.PouchDB.__dbCacheMap?.delete(name); });
 
   ctx.hooks.onReset.push(() => {
     for (const f of watchers.values()) { try { f.cancel(); } catch { /* ignore */ } }

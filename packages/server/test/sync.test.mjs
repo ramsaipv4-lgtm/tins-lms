@@ -146,3 +146,16 @@ test('D-33 personal database: a minor account refuses every coachEntry with 403'
   await assert.rejects(db.put({ _id: 'coachEntry:k1', type: 'coachEntry', id: 'k1', enc: { iv: 'aXY=', ct: 'Yw==' } }), (e) => e.status === 403);
   await db.put({ _id: 'card:k1', type: 'card', id: 'k1', deck: 'd', front: 'f', back: 'b' }); // other documents are fine
 });
+
+test('a reset wipes databases and sync still works on the same names afterwards', async () => {
+  const cookie = await login('l9', ['learner']);
+  const first = local();
+  await first.put({ _id: 'ticket:r1', type: 'ticket', id: 'r1', title: 'before', status: 'todo' });
+  await first.replicate.to(remote('class-reset', cookie));
+  assert.equal((await fetch(`${base}/__test/reset`, { method: 'POST' })).status, 200);
+  const cookie2 = await login('l9', ['learner']);
+  const gone = await fetch(`${base}/db/class-reset/ticket:r1`, { headers: { cookie: cookie2 }, signal: AbortSignal.timeout(5000) });
+  assert.equal(gone.status, 404);
+  await first.replicate.to(remote('class-reset', cookie2));
+  assert.equal((await remote('class-reset', cookie2).get('ticket:r1')).title, 'before');
+});
