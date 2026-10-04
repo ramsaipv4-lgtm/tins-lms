@@ -28,7 +28,7 @@ You build **one task** of Coach LMS v1. `SPEC.md` is the contract; `TASKS.md` li
    output, how you noticed, the fix, the command that proved it), what a learner will trip on, and
    the final gate result. After your task, the orchestrator extracts every failing command from
    your transcript into `docs/build-journal/<task-id>.evidence.md` (items `E1`, `E2`, …); the gate
-   then requires your journal to cite each `E<k>`, either as a mistake row or with one line saying
+   then requires your journal to cite each `E<k>` (the orchestrator owns that file and overwrites it; never write it yourself), either as a mistake row or with one line saying
    why it was not a mistake (e.g. a mistyped path).
 6. Write your course step in `course/steps/<step-id>/` (step id in TASKS.md) with all five files
    from `skill-template/templates/` (`lesson.md`, `instructor_script.md`, `recall.md`,

@@ -255,7 +255,7 @@ async sectionKey(dayKey: Uint8Array, sectionIndex: number): Promise<Uint8Array> 
 async sealSection(key: Uint8Array, plaintext: Uint8Array): Promise<Uint8Array>  // AES-GCM, IV prefixed
 async openSection(key: Uint8Array, sealed: Uint8Array): Promise<Uint8Array>     // throws on wrong key or tampering
 releasePlan(classStart: number, sections: readonly { id: string; plannedSec: number; graded: boolean }[]):
-  { id: string; at: number | null }[]          // at = start + sum of earlier plannedSec; null when graded
+  { id: string; at: number | null }[]          // at = start + 1000 × (sum of earlier plannedSec); null when graded
 isReleased(section: { id: string; graded: boolean }, plan: { id: string; at: number | null }[],
   ctx: { now: number; reachedIds: readonly string[]; releaseAll: boolean }): boolean
 ```
@@ -325,8 +325,10 @@ slaReport(state: ShiftState, elapsedMs: number): { ticketId: string; status: 'wa
 scoreShift(state: ShiftState, mode: 'live' | 'recorded' | 'emulated'): { score: number; max: number; rows: { id: string; earned: number }[]; modeFlag: boolean }
 ```
 
-`ShiftState` has at least `tickets: { id, variant: string | null, status, arrivedAtMs }[]` (only arrived
-tickets are listed, in arrival order). Each rubric row scores the ticket with the **same id**; a
+`ShiftState` has at least `tickets: { id, variant: string | null, status, arrivesAtMs }[]`, listing **every**
+pack ticket from the start in arrival order (`variant` is chosen by the seed when the shift starts;
+`null` for tickets without variants). Arrival only affects `slaReport`, which lists tickets whose
+`arrivesAtMin` has passed. Each rubric row scores the ticket with the **same id**; a
 wrong answer scores like an unresolved ticket. `atMs` and `elapsedMs` are **monotonic milliseconds since the shift started** (D-27). Ticket
 variants are chosen by the seed, so two learners with different seeds may get different variants
 of the same ticket. A ticket not resolved within its SLA (counted from its arrival) is
