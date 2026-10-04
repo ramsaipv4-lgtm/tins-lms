@@ -1,0 +1,12 @@
+{
+  "append-only-ledger": {
+    "files": [
+      "lib/ledger.mjs",
+      "lib/ledger.test.mjs"
+    ],
+    "hash": {
+      "ledger.mjs": "2afe0edeb8f0001f",
+      "ledger.test.mjs": "e243b096d4831ab3"
+    }
+  }
+}
