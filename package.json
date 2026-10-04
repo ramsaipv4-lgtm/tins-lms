@@ -1,0 +1,17 @@
+{
+  "name": "coach-lms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "gate": "node .tins/kit/bin/kit.mjs gate",
+    "start": "node packages/server/src/main.ts",
+    "smoke": "node acceptance/run.mjs smoke"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "typescript": "7.0.2",
+    "pouchdb-adapter-memory": "9.0.0"
+  }
+}

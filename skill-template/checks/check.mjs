@@ -50,17 +50,23 @@ export function generateReadme(manifest) {
     `Checkpoints: ${(manifest.checkpoints || []).map((c) => `\`${c.id}\` after \`${c.after}\``).join(', ') || 'none'}\n`;
 }
 
-export function check(dir, { repo = null } = {}) {
-  const fails = []; const fail = (n, msg) => fails.push({ check: n, msg });
+export function check(dir, { repo = null, stepsOnly = false } = {}) {
+  const fails = []; const fail = (n, msg) => { if (!(stepsOnly && (n === 2 || n === 10))) fails.push({ check: n, msg }); };
   const mpath = join(dir, 'manifest.json');
-  if (!existsSync(mpath)) return [{ check: 2, msg: 'manifest.json missing' }];
-  let manifest; try { manifest = JSON.parse(readFileSync(mpath, 'utf8')); } catch (e) { return [{ check: 2, msg: `manifest.json invalid: ${e.message}` }]; }
+  let manifest;
+  if (stepsOnly) { // during a build: every step folder written so far, without the assembled manifest
+    const ids = existsSync(join(dir, 'steps')) ? readdirSync(join(dir, 'steps')).filter((n) => statSync(join(dir, 'steps', n)).isDirectory()).sort() : [];
+    manifest = { title: '(build)', steps: ids.map((id) => ({ id, title: id, est_minutes: 0 })), checkpoints: [] };
+  } else {
+    if (!existsSync(mpath)) return [{ check: 2, msg: 'manifest.json missing' }];
+    try { manifest = JSON.parse(readFileSync(mpath, 'utf8')); } catch (e) { return [{ check: 2, msg: `manifest.json invalid: ${e.message}` }]; }
+  }
   const steps = manifest.steps || []; const N = steps.length;
   const files = walk(dir);
   const listed = new Set(['manifest.json', 'README.md', ...(manifest.extra_files || [])]);
   // 2: README is the generated one
-  const readme = existsSync(join(dir, 'README.md')) ? readFileSync(join(dir, 'README.md'), 'utf8') : '';
-  if (readme !== generateReadme(manifest)) fail(2, 'README.md differs from the one generated from manifest.json (run with --write-readme)');
+  const readme = stepsOnly ? generateReadme(manifest) : existsSync(join(dir, 'README.md')) ? readFileSync(join(dir, 'README.md'), 'utf8') : '';
+  if (!stepsOnly && readme !== generateReadme(manifest)) fail(2, 'README.md differs from the one generated from manifest.json (run with --write-readme)');
   steps.forEach((s, i) => {
     const sd = `steps/${s.id}`;
     // 1: required files
@@ -123,11 +129,11 @@ export function check(dir, { repo = null } = {}) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const a = process.argv.slice(2); const dir = a.find((x) => !x.startsWith('--') && a[a.indexOf(x) - 1] !== '--repo');
+  const a = process.argv.slice(2); const dir = a.find((x, i) => !x.startsWith('--') && a[i - 1] !== '--repo');
   if (!dir) { console.error('usage: node check.mjs <package-dir> [--repo <git-dir>] [--write-readme] [--json]'); process.exit(2); }
   const repo = a.includes('--repo') ? a[a.indexOf('--repo') + 1] : null;
   if (a.includes('--write-readme')) writeFileSync(join(dir, 'README.md'), generateReadme(JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'))));
-  const fails = check(dir, { repo });
+  const fails = check(dir, { repo, stepsOnly: a.includes('--steps-only') });
   if (a.includes('--json')) console.log(JSON.stringify(fails, null, 2));
   else { for (const f of fails) console.log(`FAIL check ${f.check}: ${f.msg}`); console.log(fails.length ? `${fails.length} failure(s)` : 'all checks pass'); }
   process.exit(fails.length ? 1 : 0);

@@ -1,0 +1,7 @@
+{
+  "type": "web",
+  "gate": ["node scripts/gate.mjs"],
+  "behaviour_paths": ["packages", "course"],
+  "gate_timeout_s": 3600,
+  "kit": "ee76f5af019d"
+}

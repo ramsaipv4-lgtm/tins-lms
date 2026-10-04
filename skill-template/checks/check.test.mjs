@@ -63,3 +63,9 @@ test('check 13: code excerpt must match the repo at the cited commit', () => {
   const bad = makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst y = 3;\n```' }); });
   assert.deepEqual(checksOf(bad, { repo }), [13]);
 });
+test('--steps-only: skips manifest, README and chain checks but keeps per-step checks', () => {
+  const d = makePkg(); rmSync(join(d, 'manifest.json')); rmSync(join(d, 'README.md'));
+  assert.deepEqual(check(d, { stepsOnly: true }), []);
+  writeFileSync(join(d, 'steps/ms-00.01/recall.md'), '# Recall\n**Q:** only one\n**A:** x\n');
+  assert.deepEqual(checksOf(d, { stepsOnly: true }), [8]);
+});

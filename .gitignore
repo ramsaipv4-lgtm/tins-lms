@@ -1,3 +1,6 @@
 acceptance
 .acceptance-src
 node_modules
+.artifacts
+packages/web/dist
+.tins/state*

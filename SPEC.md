@@ -202,7 +202,7 @@ unlocked (live class stays open). `selfStudyBlocked` is true while any missed da
 | ID | Behaviour | Check |
 |---|---|---|
 | AC-6 | A learner who attended every day has no missed days, `nextGate` null, all days up to today unlocked, `selfStudyBlocked` false | `acceptance/core/catchup.test.mjs` |
-| AC-7 | A learner who joined on day 3 (missed days 0–2) has `nextGate` = day 0; passing day 1's diagnostic before day 0's does **not** unlock day 1; after day 0 passes, `nextGate` = day 1 | `acceptance/core/catchup.test.mjs` |
+| AC-7 | A learner who joined on day 3 (missed days 0–2) has `nextGate` = day 0; passing day 1's diagnostic before day 0's does **not** unlock day 1; after day 0 passes (day 1 not yet passed), `nextGate` = day 1 | `acceptance/core/catchup.test.mjs` |
 | AC-8 | Score 5 of 8 does not unlock with the default pass mark; 6 does; a class pass mark of 7 is respected; today stays unlocked even while missed days are locked | `acceptance/core/catchup.test.mjs` |
 | AC-9 | `gradedDueDate` is exactly 7 × 24 h after the gate was passed by default, and honours a custom extension | `acceptance/core/catchup.test.mjs` |
 
@@ -251,7 +251,7 @@ emptyPairingState(): PairingState
 ### 4.7 Content release in step with the teleprompter (D-38)
 
 ```ts
-async sectionKey(dayKey: Uint8Array, sectionIndex: number): Promise<Uint8Array> // HKDF-SHA-256, 32 bytes, info "section:<index>"
+async sectionKey(dayKey: Uint8Array, sectionIndex: number): Promise<Uint8Array> // HKDF-SHA-256, empty salt, 32 bytes, info "section:<index>"
 async sealSection(key: Uint8Array, plaintext: Uint8Array): Promise<Uint8Array>  // AES-GCM, IV prefixed
 async openSection(key: Uint8Array, sealed: Uint8Array): Promise<Uint8Array>     // throws on wrong key or tampering
 releasePlan(classStart: number, sections: readonly { id: string; plannedSec: number; graded: boolean }[]):
@@ -282,8 +282,8 @@ scriptTotalSec(markdown: string): number | null   // from a "Total runtime: **N 
 `events` are "entered section" moments. A section's actual time runs from entering it until
 entering the next one (or `now` for the current one). `deltaSec` = actual − planned (positive =
 over time). `behindSec` = sum of deltas of finished sections plus the current section's overrun
-(if any). `parseScriptSections` reads `## <title> (h:mm — h:mm)` headings (em dash, en dash or
-hyphen) from an instructor script and returns their planned durations; ids are slugs of the titles (lowercase, non-alphanumerics → `-`, trimmed). A heading
+(if any); it is negative when the trainer is ahead. `parseScriptSections` reads `## <title> (h:mm — h:mm)` headings (em dash, en dash or
+hyphen) from an instructor script and returns their planned durations; ids are slugs of the titles (lowercase, each run of non-alphanumerics → one `-`, trimmed). A heading
 containing `[graded]` marks the section graded (the marker is removed from the title).
 Headings like `## **Break (2:15 — 2:30)**` are sections too (bold markers removed).
 
@@ -325,7 +325,9 @@ slaReport(state: ShiftState, elapsedMs: number): { ticketId: string; status: 'wa
 scoreShift(state: ShiftState, mode: 'live' | 'recorded' | 'emulated'): { score: number; max: number; rows: { id: string; earned: number }[]; modeFlag: boolean }
 ```
 
-`atMs` and `elapsedMs` are **monotonic milliseconds since the shift started** (D-27). Ticket
+`ShiftState` has at least `tickets: { id, variant: string | null, status, arrivedAtMs }[]` (only arrived
+tickets are listed, in arrival order). Each rubric row scores the ticket with the **same id**; a
+wrong answer scores like an unresolved ticket. `atMs` and `elapsedMs` are **monotonic milliseconds since the shift started** (D-27). Ticket
 variants are chosen by the seed, so two learners with different seeds may get different variants
 of the same ticket. A ticket not resolved within its SLA (counted from its arrival) is
 **breached**. `modeFlag` is true when `mode` differs from the pack's first rubric mode.
@@ -374,9 +376,11 @@ mergeRevisions(docType: string, revisions: readonly Doc[]): { doc: Doc; conflict
 Policies: `person`, `program` and other profile documents: the revision with the latest
 `updatedAt` wins (ties broken by the larger `updatedBy` string). `ticket`: status takes the most
 advanced value in `todo < doing < review < done`, other fields latest-wins, and `conflictBadge` is
-true if the statuses differed. Arrays of objects with `id` (e.g. `history`, `votes`): union by `id`.
-`class`-owned fields (`schedule`, `passMark`, `switches`) are taken only from revisions whose
-`updatedBy` starts with `hub:`.
+true if the statuses differed. Arrays of objects with `id` (e.g. `history`, `votes`): union by `id`, **sorted by `id`** (for equal ids the
+latest-wins revision's element is kept).
+`class`-owned fields (`schedule`, `passMark`, `switches`) keep the value from the latest revision
+whose `updatedBy` starts with `hub:`; the merged document records that source in
+`hubFields: { <field>: { value, updatedAt } }` so later merges stay associative.
 
 | ID | Behaviour | Check |
 |---|---|---|
@@ -402,8 +406,8 @@ pokerRound(votes: Record<string, number>): { result: 'consensus'; points: number
 ```
 
 Allowed cards: 1, 2, 3, 5, 8, 13 (anything else throws). Consensus when the highest and lowest
-votes are the same card or neighbouring cards; the points are then the higher of the two most
-common values (ties → higher). Otherwise `discuss`, naming the lowest and highest voters.
+votes are the same card or neighbouring cards; the points are then the most common value (ties →
+the higher). Otherwise `discuss`, naming the lowest and highest voters.
 
 | ID | Behaviour | Check |
 |---|---|---|
@@ -446,7 +450,7 @@ applyParseRules(lines: readonly string[], rules: ParseRules): Record<string, { v
 
 `anchor` is a case-insensitive regular expression (at most 200 characters, compiled with the `u`
 flag). Numbers may contain thousands separators (`1,234`) and a decimal point; a leading currency
-sign (`₹`, `Rs`, `$`) is ignored.
+sign (`₹`, `Rs`, `$`) is ignored. `line` is the 0-based index of the line the value came from.
 
 | ID | Behaviour | Check |
 |---|---|---|
@@ -545,7 +549,7 @@ async openPackage(container: Uint8Array, trustedPublicJwks: readonly JsonWebKey[
 ### 4.25 Recovery key and crypto-shredding (F-20, F-24)
 
 ```ts
-recoveryWords(entropy: Uint8Array): string[]               // 32 bytes -> 24 words from the 256-word list in core
+recoveryWords(entropy: Uint8Array): string[]               // 32 bytes -> 32 words (one byte each) from the 256-word list in core
 wordsToEntropy(words: readonly string[]): Uint8Array        // throws on an unknown word or wrong count
 async wrapPersonKey(personKey: Uint8Array, wrappingKey: Uint8Array): Promise<Uint8Array>
 async unwrapPersonKey(wrapped: Uint8Array, wrappingKey: Uint8Array): Promise<Uint8Array>
@@ -554,7 +558,7 @@ shred(keyring: Record<string, Uint8Array>, personId: string): Record<string, Uin
 
 | ID | Behaviour | Check |
 |---|---|---|
-| AC-45 | 32 bytes → 24 words → the same 32 bytes; the word list has 256 unique lowercase words; a misspelt word throws | `acceptance/core/keys.test.mjs` |
+| AC-45 | 32 bytes → 32 words → the same 32 bytes; the word list has 256 unique lowercase words; a misspelt word throws | `acceptance/core/keys.test.mjs` |
 | AC-46 | Data sealed with a person's key opens after wrap/unwrap; after `shred`, that person's key is gone from the keyring and other people's keys are untouched | `acceptance/core/keys.test.mjs` |
 
 ### 4.26 Graded timing and accommodations (F-17, F-09)
@@ -620,24 +624,25 @@ runGate(files: Record<string, string>, waivers?: readonly { check: string; reaso
   { pass: boolean; checks: { id: string; pass: boolean; waived: boolean; detail: string }[] }
 ```
 
+`PkgDay` is `{ index, track, sections (as §4.8), questions: { text, answer }[], cards: { front, back }[] }`.
 `files` maps relative paths to text. The importer accepts both skill-template layouts: day
-companions inside `day{N}/` (v1.2) **or** in the track root (v1.1, as in the owner's package5). A
+companions inside `day{N}/` (v1.2) **or** in the track root (v1.1, as in the owner's package5), keeping their `*_dayNN.md` names. A
 day needs `quicklearn.md`, `deepdive.md`, `instructor_script.md`, `printable_handout.md` and a
 student guide; whiteboard, live-coding and memory-recall companions are optional.
 
 | Check id | Rule |
 |---|---|
 | `G1-files` | Each day has the required files |
-| `G2-readme` | Each README's file table lists exactly the files that exist in its folder (no drift) |
+| `G2-readme` | Each README's file table lists exactly the files that exist in its folder, including `README.md` itself; subfolders are not listed (no drift) |
 | `G3-diagnostic` | Each quick-learn has an "8-question diagnostic" with 8 numbered questions and an answer key with 8 numbered answers |
 | `G4-script-times` | The instructor script has timed sections, and their total is within ±10% of the script's own "Total runtime" line (`scriptTotalSec`) |
 | `G5-links` | No relative Markdown link points to a missing file |
 | `G6-code-lang` | Every fenced code block has a language tag |
-| `G7-graded` | Every graded item (Shift pack, exam bank) parses and has an answer key or checks |
+| `G7-graded` | Every graded item parses and has an answer key or checks: Shift packs are `<track>/shift/*.json` (§4.10, every ticket has a `check`), exam banks are `<track>/exam/*.json` (`{ questions: [{ id, text, answer }] }`, every question has an `answer`) |
 | `G8-cards` | Memory-recall files (if present) parse into cards: each `## Exercise N — <title>` section is one card; front = title + the `**What to do:**` paragraph, back = everything from the `**The answer` line to the next exercise. An exercise without both parts fails |
 
-A failing check can be waived only with a reason, by a named person, until a set expiry (max 7
-days). `G7-graded` can **never** be waived. Offline, link checks to the internet are warnings
+A failing check can be waived only with a reason, by a named person, until a set expiry; an
+expiry more than 7 days after `now` is treated as `now` + 7 days. `G7-graded` can **never** be waived. Offline, link checks to the internet are warnings
 (they are not part of G5).
 
 | ID | Behaviour | Check |
@@ -667,7 +672,8 @@ retentionDue(docs: readonly { id: string; type: string; createdAt: number; batch
 
 Integrity log entries (`integrity`): delete 180 days after `resultsAt`. Commons/Shift chat
 (`chat`): delete 1 year after `createdAt`. Lab containers (`container`): delete at `batchEndedAt`.
-Grades and certificates: pseudonymise 3 years after `batchEndedAt`, never delete.
+Grades (`grade`) and certificates (`certificate`): pseudonymise 3 years after `batchEndedAt`, never
+delete. A year is 365 days.
 
 | ID | Behaviour | Check |
 |---|---|---|
@@ -722,7 +728,7 @@ Tests use `/__test/login` (§5.9) instead of a real passkey.
 
 | ID | Behaviour | Check |
 |---|---|---|
-| AC-62 | Every `/api/*` route except health, join and sign-in returns `401` without a session; a learner gets `403` on trainer and admin routes; a substitute gets `403` on grade sign-off and syllabus edits (D-30) | `acceptance/api/roles.test.mjs` |
+| AC-62 | Every `/api/*` route except health, join, sign-in and pairing claim returns `401` without a session; a learner gets `403` on trainer and admin routes; a substitute gets `403` on grade sign-off and syllabus edits (D-30) | `acceptance/api/roles.test.mjs` |
 | AC-63 | Joining with a valid one-time class code creates an enrolment; reusing the code fails; joining twice with the same roll number warns `already-enrolled` (F-23) | `acceptance/api/roles.test.mjs` |
 | AC-64 | Signup records acceptance of the current Terms & Conditions version with a timestamp; a new T&C version asks again (F-06); a date of birth under 18 creates a minor profile with Coach trackers off (D-33) | `acceptance/api/roles.test.mjs` |
 
@@ -750,7 +756,7 @@ Tests use `/__test/login` (§5.9) instead of a real passkey.
 | ID | Behaviour | Check |
 |---|---|---|
 | AC-69 | `/db/class-<id>` speaks the CouchDB replication protocol: a PouchDB client with a valid session can replicate both ways; a learner cannot read another learner's personal database (`403`) | `acceptance/api/sync.test.mjs` |
-| AC-70 | Two clients editing the same ticket offline, then syncing, both end with the core-merged revision (§4.13); no conflicts remain after the server's merge pass | `acceptance/api/sync.test.mjs` |
+| AC-70 | Two clients editing the same ticket offline, then syncing, both end with the core-merged revision (§4.13); the server's merge pass runs within 5 s of a conflicting write and leaves no conflicts | `acceptance/api/sync.test.mjs` |
 | AC-71 | A client whose schema is 3 versions behind is refused with `update-app` and its local data is untouched | `acceptance/api/sync.test.mjs` |
 
 ### 5.7 Grading, appeals and ledgers
@@ -883,7 +889,7 @@ provides (no real accounts in tests). Every adapter is switchable off and the ap
 
 | ID | Behaviour | Check |
 |---|---|---|
-| AC-120 | No log line (server stdout/stderr during the full suite) contains a value the suite planted as a secret | `acceptance/api/secrets.test.mjs` |
+| AC-120 | No log line (each acceptance file's server stdout/stderr) contains a value the suite planted as a secret | `acceptance/api/secrets.test.mjs` |
 | AC-121 | Coach entries are stored encrypted: reading the raw personal database on the server shows ciphertext only for `coachEntry` documents | `acceptance/api/secrets.test.mjs` |
 | AC-122 | A minor account cannot create Coach tracker entries, and its integrity log keeps exam events only (D-33) | `acceptance/api/roles.test.mjs` |
 | AC-123 | All visible text comes from the English strings file (`packages/web/src/strings/en.json`); a test build with a pseudo-locale shows no untranslated literal on the journey screens | `acceptance/journeys/a11y.journey.mjs` |
@@ -972,3 +978,237 @@ technical claims. So the course is **generated from a manifest** and checked by 
 | F-01 to F-46 (FAILURE-QUESTIONS.md) | §4.3, §4.5, §4.6, §4.9 to §4.13, §4.25, §4.26, §4.31, §5, §8 |
 | FEATURE-IDEAS picks (DEC-68) | §4.14 to §4.23, §4.32, §4.33, §6 |
 | Phase 2 items | §0 "Not in v1" |
+
+---
+
+## Appendix A. API details (part of the contract)
+
+Routes, fields and formats that §5 does not spell out. Builders implement exactly these.
+
+### Ids, seeds and sessions
+
+- Ids are `<type>:<key>`. Route parameters, `/__test/login` `personId`, `enrolment.personId` and
+  database names use the **key**: class `c1` is `class:c1` in `class-c1`; learner `l1` is `person:l1` with
+  personal database `person-l1`.
+- `POST /__test/seed { fixture }`: `fixture` is a path relative to `acceptance/fixtures`
+  (e.g. `api/base.json`). The file is `{ "databases": { "<dbName>": [doc, ...] } }`; docs are written as
+  given (`_id` = `id`). A `day` section may carry `body`: the section's plaintext, which the server serves
+  only sealed (AC-68).
+- `POST /__test/login { personId, roles }` works for any person id, seeded or not.
+- Validation errors: `400 { error: { <field>: <message> } }` (SPEC §5).
+
+### Routes not named in SPEC
+
+| Route | Who | Request -> response |
+|---|---|---|
+| `GET /api/me` | any session | `{ personId, roles, minor, coachTrackers, tnc: { version, acceptedAt, needsAcceptance } }` |
+| `GET /api/join/tnc` | no session | `{ version, text }` |
+| `POST /api/join` | no session | `{ code, name, rollNumber, dob, tncVersion }` -> 2xx + session cookie; body contains `already-enrolled` when the roll number is already enrolled in that class; reused code -> 4xx |
+| `POST /api/classes/:id/join-codes` | trainer | -> `{ code }` (one-time) |
+| `POST /api/admin/tnc` | admin | `{ version, text }` publishes a new T&C version |
+| `POST /api/me/tnc` | any session | `{ version }` accepts it |
+| `POST /api/pairing` | trainer | -> `{ code, qr }`; `qr` (string or object) holds the hub id, the current address and the fingerprint |
+| `GET /api/pairing/fingerprint` | any session | body holds the CA's SHA-256 fingerprint as hex (colons allowed) |
+| `POST /api/pairing/claim` | no session | `{ code, deviceId }` -> 2xx + device session; 4xx whose body says `used` / `expired` / `unknown` |
+| `GET /api/devices`, `DELETE /api/devices/:deviceId` | trainer/admin | list contains device ids |
+| `GET /api/classes/:id/attendance-code` | trainer | a 6-digit string field and a numeric seconds-left field (key containing `sec`, `left` or `remain`) |
+| `GET /api/classes/:id/printed-code?day=N` | trainer | -> `{ code }` printed fallback |
+| `POST /api/classes/:id/attendance` | learner | `{ code }`; writes an `attendance` doc (`method` `rotating` or `printed`, `verified`) |
+| `POST /api/packages` | admin/trainer | body = ustar tar -> `{ id, status, checks: [{ id, pass, waived, detail }] }`; failing -> `status: 'draft'` |
+| `POST /api/packages/:id/publish` | admin/trainer | 4xx for a draft with failing checks |
+| `GET /api/classes/:id/days/:index` | learner | `{ sections: [{ id, graded, sealed, key? }] }`; `sealed` = base64 of `sealSection` output (IV prefixed); `key` = base64 raw AES key, present only once released |
+| `POST /api/classes/:id/teleprompter` | trainer | `{ sectionId }` or `{ releaseAll: true }` |
+| `POST /api/classes/:id/attempts` | learner | `{ itemId, mode, answers, timing: { hubStart, hubEnd, monotonicMs, deviceStart, deviceEnd }, aiUsage }` -> `{ id }`; stores an `attempt` doc with `seed`, `timing.flags` and an AI-usage summary string |
+| `POST /api/classes/:id/attempts/:attemptId/grade` | trainer (sign-off; substitute 403) | `{ score, reason? }`; first call appends a ledger entry, later calls append a correction (`corrects`) |
+| `POST /api/classes/:id/appeals` | learner | `{ attemptId, reason }`; after 7 days 4xx with `window-closed` |
+| `GET /api/classes/:id/appeals` | trainer | list (or `{ appeals }`) of `{ attemptId, evidence: { seed, mode, events, rubricRows, unreadConfirmations } }` |
+| `POST /api/classes/:id/integrity`, `GET ...?personId=` | learner / trainer | event `{ context: 'exam' | 'practice', kind, at }`; list (or `{ events }`) |
+| `POST /api/me/device-key` | any session | `{ deviceId, publicJwk }` registers the device signing key used by AC-76 |
+| `POST /api/import` | admin | body = the tar from `GET /api/export` |
+
+### Sync
+
+- Old clients announce their schema with the request header `x-lms-schema: <n>`. Every `/db/*` request
+  from a client more than 2 versions behind is refused with 4xx and a body containing `update-app`.
+- The hub's merge pass (D-24) runs on its own within a few seconds of a conflicting write.
+- Personal databases refuse `coachEntry` documents that carry plaintext fields (`kind`, `values`,
+  `source`); an encrypted entry carries `enc: { iv, ct }` instead. A minor's personal database refuses every
+  `coachEntry` with 403.
+
+### Export
+
+- The export tar has `manifest.json` (paths relative to the manifest's folder, sorted; the manifest does
+  not list itself), CSV files whose names contain `roster`, `attendance` and `grade`, at least one `.md`,
+  JSON files whose name or folder contains `ledger` and `event`, and a `board` file or folder.
+- `GET /api/classes/:id/package?day=N` returns the `signPackage` container (§4.24) as raw bytes.
+
+---
+
+## Appendix B. Adapter and CLI surface (part of the contract)
+
+Modules live in `packages/adapters/src/`. Every base URL is injectable, so no test touches a real
+service. Times are ms since the epoch. "Reports" means the promise resolves to
+`{ ok: false, reason, status? }` or rejects with an `Error`.
+promise resolves to `{ ok: false, reason, status? }` or rejects with an `Error`; tests accept both.
+
+### `github.ts` (AC-110, AC-111)
+
+`createGithubAdapter({ apiUrl, graphqlUrl, token, org })` returns:
+
+| Method | Calls (fake GitHub) | Result |
+|---|---|---|
+| `provisionLearner({ username, team, template, repo, projectTitle })` (`template` = `"owner/name"`) | `GET /users/:u`, `POST /orgs/:org/invitations` (`invitee_id`), `PUT /orgs/:org/teams/:team/memberships/:u`, `POST /repos/:tOwner/:tName/generate`, `PUT /repos/:org/:repo/branches/main/protection` (`allow_force_pushes: false`, `required_pull_request_reviews` set), GraphQL `createProjectV2` + `createProjectV2Field` with `dataType: ITERATION` | `{ repo: "org/repo", projectId }` |
+| `openPullRequest({ repo, branch, title, body? })` | `GET .../git/ref/heads/main`, `POST .../git/refs`, `POST .../pulls` | `{ number }` |
+| `mergePullRequest({ repo, number })` | `PUT .../pulls/:n/merge` | `{ ok: true }` or reports |
+| `writeFile({ repo, branch, path, content })` | `PUT .../contents/:path` | `{ ok: true }` or reports |
+| `personaToken({ installationId, batchEndsAt, now })` | `POST /app/installations/:id/access_tokens` | `{ token, expiresAt }`, `expiresAt <= batchEndsAt`; reports when `now >= batchEndsAt` |
+
+It never calls an account-creation endpoint (`POST /admin/users` or similar).
+
+### `forgejo.ts` (AC-112, AC-115)
+
+`createForgejoAdapter({ apiUrl, token, org })` (`apiUrl` ends before `/api/v1`) has the same methods.
+`provisionLearner({ username, email, team, template, repo })` first creates the Forgejo login
+(`POST /api/v1/admin/users`, `must_change_password: true`) when `GET /api/v1/users/:u` is 404, then adds the
+team member (`PUT /api/v1/teams/:id/members/:u`), generates the repo, and sets protection on `main`
+(`POST .../branch_protections`). `personaToken({ username, batchEndsAt, now })` uses
+`POST /api/v1/users/:u/tokens`. Plus:
+
+- `installPushCheck({ repo, hookUrl })` registers the push-check hook: `POST /api/v1/repos/:o/:r/hooks`
+  with `config.url = hookUrl`.
+- `createPushCheck({ log })` returns `{ handler, setSecretScan(on, by) }`. `handler` is a Node
+  `(req, res)` listener. It receives `POST { repository, pusher, files: [{ path, content }] }` and answers
+  `200 { allowed: true }` or `200 { allowed: false, message }`. With `secretScan` on (the default) any
+  file matching the tins-kit secret patterns is refused with a message that says to rotate the key and
+  never repeats the key. `setSecretScan(false, by)` calls `log({ switch: 'secretScan', on: false, by, at })`.
+
+### `backup.ts` (AC-113)
+
+- `createS3Target({ endpoint, bucket, region, accessKeyId, secretAccessKey })`: path-style S3 (works for R2).
+- `createDriveTarget({ apiUrl, accessToken, folderId })`: Drive v3 upload (`uploadType=media` or `multipart`) and `?alt=media` download.
+- `createFolderTarget({ dir })`: USB stick or folder.
+- `backup(target, { name, bytes, passphrase })` -> `{ ref }`: encrypts (D-26) **before** upload.
+- `restore(target, { ref, passphrase })` -> `Uint8Array`: rejects with a wrong passphrase.
+
+### `google.ts` (AC-114)
+
+`createGoogleAdapter({ baseUrls: { meet, calendar, forms }, accessToken, switches })`. A missing switch
+key is off (§4.27). A call whose switch is off rejects with an error naming the switch and makes no
+request.
+
+| Method | Switch | Calls |
+|---|---|---|
+| `createMeetLink({ title })` -> `{ url }` | `meetLinks` | `POST /v2/spaces` |
+| `syncCalendar({ calendarId, events: [{ id, title, start, end, timezone }] })` -> `{ synced }` | `calendarSync` | `POST /calendar/v3/calendars/:id/events` |
+| `exportQuiz({ title, questions: [{ text, choices, answerIndex }] })` -> `{ formId, responderUri, published: true }` | `googleForms` | `POST /v1/forms`, `POST /v1/forms/:id:batchUpdate`, `POST /v1/forms/:id:setPublishSettings` |
+
+### `health.ts` (AC-117)
+
+- `healthDigest({ now, backups: [{ target, lastSuccessAt }], syncLagMs, checks: [{ id, ok }] })` ->
+  `{ status: 'green' | 'red', backups: [{ target, lastSuccessAt, stale }], syncLagMs, failedChecks: string[] }`.
+  A backup older than 48 h (or never) is `stale` and makes `status` red.
+- `runMorningChecklist({ now, online, checks: [{ id, kind: 'offline' | 'online', run, lastKnownAt? }] })` ->
+  results `[{ id, kind, ok, ranAt, lastKnownAt }]`, offline checks first and run first. When `online` is
+  false, online checks are not run: `ok: null`, `ranAt: null`, `lastKnownAt` as given.
+
+### MCP on the hub (AC-116)
+
+The hub serves MCP (Streamable HTTP, JSON-RPC 2.0) at `POST /mcp`, authenticated by the session cookie.
+Write tools are named `grade_edit`, `post_message` and `repo_write` and have `annotations.readOnlyHint: false`;
+every other tool has `readOnlyHint: true`. A write tool changes nothing and returns
+`structuredContent: { status: 'pending', diff, pendingId }`.
+
+### Load test CLI (AC-103)
+
+`node packages/cli/src/main.ts loadtest --learners 200 --target <url>` runs against a hub in test mode
+(it may use `/__test/*`). It exits 0 when the run passes, and its **last stdout line** is a JSON summary:
+
+```json
+{ "learners": 200, "requests": 1234, "within1sPct": 99.1, "p95Ms": 310,
+  "quizAnswers": 200, "quizWindowMs": 4200, "lostWrites": 0, "pass": true }
+```
+
+---
+
+## Appendix C. App details for journeys (part of the contract)
+
+### Shell, routes and build
+
+- The app shell root carries `data-testid="app-ready"`, visible once the shell is interactive
+  (rendered and handlers attached); AC-100 times it.
+- The web build output is `packages/web/dist`; the server serves it at `/` (SPA fallback to
+  `index.html`).
+- A join link is `<hub>/join/<code>`. A public certificate check is `/verify/<certId>` (valid or
+  invalid).
+- With `LMS_PSEUDO_LOCALE=1` the app shows every `en.json` string wrapped as `⟦…⟧`; user data and
+  course content may be marked `translate="no"`.
+- The practice forge's base URL comes from `LMS_FORGEJO_URL`.
+- AC-97: the PDF's notebook ruling is drawn as vector lines (at least 15 evenly spaced,
+  full-width horizontal lines on page 1). The board fork keeps Excalidraw's `toolbar-*` test ids
+  and imports a dropped `.mmd` file.
+- AC-101: the board chunk must not be requested by the page before the board is opened (a
+  service worker may precache it in the background).
+- AC-151: only the AI-off behaviour is tested automatically; AI-on is checked manually with a
+  connected model.
+
+### Test seeds
+
+`/__test/seed { fixture }` loads `acceptance/fixtures/<fixture>`, a file shaped
+`{ databases: { <dbName>: [docs] }, packages: [{ path, classId, publish }], joinCodes: [{ code, classId }] }`.
+Seeds are additive. Seeds may contain these extra document types and fields: `checklist`,
+`review` and `badge` documents; `class.teams`; `attempt.failing`, `attempt.publishedAt` and
+`attempt.unreadConfirmations`; `shiftRun.scorePct`.
+
+### Test ids beyond those named in §6
+
+`<personId>` is the full id, e.g. `roster-person:l1`. `<n>` counts from 1, `<index>` from 0.
+
+| Test id | Element | Used by |
+|---|---|---|
+| `app-ready` | App shell root; visible once the shell is interactive (rendered, handlers attached) | every journey, AC-100–102, smoke |
+| `class-schedule`, `schedule-day-<index>` | Class schedule after publishing; one entry per class day | AC-80 |
+| `gate-check-<checkId>` | One row per gate check inside `gate-report`, with `data-state="pass\|fail\|waived"` | AC-80 |
+| `roster-<personId>` | A learner's row in the trainer's roster/attendance roll (text includes "verified" / "dropped" / "active") | AC-82, AC-152, AC-159 |
+| `diag-q-<n>` | Question n (display order) of a diagnostic: radios or a text box | AC-84, AC-95 |
+| `cards-due-count` | Number of cards due now (text contains the number) | AC-85, AC-89, AC-95 |
+| `score-row-<rubricRowId>` | One row per rubric row inside `shift-score` | AC-86 |
+| `standup-summary` | Stand-up summary; a blocked answer has `data-blocked="true"` (or is in `<mark>`) | AC-87 |
+| `poker-result` | Result after `poker-reveal`: all cards, consensus or low/high voters asked to explain | AC-87 |
+| `score-history` | A grade's history (original and corrected scores) | AC-88 |
+| `doubt-list` | Doubt queue; each doubt is a `role=listitem` | AC-91 |
+| `exit-tally` | Exit-ticket tally; each choice is a `role=listitem` ending with its count | AC-92 |
+| `explain-covered`, `explain-missing`, `explain-misconceptions` | Explain-it-back feedback lists | AC-93 |
+| `mastery-map` | Mastery map | AC-95 |
+| `handover-pack` | Substitute's handover pack | AC-150 |
+| `self-learn` | Self-learn (AI-delivered) player | AC-151 |
+| `drop-confirm` | Drop confirmation dialog listing the `dropPlan` actions | AC-152 |
+| `shift-timer` | Shift countdown showing the (accommodated) limit | AC-153 |
+| `syllabus-draft`, `change-log` | Drafted syllabus; cohort change log with dates | AC-154 |
+| `first-run` | First-run screen with the 4 choices | AC-155 |
+| `home-<space>` (e.g. `home-learner`) | Home screen of a role space | AC-155 |
+| `coach-plan` | Current coaching plan (shows its version) | AC-156 |
+| `day-timeline` | Coach day timeline | AC-156 |
+| `trainer-pack`, `package-library` | Per-day trainer pack; package library | AC-157 |
+| `rehearsal-report` | Planned vs actual after a rehearsal | AC-158 |
+| `learner-notes` | Trainer notes on a learner's profile | AC-159 |
+| `digest`, `digest-<personId>` | Friday at-risk digest; one row per learner (level + reasons + `wa-<personId>`) | AC-160 |
+| `lab-clusters` | Lab results grouped by failing checks; each cluster a `role=listitem` | AC-160 |
+| `review-checklist`, `review-score` | Peer-review checklist; the review's score | AC-161 |
+| `pair-timer` | Pair-programming swap timer | AC-161 |
+| `portfolio-preview` | `<iframe>` previewing the generated portfolio | AC-162 |
+| `incident-page` | Incident page with the acknowledge timer | AC-164 |
+| `certificate-id` | Issued certificate id (12 Crockford characters) | AC-165 |
+| `item-analysis`, `item-row-<itemId>` | Item analysis; a row has `data-flag="true"` when flagged | AC-166 |
+| `misconception-suggestions` | Suggested misconceptions; each a `role=listitem` with Accept / Edit / Reject | AC-166 |
+| `package-diff` | Changes between an uploaded package and the current one (days and questions) | AC-166 |
+| `fire-drill`, `data-meter` | Fire-drill wizard; data meter | AC-167 |
+| `heading-strike`, `celebration-wall` | Heading Strike round; team badges / merged-PR wall | AC-168 |
+| `forge-exercise` | Practice-forge exercise, `data-state="todo\|done"` | AC-170 |
+
+Also used, but not new:
+
+- `toolbar-rectangle`, `toolbar-text`: upstream Excalidraw's own test ids; the board fork should keep them (AC-97).
+- `setup-check` (SPEC): its items carry `data-state="pass\|fail"` (green/red) (AC-81).
+- `section-<id>` (SPEC): rendered **only** for released sections; a locked section must not use this id (AC-83).
+- `shot-confirm` (SPEC): treated as the confirmation panel holding the fields labelled "Calories" and "Protein" and a
+  "Confirm" button (AC-94).
