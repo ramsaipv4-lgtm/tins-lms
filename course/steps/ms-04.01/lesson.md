@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 4
 skills: [teleprompter-pacing, script-parsing]
-source_refs: [{ path: packages/core/src/pace.ts, commit: 9b41a35 }]
+source_refs: [{ path: packages/core/src/pace.ts, commit: e345507 }]
 next: end
 ---
 
@@ -108,8 +108,8 @@ At now = 900:
 
 ```ts packages/core/src/pace.ts
 export function pace(
-  sections: readonly { id: string; plannedSec: number }[],
-  events: readonly { sectionId: string; at: number }[],
+  sections: readonly PaceSection[],
+  events: readonly PaceEvent[],
   now: number
 ): PaceResult
 ```
@@ -132,10 +132,7 @@ Key insights:
 export function parseScriptSections(markdown: string): ParsedSection[]
 ```
 
-Uses a regex to match:
-```markdown
-## [**]Title[**] (h:mm [—–-] h:mm)[graded]
-```
+Uses a regex to match headings like: `## [**]Title[**] (h:mm [—–-] h:mm)[graded]`
 
 It:
 1. Extracts all heading lines from the markdown
