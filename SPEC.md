@@ -1005,7 +1005,7 @@ Routes, fields and formats that §5 does not spell out. Builders implement exact
 |---|---|---|
 | `GET /api/me` | any session | `{ personId, roles, minor, coachTrackers, tnc: { version, acceptedAt, needsAcceptance } }` |
 | `GET /api/join/tnc` | no session | `{ version, text }` |
-| `POST /api/join` | no session | `{ code, name, rollNumber, dob, tncVersion }` -> 2xx + session cookie; body contains `already-enrolled` when the roll number is already enrolled in that class; reused code -> 4xx |
+| `POST /api/join` | no session | `{ code, name?, rollNumber?, dob, tncVersion }` (name and roll number optional) -> 2xx + session cookie; body contains `already-enrolled` when the roll number is already enrolled in that class; reused code -> 4xx |
 | `POST /api/classes/:id/join-codes` | trainer | -> `{ code }` (one-time) |
 | `POST /api/admin/tnc` | admin | `{ version, text }` publishes a new T&C version |
 | `POST /api/me/tnc` | any session | `{ version }` accepts it |
@@ -1027,6 +1027,10 @@ Routes, fields and formats that §5 does not spell out. Builders implement exact
 | `POST /api/classes/:id/integrity`, `GET ...?personId=` | learner / trainer | event `{ context: 'exam' | 'practice', kind, at }`; list (or `{ events }`) |
 | `POST /api/me/device-key` | any session | `{ deviceId, publicJwk }` registers the device signing key used by AC-76 |
 | `POST /api/import` | admin | body = the tar from `GET /api/export` |
+| `POST /api/signout` | any session | ends the session and clears the cookie |
+| `POST /api/passkeys/register/options`, `POST /api/passkeys/register` | any session | WebAuthn registration (attestation `none`, ES256); stores the credential's public key for the person |
+| `POST /api/signin/passkey/options`, `POST /api/signin/passkey` | no session | WebAuthn assertion; verifies the signature against the stored key and the challenge, then creates a session |
+| `POST /api/signin/google` | no session | exchanges a Google ID token for a session when Google sign-in is configured; otherwise `501 { error: { code: 'not-configured' } }` |
 
 ### Sync
 
@@ -1142,7 +1146,7 @@ every other tool has `readOnlyHint: true`. A write tool changes nothing and retu
   `index.html`).
 - A join link is `<hub>/join/<code>`. A public certificate check is `/verify/<certId>` (valid or
   invalid).
-- With `LMS_PSEUDO_LOCALE=1` the app shows every `en.json` string wrapped as `⟦…⟧`; user data and
+- With `LMS_PSEUDO_LOCALE=1` (server environment; the server injects `<meta name="lms-pseudo-locale" content="1">` into `index.html`) the app shows every `en.json` string wrapped as `⟦…⟧`; user data and
   course content may be marked `translate="no"`.
 - The practice forge's base URL comes from `LMS_FORGEJO_URL`.
 - AC-97: the PDF's notebook ruling is drawn as vector lines (at least 15 evenly spaced,

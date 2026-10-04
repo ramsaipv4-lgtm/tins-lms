@@ -44,6 +44,7 @@ the orchestrator merges with `kit merge <id>` and pushes. Every task also owns
 
 | Task | Step | Model | Title | Rows | Code paths | Status |
 |---|---|---|---|---|---|---|
+| b6-8 | ms-06.08 | sonnet | Sign-out, passkeys, Google sign-in stub, optional join fields, pseudo-locale meta | AC-81, AC-62 | packages/server/src/routes/accounts.ts, packages/server/src/main.ts, packages/server/test/signin.test.mjs | todo |
 | b7-1 | ms-07.01 | sonnet | Web foundation: shell, routing, role spaces, strings + pseudo-locale, data layer, PWA, join flow | AC-81 | packages/web/package.json, packages/web/index.html, packages/web/vite.config.ts, packages/web/public, packages/web/src/main.tsx, packages/web/src/app, packages/web/src/strings, packages/web/src/features/registry.ts, packages/web/src/features, packages/web/test/foundation.test.mjs | todo |
 | b7-2 | ms-07.02 | sonnet | Admin: class setup, verbal syllabus, college outputs, Google opt-in | AC-80, AC-154, AC-165, AC-169 | packages/web/src/features/admin, packages/server/src/routes/features/admin.ts, packages/web/test/admin.test.mjs | todo |
 | b7-3 | ms-07.03 | sonnet | Attendance, wrap-up, messages, trainer notes, digest | AC-82, AC-89, AC-90, AC-159, AC-160 | packages/web/src/features/attend, packages/server/src/routes/features/attend.ts, packages/web/test/attend.test.mjs | todo |
