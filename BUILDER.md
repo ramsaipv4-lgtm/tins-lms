@@ -6,7 +6,7 @@ You build **one task** of Coach LMS v1. `SPEC.md` is the contract; `TASKS.md` li
 ## Rules
 
 1. Work only inside your task's worktree and its declared paths.
-2. **Do not read `acceptance/` except `acceptance/smoke/`** (SPEC D-40). The gate runs the
+2. **Do not read `acceptance/` except `acceptance/smoke/` and `acceptance/fixtures/`** (SPEC D-40). The gate runs the
    acceptance rows you claim and prints which ones fail; that is your feedback.
 3. Import other workspace packages by **relative path** (e.g. `../../core/src/index.ts`), never by
    `@lms/...` name (worktrees share one `node_modules`).

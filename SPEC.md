@@ -92,7 +92,7 @@ tins-kit gate rejects any dependency not named here. Versions were read from npm
 | D-37 | No paid service is required anywhere in v1. Every paid option is optional and off | locked | Owner |
 | D-38 | Content release follows the teleprompter: sections unlock when the trainer reaches them, or at their scheduled time as a fallback; graded material never unlocks by time alone | locked | §20.4 |
 | D-39 | The rebuild course (§11) is generated after v1 from the code, commits and build journal | locked | DEC-71 |
-| D-40 | The acceptance suite lives in the public repo `tins-lms-tests`. Builders work from this SPEC and the visible smoke subset (`acceptance/smoke/`) only; reading the rest of the suite during the build experiment voids that run's score | locked | Owner, iteration 16 |
+| D-40 | The acceptance suite lives in the public repo `tins-lms-tests`. Builders work from this SPEC, the visible smoke subset (`acceptance/smoke/`) and the data fixtures (`acceptance/fixtures/`) only; reading the rest of the suite during the build experiment voids that run's score | locked | Owner, iteration 16 |
 
 ---
 
@@ -1214,3 +1214,265 @@ Also used, but not new:
 - `section-<id>` (SPEC): rendered **only** for released sections; a locked section must not use this id (AC-83).
 - `shot-confirm` (SPEC): treated as the confirmation panel holding the fields labelled "Calories" and "Protein" and a
   "Confirm" button (AC-94).
+
+---
+
+## Appendix D. Journey UI contract (part of the contract)
+
+For each journey: the test ids it touches, the accessible names (regular expressions, matched
+case-insensitively against roles, labels and button text) it uses to find controls, and the seed it
+starts from. `*` marks ids listed in Appendix C. Seeds are synthetic files in
+`acceptance/fixtures/journeys/` and `acceptance/fixtures/api/`; builders **may read
+`acceptance/fixtures/`** (data only) to see document shapes.
+
+### a11y.journey.mjs
+AC-99 Accessibility basics and AC-123 externalised strings (SPEC §6, §8).
+data-testids used: app-ready*
+Screens checked: for each role space (admin, trainer, learner), the home screen and every same-origin link in
+the app's navigation (<nav> or role="navigation"), up to 10 per role, opened by URL (SPA routes must be
+deep-linkable). The journeys' main screens are reachable from this navigation.
+AC-99 uses lib/a11y.mjs checkA11y (image alt, button/link names, form labels, 4.5:1 text contrast).
+### accommodations.journey.mjs
+AC-153 Accommodations (F-09) (SPEC §6.3, §4.26).
+data-testids used: app-ready*, shift-timer*
+Accessible names used: learner nav /settings|profile|accommodations?/; button /request (an )?accommodation/;
+  field /extra time|time multiplier/ (1.5); field /reason/; button /submit|send|request/;
+  admin nav /accommodations?|requests/; button /approve/; learner nav /shift/.
+Fixture Shift is 60 min, so with 1.5x the timer shows a 90-minute limit ("90 min" or "1:30:00"/"1:30").
+### admin-setup.journey.mjs
+AC-80 Admin sets up a class (SPEC §6).
+data-testids used: app-ready*, create-class, gate-report, gate-check-<checkId>* (data-state="pass|fail|waived"),
+  class-schedule*, schedule-day-<index>*                       (* = not named in SPEC, see TESTIDS.md)
+Accessible names used: fields labelled /program/, /cohort/, /class name/, /start date|first day/;
+  file field labelled /package/; buttons /publish/.
+Flow: admin signs in (org-only seed) -> fills program, cohort, class -> create-class -> uploads the fixture
+### appeal.journey.mjs
+AC-88 Appeal (SPEC §6, §4.11, AC-73).
+data-testids used: app-ready*, appeal-open, appeal-evidence, score-history*
+Accessible names used: nav /grades|results|scores/ (learner), /appeals|inbox/ (trainer); field /reason/;
+  buttons /submit|send|appeal/, /uphold/, /confirm|save/; field /corrected score|new score/.
+Seed "appeal": l1's day-0 quiz scored 5/8 with seed "seed-c1-l1-day0-quiz", mode live, published day 0 13:00.
+### attendance.journey.mjs
+AC-82 Attendance with the rotating code (SPEC §6, §4.5, AC-66).
+data-testids used: app-ready*, attendance-code, attendance-input, roster-<personId>* (e.g. roster-person:l1)
+Accessible names used: nav /attendance|check in/; submit button /submit|mark|check in|mark present/.
+### audio.journey.mjs
+AC-163 Audio quick-learn (B-10) (SPEC §6.3).
+data-testids used: app-ready*
+Accessible names used: learner nav /today|day 0/ then /quick.?learn/; button /play|listen|read aloud/;
+  field /speed/ (select, slider or number) set to 1.5.
+speechSynthesis is replaced by a recorder (init script) so the test does not depend on installed voices:
+window.__spoken = [{ text, rate }].
+### board.journey.mjs
+AC-97 Board (SPEC §6, D-7, D-36).
+data-testids used: app-ready*, board, board-export-pdf, toolbar-rectangle and toolbar-text (Excalidraw's own
+  testids, kept by the fork; keyboard shortcuts R / T are the fallback)
+Accessible names used: nav /board/; button /add page|new page/.
+Checks:
+- Drawing a rectangle, text, and dropping fixtures/journeys/flow.mmd each change the board's static canvas
+### cards.journey.mjs
+AC-85 Daily cards and error notebook (SPEC §6, §4.2).
+data-testids used: app-ready*, card-show, rate-good, cards-due-count* (text contains the number due),
+  error-notebook
+Accessible names used: nav /cards|review|daily cards/, /error notebook|mistakes|my mistakes/.
+Seed "cards": l1 has 3 due cards and day-0 error notes under subtopics "Commands" and "Folders".
+### catchup.journey.mjs
+AC-84 Catch-up gate for a learner who joined on day 3 (SPEC §6, §4.3).
+data-testids used: app-ready*, gate-day-<n>, diag-q-<1..8>* (one per diagnostic question, display order)
+Accessible names used: nav /catch.?up|today|my days/; buttons /start|take (the )?diagnostic/,
+  /submit|check|finish/, /retry|try again/. Scores shown as "5/8" / "6/8".
+The diagnostic is the fixture day-0 quick-learn's 8 questions (free-text answers, matched by text).
+### coach-shot.journey.mjs
+AC-94 Coach screenshot import (P-16) (SPEC §6, §4.18, D-11).
+data-testids used: app-ready*, shot-upload, shot-confirm (the confirmation panel; it contains the fields
+  labelled /calories/ and /protein/ and a button /confirm|save/)
+Accessible names used: nav /coach/, /food|diet|import screenshot|screenshot/; Coach PIN field /pin/.
+Fixture: fixtures/journeys/diet-screenshot.png (rendered text "Calories 1,850", "Protein 72.5 g");
+seed "coach" has approved rules for it. OCR runs in the browser (tesseract.js, data from the hub).
+### coach.journey.mjs
+AC-156 Coach space (§7.0, §7.2, F-05) (SPEC §6.3).
+data-testids used: app-ready*, coach-plan*, day-timeline*, section-<id>
+Accessible names used: nav /coach/; Coach PIN field /pin/ (+ /confirm pin/); button /accept defaults/;
+  nav /timeline|my day/; nav /today|day 0/.
+Counts every tap from opening the Coach conversation to the plan (PIN entry excluded): <= 25.
+### college.journey.mjs
+AC-165 College outputs (D-1, D-2, D-3, 7.4) (SPEC §6.3, §4.33).
+data-testids used: app-ready*, certificate-id* (text = the 12-char certificate id)
+Accessible names used: admin nav /reports?|college reports/; download buttons/links /attendance sheet.*pdf/,
+  /attendance sheet.*csv/, /completion report.*pdf/, /completion report.*csv/, /co.?po/; learner nav /feedback/,
+  field /feedback|what went well/, button /submit|send/; trainer nav /feedback/; admin nav /certificates/,
+  button /issue certificate/ for Lena, button /download( certificate)?( pdf)?/.
+### content-improve.journey.mjs
+AC-166 Content improvement (E-1, E-2, E-4) (SPEC §6.3, §4.21).
+data-testids used: app-ready*, item-analysis*, item-row-<itemId>* (data-flag="true" when flagged),
+  misconception-suggestions* (each suggestion a role=listitem with buttons /accept/, /edit/, /reject/),
+  package-diff*
+Accessible names used: trainer nav /item analysis|question quality|analytics/, /misconceptions/ (optional);
+  upload field labelled /package/ on nav /library|packages/.
+### corporate.journey.mjs
+AC-164 Corporate practice in the Shift (C-4, C-5, C-8, C-9, C-11, C-12) (SPEC §6.3).
+data-testids used: app-ready*, shift-start, incident-page*, sla-<ticketId>
+Accessible names used:
+  incident: nav /shift/; incident-page shows an acknowledge timer (m:ss) and button /acknowledge/.
+  change request: nav /deploy|deployments/; button /deploy to prod/ (disabled or refused without an approved
+    change request); button /new change request/; fields /summary|title/, /rollback/; button /submit/;
+### digest.journey.mjs
+AC-160 At-risk digest and mistake clusters (A-3, A-4) (SPEC §6.3, §4.20, §4.22).
+data-testids used: app-ready*, digest*, digest-<personId>* (one row per learner), wa-<personId>, lab-clusters*
+  (each cluster is a role=listitem)
+Accessible names used: trainer nav /digest|at.?risk|friday digest/, /lab results|labs/; in a cluster: field /comment/,
+  button /send|post|comment/; learner nav /lab|results|feedback/.
+Seeds: late-joiner (l4: locked missed days -> watch), digest (l3: 50 overdue cards + last Shift 25% -> risk;
+### doubts.journey.mjs
+AC-91 Doubt queue (A-5) (SPEC §6).
+data-testids used: app-ready*, doubt-list* (each doubt is a role=listitem inside it)
+Accessible names used: nav /doubts|ask a doubt|questions/; field /your doubt|doubt|question/;
+  checkbox /anonymous|post anonymously/; buttons /post|ask|submit/, /upvote|\+1|vote/.
+### drop.journey.mjs
+AC-152 Drop switch (F-03) (SPEC §6.3, §4.30).
+data-testids used: app-ready*, roster-<personId>*, drop-confirm*, attendance-code
+Accessible names used: trainer nav /roster|learners|class/; in roster-person:l2: button /drop/, later /undo|restore|re-?activate/;
+  button /confirm|drop/ in drop-confirm.
+Seed: l2 is in team-a and assigned ticket "Add a health endpoint".
+### engagement.journey.mjs
+AC-168 Engagement (G-1 to G-4) (SPEC §6.3, §4.27 headingStrike, teamBadges, celebrationWall, storyMode).
+data-testids used: app-ready*, heading-strike*, celebration-wall*, section-<id>
+Accessible names used: nav /heading strike/, button /start|play/, answer buttons inside heading-strike, result
+  /round (over|complete)|score/; nav /wall|badges|celebration/; admin switches checkbox /story mode/.
+Seed "portfolio" adds the team-a badge "First merged PR".
+### exit-ticket.journey.mjs
+AC-92 Exit ticket (B-1) (SPEC §6, §4.19).
+data-testids used: app-ready*, exit-tally* (each choice is a role=listitem with its count)
+Accessible names used: nav /exit ticket/; pre-generated choices are checkboxes; field /anything else|comment|in your words/;
+  button /submit|send/.
+### explain.journey.mjs
+AC-93 Explain-it-back (B-3) with AI off (SPEC §6, §4.17).
+data-testids used: app-ready*, explain-covered*, explain-missing*, explain-misconceptions*
+Accessible names used: nav /explain/; field /explanation|explain/; button /check|submit/.
+Seed "explain": day-0 checklist with concepts "Build output folder" (public folder | build output),
+"Themes apply templates" (theme | template) and misconception "The build edits page sources"
+(changes the pages folder | edits the sources). AI is off by default (switch explainBackAi off).
+### export.journey.mjs
+AC-98 Export my data (SPEC §6, AC-74 GET /api/me/export).
+data-testids used: app-ready*
+Accessible names used: nav /settings|my data|profile|privacy/; button or link /export my data|download my data/.
+Seeds "appeal" + "cards": l1 and l2 both have attempts; l2 has a private error note.
+The download is a tar (optionally gzip); every file is scanned: l1's records are present, no other
+person's name, attempt or private text appears.
+### files.journey.mjs
+AC-96 File exchange (SPEC §6, AC-76).
+data-testids used: app-ready*, pkg-download, pkg-import, section-<id>
+Accessible names used: nav /packages?|files|file exchange/ (both); learner button /export submission|submission file/;
+  trainer file field /import submission|submission file/; result text /accepted|imported/.
+The phone-only learner (l3, enrolment profile "phone") is taken offline (context offline) before importing.
+### first-run.journey.mjs
+AC-155 First run (§17.4) (SPEC §6.3).
+data-testids used: app-ready*, first-run*, home-learner*, tnc-accept, setup-check
+Accessible names used: in first-run, four buttons /join a class/, /connect to a hub/, /hosted service/,
+  /(this|on this) phone only/; fields /class code|join code/, /hub address/, /pairing code/;
+  buttons /continue|join|connect|next/. Hosted path: a sign-in screen naming the hosted service (/sign in/).
+Each path is its own test. The hub path pairs with a code from POST /api/pairing (AC-65) issued by the trainer.
+### forge.journey.mjs
+AC-170 Practice forge first (§20.1, D-34) (SPEC §6.3).
+data-testids used: app-ready*, forge-exercise* (data-state="todo|done")
+Accessible names used: learner nav /forge|repos|git/; inside forge-exercise text /practice forge|forgejo/ and a
+  button /check|verify|i('ve)? done it/; nav /settings|profile|accounts/; field /github user(name)?/;
+  button /link( github)?/; text /github pass/ and button /move (my )?practice repos/.
+Completing the exercise needs a practice forge: the suite's fake Forgejo (fixtures/fakes, AC-112) is started by the
+### google-optin.journey.mjs
+AC-169 Calendar sync and Google Forms opt-in (A-12, 1.11) (SPEC §6.3, §4.27 calendarSync, googleForms).
+data-testids used: app-ready*
+Accessible names used: admin nav /settings|switches|features/, checkboxes/switches /calendar sync/, /google forms/;
+  trainer controls /calendar/ (e.g. "Sync to calendar") and /google forms/ (e.g. "Export to Google Forms") on the
+  schedule and quiz screens. Using the adapters against fakes is covered by acceptance/adapters/google.test.mjs (AC-114).
+### learner-join.journey.mjs
+AC-81 Learner joins (SPEC §6).
+data-testids used: app-ready*, tnc-accept, setup-check, items inside setup-check carry data-state="pass|fail"*
+Accessible names used: field /date of birth/; optional /full name|your name/, /roll/; buttons
+  /continue|next|join|create account|create passkey|sign up/.
+Join link format (SPEC gap G-3): <hub>/join/<code>. Passkey sign-up uses a CDP virtual authenticator.
+### messages.journey.mjs
+AC-90 Messages (A-2, A-3) (SPEC §6, §4.32).
+data-testids used: app-ready*, wa-<personId> (e.g. wa-person:l2), copy-all
+Accessible names used: nav /absentees|absent|messages|follow.?up/.
+Seed "attendance-day0": only l1 attended day 0; l2 (9876500002) and l3 (9876500003) are absent.
+### offline.journey.mjs
+AC-95 Phone-only use after the first load (SPEC §6, D-5 installable offline app, D-6 sync).
+data-testids used: app-ready*, section-<id>, card-show, rate-good, cards-due-count*, diag-q-<n>*, mastery-map*
+Accessible names used: nav /today|day 0/, /cards|review/, /diagnostic|quick.?learn|quiz/, /mastery|progress/;
+  buttons /start|take (the )?diagnostic/, /submit|check|finish/.
+Steps: first load online (service worker installs) -> server stopped -> reload works from the service worker ->
+released content, a card review, the diagnostic and the mastery map all work -> server restarted on the
+### peer.journey.mjs
+AC-161 Peer review and pair programming (B-5, B-4) (SPEC §6.3, §4.27 pairProgramming).
+data-testids used: app-ready*, review-checklist*, review-score*, pair-timer*
+Accessible names used: learner nav /reviews?|peer review/; checklist items are checkboxes; field /comment/;
+  button /submit( review)?/; trainer nav /settings|switches|class settings/, checkbox /pair programming/;
+  learner nav /lab/.
+Seed "peer": l1 reviews l2's PR "Add an about page" with 3 checklist items. Teams: team-a = l1 + l2.
+### portfolio.journey.mjs
+AC-162 Portfolio (B-7) (SPEC §6.3).
+data-testids used: app-ready*, portfolio-preview* (an <iframe> showing the generated site)
+Accessible names used: learner nav /portfolio/; button /build my portfolio/.
+Seed "portfolio": l1 has certificate 7KQ2M9X4TB1R and team-a has the badge "First merged PR".
+### rehearsal.journey.mjs
+AC-158 Rehearsal (A-9, A-10, E-3) (SPEC §6.3, §4.8).
+data-testids used: app-ready*, teleprompter, tp-next, tp-pace, rehearsal-report*
+Accessible names used: nav /rehears/; buttons /start rehearsal|rehearse/, /end|finish( rehearsal)?/;
+  self-check list = checkboxes under a heading /self.?check/; text /freshness/ with a result /ok|pass|stale|fail|not checked/.
+Time moves with the Playwright page clock (fastForward) so the actual section times differ from plan.
+### rituals.journey.mjs
+AC-87 Sprint rituals: stand-up, estimation poker, retro (SPEC §6, §4.15, §4.16).
+data-testids used: app-ready*, poker-reveal, standup-summary*, poker-result*
+Accessible names used: nav /stand.?up/, /poker|estimat/, /retro/; fields /yesterday/, /today/, /blockers?/,
+  /retro item|went well|to improve|add item/; buttons with the card values "2", "3", "8" (exact names),
+  /submit|post|send/, /start|estimate/, /make (a )?ticket|create ticket|to ticket/; nav /tickets|board|backlog/.
+Votes {l1: 2, l2: 8, l3: 3} are a spread -> poker-result names Lena (low) and Liam (high) and asks them to explain.
+### robustness.journey.mjs
+AC-167 Robustness (F-1, F-2, F-3) (SPEC §6.3).
+data-testids used: app-ready*, fire-drill*, data-meter*, cards-due-count*, card-show
+Accessible names used: trainer nav /fire drill/, buttons /start( fire)? drill/, /next|continue/; result /passed|complete/;
+  learner nav /settings/, checkbox /kiosk( mode)?/, checkbox /wi-?fi only downloads/; nav /coach/ must be absent in kiosk;
+  kiosk sign-out after 30 min idle shows /sign in|signed out/; data meter text like "12 KB" / "1.2 MB";
+  a download on a cellular connection (CDP connectionType cellular3g) is held with a /wi-?fi/ message.
+### shift.journey.mjs
+AC-86 Shift (SPEC §6, §4.10).
+data-testids used: app-ready*, shift-start, sla-<ticketId>, shift-score, score-row-<rubricRowId>*
+Accessible names used: nav /shift/; inside sla-<id>: buttons /acknowledge|ack/, /resolve/, field /answer|resolution/;
+  button /end shift|finish shift|submit shift/.
+Time travel: j.clock() sets the server clock (/__test/clock) and the page clock (Playwright clock) together.
+Fixture pack shift-pack-1: T1 at 0 min (answer "missing build step"), T2 at 5 min, T3 at 20 min, T4 at 30 min.
+### substitute.journey.mjs
+AC-150 Substitute (F-01) and AC-151 AI-delivered session with AI off (SPEC §6.3).
+data-testids used: app-ready*, handover-pack*, self-learn*, wrap-up, teleprompter
+Accessible names used: trainer button /can.?t take day 1|cannot take day 1/; field /substitute/ (select, combobox
+  or radio) with option "Sam Substitute"; option /self.?learn( mode)?/; buttons /confirm|save|send/;
+  substitute nav /handover/, button /mark (as )?read/; nav /teleprompter/; trainer nav /reports?|delivery reports?/;
+  learner nav /today|day 1/; self-learn button /next( section)?/; field /question|ask/; button /ask|send|submit/.
+### syllabus.journey.mjs
+AC-154 Verbal syllabus (§17.1) (SPEC §6.3).
+data-testids used: app-ready*, syllabus-draft*, change-log*
+Accessible names used: admin nav /syllabus/; field /topic notes|notes|topics/; button /draft( syllabus)?/;
+  button or link /confirmation pdf|download pdf|pdf for (the )?college/; button /save|confirm/.
+### teleprompter.journey.mjs
+AC-83 Teleprompter release (SPEC §6, D-38, AC-68).
+data-testids used: app-ready*, teleprompter, tp-next, tp-pace, section-<id> (rendered only once released)
+Accessible names used: nav /teleprompter/ (trainer), /today|day 0|class/ (learner).
+Section ids come from the fixture script (SPEC §4.8 slug rule): warm-up, concept-walkthrough, …
+At 09:01 on day 0 only the first section is released (by time); tp-next reaches the second section.
+### trainer-notes.journey.mjs
+AC-159 Voice notes (A-7), typed in tests (SPEC §6.3).
+data-testids used: app-ready*, roster-<personId>*, learner-notes*
+Accessible names used: trainer nav /notes|voice notes|class notes/; field /learner/ (choose Lena Learner);
+  field /note/; button /save|attach/; nav /roster|learners/; learner nav /profile|settings|my profile/.
+### trainer-pack.journey.mjs
+AC-157 Trainer pack and package library (A-11, E-5) (SPEC §6.3).
+data-testids used: app-ready*, trainer-pack*, package-library*
+Accessible names used: trainer nav /trainer pack|my pack|day pack|prep/; nav /library|package library|packages/.
+### wrapup.journey.mjs
+AC-89 Wrap-up (A-1) (SPEC §6).
+data-testids used: app-ready*, wrap-up, attendance-input, cards-due-count*
+Accessible names used: nav /teleprompter|today|class/ (trainer); /today|day 0/ (learner) with links
+  /board.*pdf|board pdf/ and /quick.?learn/; nav /attendance|check in/; nav /reports?|delivery reports?/.
+After one tap: learners get the board PDF and quick-learn links and day-0 cards; attendance is closed;
+the trainer has a draft delivery report for day 0.
