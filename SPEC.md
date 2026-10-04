@@ -275,14 +275,17 @@ Rules: a section is released if the trainer's teleprompter has reached it (`reac
 pace(sections: readonly { id: string; plannedSec: number }[],
      events: readonly { sectionId: string; at: number }[], now: number):
   { perSection: { id: string; actualSec: number | null; deltaSec: number | null }[]; currentId: string | null; behindSec: number }
-parseScriptSections(markdown: string): { id: string; title: string; plannedSec: number }[]
+parseScriptSections(markdown: string): { id: string; title: string; plannedSec: number; graded: boolean }[]
+scriptTotalSec(markdown: string): number | null   // from a "Total runtime: **N hours**" (or "N minutes") line
 ```
 
 `events` are "entered section" moments. A section's actual time runs from entering it until
 entering the next one (or `now` for the current one). `deltaSec` = actual − planned (positive =
 over time). `behindSec` = sum of deltas of finished sections plus the current section's overrun
 (if any). `parseScriptSections` reads `## <title> (h:mm — h:mm)` headings (em dash, en dash or
-hyphen) from an instructor script and returns their planned durations; ids are slugs of the titles.
+hyphen) from an instructor script and returns their planned durations; ids are slugs of the titles (lowercase, non-alphanumerics → `-`, trimmed). A heading
+containing `[graded]` marks the section graded (the marker is removed from the title).
+Headings like `## **Break (2:15 — 2:30)**` are sections too (bold markers removed).
 
 | ID | Behaviour | Check |
 |---|---|---|
@@ -627,11 +630,11 @@ student guide; whiteboard, live-coding and memory-recall companions are optional
 | `G1-files` | Each day has the required files |
 | `G2-readme` | Each README's file table lists exactly the files that exist in its folder (no drift) |
 | `G3-diagnostic` | Each quick-learn has an "8-question diagnostic" with 8 numbered questions and an answer key with 8 numbered answers |
-| `G4-script-times` | The instructor script has timed sections, and their total is within ±10% of the day's slot |
+| `G4-script-times` | The instructor script has timed sections, and their total is within ±10% of the script's own "Total runtime" line (`scriptTotalSec`) |
 | `G5-links` | No relative Markdown link points to a missing file |
 | `G6-code-lang` | Every fenced code block has a language tag |
 | `G7-graded` | Every graded item (Shift pack, exam bank) parses and has an answer key or checks |
-| `G8-cards` | Memory-recall files (if present) parse into cards with front and back |
+| `G8-cards` | Memory-recall files (if present) parse into cards: each `## Exercise N — <title>` section is one card; front = title + the `**What to do:**` paragraph, back = everything from the `**The answer` line to the next exercise. An exercise without both parts fails |
 
 A failing check can be waived only with a reason, by a named person, until a set expiry (max 7
 days). `G7-graded` can **never** be waived. Offline, link checks to the internet are warnings
@@ -946,7 +949,7 @@ The course follows the owner's example layout:
 - marketing material.
 
 An evaluation of the example (`docs/COURSE-FORMAT-EVALUATION.md`) found defects that this course
-must not repeat: README out of sync with the files, missing checkpoint files, inconsistent
+must not repeat (layout and section template: that report's §C, the skill template's new `case-study` variant): README out of sync with the files, missing checkpoint files, inconsistent
 sections, broken "Next" links, wrong step totals, no answer keys, heavy steps, and two wrong
 technical claims. So the course is **generated from a manifest** and checked by a script:
 
@@ -956,7 +959,7 @@ technical claims. So the course is **generated from a manifest** and checked by 
 | AC-141 | Every micro-step has all standard sections with the fixed Detective-question labels (Problem / Approaches considered / Approach selected / Why), a correct "Step X of N", and a "Next" link to the following step; following "Next" from step 1 visits every step once | manual: `node course/check.mjs` |
 | AC-142 | Every reinforcement activity and checkpoint has an answer key; every step has recall cards | manual: `node course/check.mjs` |
 | AC-143 | Every code excerpt matches the repo at the commit the step cites | manual: `node course/check.mjs` |
-| AC-144 | Each step stays within a load budget: at most 2,500 words, 8 learning objectives and 10 new glossary terms | manual: `node course/check.mjs` |
+| AC-144 | Each step stays within a load budget: words/100 + code lines/8 + activity minutes ≤ the step's `est_minutes`; at most 4 learning objectives and 8 new glossary terms | manual: `node course/check.mjs` |
 | AC-145 | A fresh agent follows the course from step 1 in an empty folder and reaches a passing acceptance suite | manual: run once after the course is generated; result recorded in the course appendix |
 
 ---
