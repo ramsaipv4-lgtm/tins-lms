@@ -1,4 +1,6 @@
-# Coach LMS — Plan v6 (consolidated)
+# Coach LMS — Plan v7 (consolidated)
+
+Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
 Status: **DRAFT for owner review.** Comment on any section (quote its ID). The whole file is replaced
 by the next version; the changelog at the bottom says what moved.
@@ -561,7 +563,7 @@ The mechanics are identical; only presentation changes.
 
 ---
 
-## 12. Resource coverage: all 53 items placed
+## 12. Resource coverage: all 54 items placed
 
 Status column:
 - **verified** = I read the repo or the official page;
@@ -593,10 +595,11 @@ Status column:
 | 21 | Taiga | known | Sprints, story points, burndown | M-9 | 1 |
 | 22 | PACA | searched | AI agents as Scrum teammates; MCP server; model for AI personas | M-11, T-9 | 1 (scripted) / 2 (AI) |
 | 23 | OpenProject | known | Time tracking feeding the timeline; capstone Gantt | A-11 | 2 |
-| 24 | classroom-analytics | **name only** | Commit stats per learner | M-17 | 2 |
-| 25 | TCH-Github_Evaluator | **name only** | Contribution and rubric scoring | M-17, T-15 | 2 |
+| 24 | classroom-analytics (skooter500) | verified (repo; **GPL-3.0**) | Commit counts per week per student from the classroom roster. **Ideas only: GPL code cannot be copied into this project** | M-17 | 1.5 |
+| 25 | TCH-Github_Evaluator (JordiCortesCom) | verified (repo; README says MIT, **no LICENSE file**) | Weighted repo scoring: commit frequency 25, commit quality 25, individual contribution 30, branch strategy 10, documentation 10; CSV/JSON/text reports | M-17, T-18 | 1.5 |
 | 26 | RepoBee | known | One repo per learner from a template | T-5 | 2 |
-| 27 | open-source-pulse-wall | **name only** | Class contribution wall | T-13, A-11 | 2 |
+| 27 | open-source-pulse-wall (nanzhi84) | verified (repo; MIT; Node ≥ 18, no runtime dependencies) | A one-class Git exercise: fork → branch → commit → PR → review → merge; the projector wall lights up each student's profile card; issues and PR board; Git history graph | Day 0 warm-up, T-16, A-11 | 1 |
+| + | collect-homework 0.1.5 (PyPI; source from the sdist) | verified (MIT; depends on `click`) | Trainer-side clone / pull / summary of every student repo (`00.ids` list of GitHub ids) | M-17 | 1.5 |
 | 28 | Manhua classes (idea) | owner idea | Story mode across the app | §7.6, M-18 | 2 |
 | 29 | Heading Strike game (idea) | owner idea | Warm-up; drills from cards | M-18 | 2 (or 1) |
 | U1 | Readiness assessment (upload) | verified | Placement test; retest at the capstone | §7.1 | 1 |
@@ -624,8 +627,7 @@ Status column:
 | + | Effect v4 (`effect@rc`) | verified (npm rc.118) + searched | Hub and pipelines | §4.2 | 1 |
 | + | Laya | verified (repo) | Decide/route/guard: choice, score, yes-no in 100+ languages; moderation; triage scoring | M-14, M-20, §8, §9 | 2 |
 
-**Note on 24, 25, 27:** I could not find these repos by name. Similar tools exist (Git Reporter,
-GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
+**Note on 24, 25, 27:** found from the owner's links in iteration 8; see licences above.
 
 ---
 
@@ -659,16 +661,17 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 
 | ID | Question | Owner's input needed |
 |---|---|---|
-| OQ-1 | Phase-1 size: all 15 phase-1 modules, or a smaller first cut? | **Deferred by owner until approval** |
+| OQ-1 | Phase-1 size. Proposal from the simulated run (Part G): about 15 modules at their minimum form; Notebook board optional at 1.5 | **Owner decides after reading SIMULATED-RUN.md** |
 | OQ-2 | ~~Is the pasted framework the personal OS prompt?~~ **Resolved**: yes; completed in §7.0 (DEC-16) | — |
-| OQ-3 | Links for classroom-analytics, TCH-Github_Evaluator, open-source-pulse-wall | Links |
+| OQ-3 | ~~Links~~ **Resolved** (iteration 8) | — |
 | OQ-4 | ~~Stack~~ **Resolved** by Claude at the owner's request: §4.2 (DEC-13) | — |
 | OQ-5 | Should Heading Strike move into phase 1 as a small, testable game core? | Yes/no |
 | OQ-7 | ~~C traces?~~ **Resolved**: Python, JavaScript, Java, C, C++ (DEC-14, §6.5) | — |
-| OQ-8 | Trainer management (M-30) in phase 2, or is it needed in phase 1 for your academy? | Choose |
-| OQ-9 | Attendance check-in default: site QR code (privacy-friendly) or GPS + photo like Spark? | Choose |
+| OQ-8 | ~~Trainer management in phase 1?~~ **Resolved**: minimal only in phase 1 (trainer profile with skills, assignment, site with QR check-in, schedule, prefilled delivery report). Payroll, expenses, quotations and invoices later | — |
+| OQ-9 | Check-in default. **Claude's recommendation:** site QR code (no GPS, no photo). It is enough while you are the only trainer, and GPS/photo can be enabled per site later if you hire trainers | Accept or change |
 | OQ-10 | Licences of Galles' visualizations, dsa-visualizer and Python Tutor backends must be checked before reusing any code; until then they are inspiration only | Accept |
-| OQ-11 | Onboarding friction targets (≤ 5 min, ≤ 25 taps, ≤ 2 sentences): right numbers? | Confirm or change |
+| OQ-11 | ~~Friction targets~~ **Accepted** (≤ 5 min, ≤ 25 taps, ≤ 2 sentences) | — |
+| OQ-12 | Azure track emulators (Azurite, Cosmos DB emulator, Functions Core Tools) on the hub: add as a phase-1.5 item? (floci covers AWS only) | Choose |
 | OQ-6 | Calorie and money "direct" coaching tone: acceptable as default, or default to "gentle"? | Choose |
 
 ## 16. Decision log
@@ -691,9 +694,18 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 | DEC-14 | Trace viewer covers Python, JavaScript, Java, C and C++ | Owner, iteration 7 |
 | DEC-15 | Algorithm visualizers inspired by Galles, VisuAlgo, DSA Visualizer, visualizedsa, Treelab | Owner, iteration 7 |
 | DEC-16 | Coaching framework completed: stages 0 and 5, predicted options, plan cards, friction targets | Owner asked; Claude proposed, iteration 7 |
+| DEC-18 | Trainer management stays minimal in phase 1 | Owner, iteration 8 |
+| DEC-19 | Onboarding friction targets accepted | Owner, iteration 8 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## Changelog
+
+- **v7**:
+  - Added `SIMULATED-RUN.md` (input for OQ-1).
+  - Resources 24, 25, 27 verified from the owner's links, with licences (classroom-analytics is
+    GPL-3.0; TCH-Github_Evaluator has no LICENSE file); collect-homework added.
+  - OQ-3, OQ-8 and OQ-11 resolved; OQ-9 recommendation; new OQ-12 (Azure emulators).
+  - DEC-18, DEC-19.
 
 - **v6**:
   - Added §4.2 stack (DEC-13), §5.1 trainer management from Spark (DEC-17), §6.5 multi-language
