@@ -26,7 +26,10 @@ You build **one task** of Coach LMS v1. `SPEC.md` is the contract; `TASKS.md` li
 5. Write `docs/build-journal/<task-id>.md` from `skill-template/templates/journal.md`: the decision
    (Problem / Options considered / Choice / Why), **every mistake** (what failed, the exact
    output, how you noticed, the fix, the command that proved it), what a learner will trip on, and
-   the final gate result. Be honest; a journal with no mistakes is suspicious.
+   the final gate result. After your task, the orchestrator extracts every failing command from
+   your transcript into `docs/build-journal/<task-id>.evidence.md` (items `E1`, `E2`, …); the gate
+   then requires your journal to cite each `E<k>`, either as a mistake row or with one line saying
+   why it was not a mistake (e.g. a mistyped path).
 6. Write your course step in `course/steps/<step-id>/` (step id in TASKS.md) with all five files
    from `skill-template/templates/` (`lesson.md`, `instructor_script.md`, `recall.md`,
    `activity_key.md`, `trainer_prep.md`). Rules (`skill-template/SKILL.md`):
@@ -37,8 +40,11 @@ You build **one task** of Coach LMS v1. `SPEC.md` is the contract; `TASKS.md` li
      `**Why:**`;
    - "Your turn: faulty first" reuses **your real mistakes** from the journal;
    - "Check yourself": 3–5 numbered questions, each followed by `<details>answer</details>`;
-   - code excerpts from the repo use a fence like ` ```ts packages/core/src/rng.ts ` and list
-     `{ path: …, commit: <sha> }` in `source_refs` (commit your code first, then cite that sha);
+   - "Walkthrough of the real code" shows real code: every code block there uses a fence with the
+     file path (` ```ts packages/core/src/rng.ts `) and has a `{ path: …, commit: <sha> }` entry in
+     `source_refs`. To get the sha: `git add <your code files> && git commit -m "<task-id>: code"`,
+     then `git rev-parse HEAD`. Excerpts must match that commit exactly (check 13). Removing code or
+     citations to get past the check is not allowed;
    - recall.md: at least 3 `**Q:**`/`**A:**` cards.
    Check it with `node skill-template/checks/check.mjs course --repo . --steps-only`.
 7. `kit gate` must pass. Then `kit close --why "implements <rows> as specified in SPEC"`.

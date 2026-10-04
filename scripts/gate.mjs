@@ -93,4 +93,15 @@ if (existsSync(join(root, 'course'))) {
   const r = spawnSync(process.execPath, [join(root, 'skill-template', 'checks', 'check.mjs'), join(root, 'course'), '--repo', root, ...(full ? [] : ['--steps-only'])], { cwd: root, env, encoding: 'utf8' });
   if (r.status !== 0) { console.error(r.stdout); fail('course steps fail the skill-template gate'); }
 }
+// 7. journals account for every failure the orchestrator extracted from the builder's transcript
+// (docs/build-journal/<task>.evidence.md, items "### E<k>."): each E<k> must be cited in the journal.
+const jdir = join(root, 'docs', 'build-journal');
+if (existsSync(jdir)) for (const f of readdirSync(jdir).filter((x) => x.endsWith('.evidence.md'))) {
+  const id = f.replace('.evidence.md', '');
+  const ev = [...readFileSync(join(jdir, f), 'utf8').matchAll(/^### (E\d+)\./gm)].map((m) => m[1]);
+  const jp = join(jdir, `${id}.md`);
+  const journal = existsSync(jp) ? readFileSync(jp, 'utf8') : '';
+  const missing = ev.filter((e) => !new RegExp(`\\b${e}\\b`).test(journal));
+  if (missing.length) fail(`docs/build-journal/${id}.md does not account for transcript failures ${missing.join(', ')} (see ${f})`);
+}
 if (!process.exitCode) console.log('gate: project checks pass');
