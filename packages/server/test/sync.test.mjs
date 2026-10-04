@@ -1,5 +1,5 @@
 // Sync tests for b6-4: AC-69 (replication + personal DB ownership), AC-70 (merge pass), AC-71 (schema check),
-// AC-121 (coachEntry ciphertext only) and the minor rule of AC-122 on personal databases.
+// AC-121 (coachEntry ciphertext only) and the minor rule (D-33) on personal databases.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -138,7 +138,7 @@ test('AC-121 coachEntry plaintext is refused; ciphertext is stored as ciphertext
   assert.equal(all.rows.filter((r) => r.doc.kind || r.doc.values).length, 0);
 });
 
-test('AC-122 (personal database) a minor account refuses every coachEntry with 403', async () => {
+test('D-33 personal database: a minor account refuses every coachEntry with 403', async () => {
   const admin = await login('adm', ['admin']);
   await remote('org', admin).put({ _id: 'person:kid1', type: 'person', id: 'kid1', name: 'Kid', roles: ['learner'], minor: true, schema: 1, updatedBy: 'adm' });
   const kid = await login('kid1', ['learner']);
