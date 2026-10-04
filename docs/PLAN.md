@@ -1,4 +1,4 @@
-# Coach LMS — Plan v4 (consolidated)
+# Coach LMS — Plan v5 (consolidated)
 
 Status: **DRAFT for owner review.** Comment on any section (quote its ID). The whole file is replaced
 by the next version; the changelog at the bottom says what moved.
@@ -41,6 +41,8 @@ a small hub server adds classes, chat and sync.
 | P-8 | **Observe, never accuse.** Integrity monitoring records events; it never declares cheating (exam-forge D4–D6). |
 | P-9 | **One validated content format, one validator that fails loudly** (exam-forge D1–D3). |
 | P-10 | **Corrections are new entries.** Money, grades and attempts are append-only ledgers; nothing is silently edited. |
+| P-11 | **Markdown is the content interchange format.** Every teacher upload (PDF, PPTX, DOCX, XLSX, HTML) is converted to Markdown before it enters the content pipeline; the original file is kept alongside. |
+| P-12 | **Agree before acting.** Coaching conversations follow the 4-stage framework (§7.0): confirm the goal, surface constraints and risks, propose a pathway, then produce a versioned, agreed plan. |
 
 ## 3. Cast used in the walkthroughs
 
@@ -95,6 +97,9 @@ for customising the app.
 | **Think** (plans, content, review) | — | — | **Claude** or any harness over MCP | Templates |
 | **Automate** | — | **Node-RED** flows, with Laya making decisions inside them | UiPath via MCP (optional) | Scheduled rules |
 | **Visualise** | Node-graph component (Treelab-style) | same | — | — |
+| **Convert content** | — | — | **MarkItDown** on the hub (Python) | Upload stays as an attachment; trainer pastes text |
+| **Draw** | Notebook board (view, annotate) | **Notebook board** (modified Excalidraw, §6.4) | — | — |
+| **Trace code** | — | Trace viewer (pyviz_tutor output) | **pyviz_tutor** on the hub / desktop | Static trace table drawn on the board |
 
 All AI reaches the app through **one tool layer** (`get_plan`, `propose_plan_edit`, `add_expense`,
 `log_meal`, `cards_due`, `review_card`, `assign_ticket`, `post_message`, `search_graph`, …) and
@@ -126,47 +131,126 @@ implementations.
 
 ### 6.1 Before the batch: authoring at speed
 
+The authoring engine is the owner's **Syllabus-to-Study-Plan skill template (v1.2)**. Its real
+output is **package5**: 3 tracks × 9 days; 1,074 files (412 `.md`, 307 `.js`, 142 `.py`, 95 `.svg`,
+51 `.mmd`, 31 `.pptx`, 12 `.bicep`).
+
 | Step | What happens | Resources |
 |---|---|---|
-| T-1 | Writes **one skill template** per skill (e.g. "Docker basics"): objectives, lesson outlines, `::card` facts, practice task, quiz seeds, optional story panels. | exam-forge authoring prompt (1), Elementari (10) |
-| T-2 | The **generator** expands the template into: lessons and study notes (with *Minimum viable knowledge* and *Common traps* callouts), **Anki cards**, a **validated question bank**, a **Saturday lab**, ticket templates, a **Shift scenario stub**, and optional **manhua panels**. | exam-forge (1), Anki (6), manhua idea (28) |
-| T-3 | **Imports** old material: MCQ-Mastery text format; eduplay JSON packs; **a photo of a printed paper**, read by OCR into draft questions she confirms. | MCQ-Mastery (4), eduplay (5), Google_Form_Builder (3) |
-| T-4 | Places skills in the **skill map**. Each node holds small tasks, with prerequisite links (Git → Docker → Cloud → CI/CD). | Skill Circuits (16), Treelab-style visual |
-| T-5 | Creates **one Git repo per learner** from a template. | RepoBee (26) |
-| T-6 | Writes or adapts **Shift scenario packs**: seeded ticket schedules, requester scripts, auto-checks against floci. | floci (2), Plane (20) |
+| T-1 | **Upload anything.** Syllabus spreadsheets, slide decks, PDFs and Word notes are converted by **MarkItDown** on the hub into Markdown (slide speaker notes included). A cleanup pass removes spreadsheet noise (`NaN` cells from merged ranges). Handwritten or scanned PDFs have no text layer, so they go to OCR instead. | MarkItDown, Google_Form_Builder OCR (3) |
+| T-2 | **Run the skill template** on the syllabus (with Claude over MCP, or another model). For every day it produces the **7-artifact set**: `quicklearn.md`, `deepdive.md`, `instructor_script.md` (teleprompter), `printable_handout.md`, badges/resources, `lab/`, `assets/` (Mermaid). It also produces the **3 companion files** (`whiteboard_dayNN.md`, `live_coding_dayNN.md`, `memory_recall_dayNN.md`) and `student_guide_dayNN.md`, all inside `dayN/`. | skill template v1.2 |
+| T-3 | **Faulty-first content:** labs and walkthroughs show the common mistake, the error, the diagnosis, then the fix, so learners recognise failure modes later. | faulty-first-instructions skill |
+| T-4 | **Import the package.** The LMS reads a package folder (`track/dayN/…`) directly and maps every file to a place in the app (table below). | package5 |
+| T-5 | **Content gate.** The template's 8-point validation checklist becomes a mechanical check that blocks publishing, like exam-forge's validator (P-9). It checks: voice, pacing, the fun cadence, code runs, links live, diagrams render, all companion files present, and instructor scripts in Say/Do format. Link checks need internet and run on the hub when online. | validation-checklist.md, exam-forge (1) |
+| T-6 | Imports older banks: MCQ-Mastery text, eduplay JSON. | 4, 5 |
+| T-7 | Places skills on the **skill map** (nodes = skills holding tasks; prerequisite links). | Skill Circuits (16) |
+| T-8 | Creates **one Git repo per learner** from the package's `lab-repo/` template. | RepoBee (26), package5 |
+| T-9 | Writes or adapts **Shift scenario packs**. | floci (2), Plane (20) |
+
+**How a package maps into the LMS:**
+
+| Package file | Becomes |
+|---|---|
+| `COURSE-MAP.md`, `chronological_study_plan.md` | Program schedule + skill map |
+| `student_guide_dayNN.md` | The learner's **90-minute daily block** (read → whiteboard → lab → live coding → memory recall) inserted into the timeline |
+| `quicklearn.md` (8-question diagnostic) | Quick quiz → question bank (validated) |
+| `deepdive.md` | Lesson page |
+| `instructor_script.md` | **Teleprompter view** for the trainer: `[SAY]`/`[DO]`/`[TYPE]`/`[BOARD]`/`[PAUSE]` markers, running clock, `⚠️ LIKELY CROSS-Q` callouts |
+| `whiteboard_dayNN.md` | 3 timed drawing exercises on the **Notebook board** (§6.4) |
+| `live_coding_dayNN.md` | Live-coding script (intentional bug at about 18:00), linked to the **trace viewer** |
+| `memory_recall_dayNN.md` | 5 closed-book recall exercises (diagram / code / recite / Feynman / trade-offs). Recite and Feynman answers also become **Anki cards** |
+| `printable_handout.md` | Printable 2-sided card |
+| `lab/`, `assets/*.mmd/.svg`, `.pptx` | Lab files, rendered diagrams, slides (converted by MarkItDown for search; originals kept) |
 
 ### 6.2 In class (Tue/Thu 20:00)
 
 | Step | What happens | Resources |
 |---|---|---|
-| T-7 | **Live PIN quiz** on the projector; learners join from phones over local Wi-Fi. Game types: boss battle, debug derby, code sprint, cloze, match, slider estimation, poll. | eduplay (5) |
-| T-8 | **Whiteboard / mind map** shared to the class channel; auto-linked into the learners' knowledge graph. | AFFiNE (17), PM-app whiteboard |
-| T-9 | **Sprint planning** on the class board: tickets, story points, 1-week sprints. Optional **AI Scrum master** and AI teammates. | Plane (20), Taiga (21), PACA (22) |
-| T-10 | Runs a **class Shift**: same seed for everyone, leaderboard at the end. Practice or graded per syllabus (DEC-1). | §7 |
-| T-11 | **Electives** run as stations: IoT (Sucre4Stem kits), flow-based embedded (Flowboard), robots in simulation (ROSBLOCKS), AI literacy (RAISE Playground), tree algorithms (Treelab). | 9, 11, 12, 13, 15 |
+| T-10 | **Live PIN quiz** on the projector; learners join from phones over local Wi-Fi. Game types: boss battle, debug derby, code sprint, cloze, match, slider estimation, poll. | eduplay (5) |
+| T-11 | **Notebook board** (§6.4): Meera teaches on the tablet; learners scan a **QR code** to follow live or open the finished pages; the board auto-links into the learners' knowledge graph. | Excalidraw (modified), AFFiNE (17) |
+| T-12 | **Sprint planning** on the class board: tickets, story points, 1-week sprints. Optional **AI Scrum master** and AI teammates. | Plane (20), Taiga (21), PACA (22) |
+| T-13 | Runs a **class Shift**: same seed for everyone, leaderboard at the end. Practice or graded per syllabus (DEC-1). | §7 |
+| T-14 | **Electives** run as stations: IoT (Sucre4Stem kits), flow-based embedded (Flowboard), robots in simulation (ROSBLOCKS), AI literacy (RAISE Playground), tree algorithms (Treelab). | 9, 11, 12, 13, 15 |
 
 ### 6.3 After class
 
 | Step | What happens | Resources |
 |---|---|---|
-| T-12 | **Progress grid** (learners × skills): lessons, drill and quiz %, card retention, lab checks, tickets, Shift results. | MCQ-Mastery (4), Skill Circuits (16) |
-| T-13 | **Git signals** per learner repo: commit and line stats, contribution score on the capstone rubric, class **contribution wall** on the projector. | 24, 25, 27 (see §12 note) |
-| T-14 | **Feedback timeline:** dated notes per learner on a photo roster; one-tap stock notes. | student-tracker upload |
-| T-15 | **Grading.** Exams and graded Shifts are seeded and pinned, and carry an integrity log that never accuses. Laya *suggests* rubric scores for postmortems and short answers; **Meera confirms** (P-2). | exam-forge (1), Laya |
-| T-16 | **Paper route** when the room has no devices: question PDF or Google Form export, then import the responses. | exam-forge (1), Google_Form_Builder (3) |
-| T-17 | **Automations:** e.g. "no commits for 3 days → nudge the learner and list them for me". Node-RED flows with Laya deciding. | Node-RED (14), Laya |
-| T-18 | **Video stand-ups:** learners post 60-second updates on tickets. | PM-app upload |
+| T-15 | **Progress grid** (learners × skills): lessons, drill and quiz %, card retention, lab checks, tickets, Shift results. | MCQ-Mastery (4), Skill Circuits (16) |
+| T-16 | **Git signals** per learner repo: commit and line stats, contribution score on the capstone rubric, class **contribution wall** on the projector. | 24, 25, 27 (see §12 note) |
+| T-17 | **Feedback timeline:** dated notes per learner on a photo roster; one-tap stock notes. | student-tracker upload |
+| T-18 | **Grading.** Exams and graded Shifts are seeded and pinned, and carry an integrity log that never accuses. Laya *suggests* rubric scores for postmortems and short answers; **Meera confirms** (P-2). | exam-forge (1), Laya |
+| T-19 | **Paper route** when the room has no devices: question PDF or Google Form export, then import the responses. | exam-forge (1), Google_Form_Builder (3) |
+| T-20 | **Automations:** e.g. "no commits for 3 days → nudge the learner and list them for me". Node-RED flows with Laya deciding. | Node-RED (14), Laya |
+| T-21 | **Video stand-ups:** learners post 60-second updates on tickets. | PM-app upload |
+
+### 6.4 The Notebook board (modified Excalidraw)
+
+The reference is the owner's whiteboard PDF: four 3840×2160 (16:9) pages of handwriting on ruled
+notebook paper, in several pen colours. Each page follows the same teaching layout: *problem →
+Example → Known → Assumption → Observation → Answer (code) → TRACE TABLE*.
+
+| Change to Excalidraw | Detail |
+|---|---|
+| **Paper** | Ruled-notebook background (light grey with horizontal rules) instead of a blank canvas |
+| **Pages** | Fixed 16:9 pages (3840×2160) as frames; page strip; next/previous page; export **multi-page PDF** matching the reference |
+| **Pens** | Palette taken from the reference: black, red, orange, green, blue, purple. Pressure-sensitive strokes (Wacom / stylus) |
+| **Teaching stamps** | One-tap section labels: *Problem, Example, Known, Assumption, Observation, Answer/Solution* |
+| **Trace table** | Insert a green grid with named columns (e.g. Row (i), Column (j), Condition, Output); add rows while explaining |
+| **Share by QR** | "Share" shows a QR code with the hub address + board id. Scanning it opens the board on a phone: **follow live** during class, or open the pages afterwards. It works on the classroom LAN with no internet. View-only by default; the trainer can allow learners to annotate their own copy |
+| **Into the LMS** | Saved boards attach to the day's skill node, appear in every enrolled learner's "related" panel, and are linked from `whiteboard_dayNN.md` exercises |
+| **Learner use** | Learners do the package's whiteboard exercises on the same board; recall exercises of type *diagram* are drawn here |
+
+### 6.5 Trace viewer (pyviz_tutor)
+
+pyviz_tutor (MIT, zero-dependency Python) runs a Python script and records each step: variables,
+stack, output, and counts of comparisons and swaps. It produces one HTML page with a time-travel
+slider.
+
+In the LMS:
+
+- **Predict, then reveal** (commit-before-reveal for code). A learner fills a trace table on the
+  Notebook board first, then opens the real trace to compare, row by row.
+- Live-coding scripts link to traces of their programs.
+- **Offline fix:** the generated page loads two libraries from a CDN (`viewer.py` lines 977–979).
+  The LMS ships local copies so traces work offline.
+- **Limit:** Python only. The reference whiteboard examples are in **C**, so C traces need another
+  tracer, or a hand-drawn trace table as the fallback.
 
 ## 7. Learner workflow (Arjun)
+
+### 7.0 The coaching conversation framework (owner's prompt)
+
+Every coaching conversation uses the owner's 4-stage framework, with a **halt for the person's
+answer** at each decision point (P-12):
+
+| Stage | The coach… | Ends with |
+|---|---|---|
+| 1. **Goal clarification** | Restates the goal and the core problem in its own words | "Is this correct? Answer Yes or correct me." |
+| 2. **Constraint and risk analysis** | Lists what the coach cannot do, what the person must do, and **pitfalls they may have overlooked** | (continues to stage 3) |
+| 3. **Proposed solution pathway** | Proposes a collaborative workflow with high-level steps | "Agree, or modify?" |
+| 4. **Final action plan** | Adopts the person's changes explicitly ("that's a better idea; here is how I'm incorporating it"), then produces a **versioned master plan** ("Plan v1", "Plan v2"…) | The saved plan |
+
+Where it is used:
+
+- **Onboarding.** Stage 1 is the goals interview; stage 2 covers time, money, health and skills
+  constraints; stage 3 is the draft 12-week arc and daily rhythm; stage 4 is the agreed plan that
+  drives the timeline.
+- **Any new problem**, e.g. "I keep missing my morning lessons". The agreed plan is stored like a
+  SPEC: numbered and versioned, and a change creates a new version.
+- **Shift postmortems and capstone planning** (stages 2–4).
+
+Without AI, each stage is a guided form with the same halts. With AI, Claude (over MCP) or the
+on-device model runs the conversation, but the halts and the saved, versioned plan are enforced by
+the app, not left to the model.
 
 ### 7.1 Day 0
 
 1. Sign-up, then a join code (links him to Meera's batch).
-2. **Personal OS interview**: goals, why they matter, wake and sleep times, fixed commitments,
-   commute, income and fixed costs, height, weight and activity, diet, social energy, weekly
-   learning hours, biggest time-waster, coaching tone.
-   The owner's "personal OS prompt" replaces these questions when supplied; it is content, not
-   code.
+2. **Onboarding conversation** using the §7.0 framework. Stage 1 asks: goals, why they matter.
+   Stage 2 asks: wake and sleep times, fixed commitments, commute, income and fixed costs, height,
+   weight and activity, diet, social energy, weekly learning hours, biggest time-waster, coaching
+   tone; then names risks. Stage 3 proposes. Stage 4 saves **Plan v1**.
 3. **Placement test**: sectioned, points per section (from the readiness assessment upload).
 4. Result:
    - a **profile**;
@@ -199,7 +283,7 @@ implementations.
 | Slot | Time | What |
 |---|---|---|
 | Anki review | about 1 h (7 × 6–10 min) | Due cards: template cards plus missed quiz questions |
-| Morning lessons | 2 h (3 × 40 min) | Study notes, then **drill with commit-before-reveal** (exam-forge) |
+| Daily block (package) | 2 h (3 × 40 min, from the 90-min block) | `student_guide_dayNN`: quicklearn → whiteboard exercise on the Notebook board → lab → live-coding replay with trace viewer → memory recall; then **drill with commit-before-reveal** |
 | Warm-up | inside lessons | **Heading Strike** (3 min) |
 | Ticket work | 1.5 h | Sprint tickets in his RepoBee repo |
 | Saturday lab | 2.5 h | floci lab ending in an auto-checked **boss check** |
@@ -344,6 +428,11 @@ The mechanics are identical; only presentation changes.
 | M-22 | Node-RED automations; UiPath via MCP | 2 (Node-RED), 3 (UiPath) |
 | M-23 | Paper and Google Forms export / import | 2 |
 | M-24 | Certificates, academy dashboard, assets with QR codes | 2 |
+| M-25 | **Content conversion**: MarkItDown on the hub, cleanup pass, OCR route for scans | 1 (convert + cleanup), 2 (OCR) |
+| M-26 | **Package import**: skill-template v1.2 folders → lessons, quizzes, cards, teleprompter, whiteboard exercises; the 8-point content gate | 1 |
+| M-27 | **Notebook board**: modified Excalidraw (ruled paper, 16:9 pages, pen palette, stamps, trace-table tool, PDF export, QR share, live follow) | 2 (needs Excalidraw as a dependency; see OQ-4) |
+| M-28 | **Trace viewer**: pyviz_tutor traces with offline-bundled libraries; predict-then-reveal trace tables | 2 |
+| M-29 | **Coaching framework engine**: 4 stages with enforced halts; versioned plans | 1 |
 
 **Phase-1 size is deferred** until the owner approves (OQ-1).
 
@@ -363,7 +452,7 @@ The mechanics are identical; only presentation changes.
 
 ---
 
-## 12. Resource coverage: all 38 items placed
+## 12. Resource coverage: all 45 items placed
 
 Status column:
 - **verified** = I read the repo or the official page;
@@ -409,6 +498,13 @@ Status column:
 | + | Cactus | searched | On-device runtime for the native companion app | M-19 | 2 |
 | + | Needle / needle-rs | verified (needle-rs repo) | System 1 tool calls and extraction; browser via WASM | M-14, M-20 | 2 |
 | + | Jev (TypeSafe AI) | searched | Superseded by Laya for decide/route/guard (Laya is open source and runs in the browser) | — | — |
+| + | MarkItDown (Microsoft) | **verified (run on package5's PPTX and XLSX)** | Uploads → Markdown, including slide notes; spreadsheet output needs cleanup | M-25, T-1 | 1 |
+| + | Excalidraw | known (MIT, React) | Base of the Notebook board | M-27, §6.4 | 2 |
+| U4 | Whiteboard PDF (upload, 4 pages) | verified (rendered and viewed) | Visual target: ruled paper, 16:9 pages, pen colours, teaching layout, trace tables | §6.4 | 2 |
+| U5 | pyviz_tutor 0.1.5 (upload) | verified (source read; MIT; zero-dependency Python; CDN libraries in output) | Execution traces, time-travel viewer | M-28, §6.5 | 2 |
+| U6 | Skill template v1.2 + faulty-first-instructions (upload) | verified (read) | The authoring engine: 7-artifact set + companions, teleprompter scripts, validation checklist, prompt library | T-2, T-3, T-5, M-26 | 1 |
+| U7 | package5 (upload) | verified (1,074 files inventoried; samples read) | Real example package; import target for M-26; `lab-repo/` template | T-4, T-8 | 1 |
+| U8 | Coaching framework prompt (pasted) | verified (read) | The 4-stage conversation with halts and versioned plans | §7.0, M-29 | 1 |
 | + | Laya | verified (repo) | Decide/route/guard: choice, score, yes-no in 100+ languages; moderation; triage scoring | M-14, M-20, §8, §9 | 2 |
 
 **Note on 24, 25, 27:** I could not find these repos by name. Similar tools exist (Git Reporter,
@@ -447,10 +543,11 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 | ID | Question | Owner's input needed |
 |---|---|---|
 | OQ-1 | Phase-1 size: all 15 phase-1 modules, or a smaller first cut? | **Deferred by owner until approval** |
-| OQ-2 | The "personal OS prompt" text | Paste it, or accept the interview questions in §7.1 |
+| OQ-2 | Is the pasted 4-stage framework the "personal OS prompt", or is there a separate one for the timeline itself? | Confirm |
 | OQ-3 | Links for classroom-analytics, TCH-Github_Evaluator, open-source-pulse-wall | Links |
-| OQ-4 | Stack: zero-dependency web app (recommended for the experiment) vs React/Vite | Choose |
+| OQ-4 | Stack. Excalidraw is React, and MarkItDown is Python. Proposal: zero-dependency core (testable), plus two isolated, declared exceptions: the Notebook board bundle (React/Excalidraw) and the hub's converter service (Python/MarkItDown). Alternative: React for the whole UI | Choose |
 | OQ-5 | Should Heading Strike move into phase 1 as a small, testable game core? | Yes/no |
+| OQ-7 | Should the Notebook board support **C** traces (the reference PDF uses C) in phase 2, or stay Python-only with hand-drawn tables for other languages? | Choose |
 | OQ-6 | Calorie and money "direct" coaching tone: acceptable as default, or default to "gentle"? | Choose |
 
 ## 16. Decision log
@@ -464,8 +561,22 @@ GitHub's Pulse view). Links from the owner would replace guesses (OQ-3).
 | DEC-5 | System 1 on device (Needle/Laya) as the non-technical alternative to MCP | Owner, iterations 3–5 |
 | DEC-6 | Laya replaces UiPath's "decision" role; UiPath stays optional for real RPA | Owner suggested, iteration 5 |
 | DEC-7 | Story mode is optional, one switch for the whole app | Owner, iteration 3 |
+| DEC-8 | MarkItDown converts teacher uploads to Markdown | Owner, iteration 6 |
+| DEC-9 | A modified Excalidraw that looks like the reference PDF and is shareable by QR is the content-section whiteboard | Owner, iteration 6 |
+| DEC-10 | The skill template (v1.2) is the authoring engine; package5 is the reference output | Owner, iteration 6 |
+| DEC-11 | pyviz_tutor visualises Python files | Owner, iteration 6 |
+| DEC-12 | The 4-stage framework prompt governs coaching conversations | Owner, iteration 6 |
 
 ## Changelog
+
+- **v5**:
+  - Added §6.4 Notebook board (modified Excalidraw matching the owner's PDF, QR sharing).
+  - Added §6.5 Trace viewer (pyviz_tutor).
+  - Added §7.0 coaching framework.
+  - Rewrote §6.1 around the skill template v1.2 and package5, with the file-mapping table.
+  - Added MarkItDown (verified on real files), modules M-25 to M-29, resources U4–U8, P-11, P-12,
+    DEC-8 to DEC-12, OQ-7; OQ-2 and OQ-4 reworded.
+  - Trainer step IDs renumbered (T-1 to T-21).
 
 - **v4**: consolidated v1–v3 plus research. Added:
   - DEC-1 and DEC-2;
