@@ -7,12 +7,18 @@ prereqs: [ms-02.03]
 objectives: 4
 new_terms: 5
 skills: [timing, accommodations, clock-skew, monotonic-time, offline-work]
-source_refs: [{ path: packages/core/src/timing.ts, commit: d5ee3cd64dbf4b6e50fcb025e4bdddba96871d66 }]
+source_refs: [{ path: packages/core/src/timing.ts, commit: bb6614112b654cb00aafed4aef9307b851f687d8 }]
 next: ms-02.05
 ---
 
 # MS 2.4 — Graded Timing and Accommodations
 *Step 4 of 5 in Module 2*
+
+## Prerequisites
+
+- Ms-02.03 (Attempt scoring basics)
+- Knowledge of cryptographic signing and time measurement
+- Familiarity with device clocks and NTP synchronization
 
 ## You already understand this
 
@@ -96,19 +102,18 @@ The multiplier is clamped to [1, 3] to prevent abuse:
 
 This function resolves all three time sources and returns the authoritative duration plus any flags.
 
-```ts
+**Step 1: Choose the duration.**
+
+```ts packages/core/src/timing.ts
 export function gradedTiming(t: {
   hubStart: number | null;
   hubEnd: number | null;
   monotonicMs: number;
   deviceStart: number;
   deviceEnd: number;
-}): { durationMs: number; flags: ('offline-attempt' | 'clock-skew')[] }
-```
+}): { durationMs: number; flags: ('offline-attempt' | 'clock-skew')[] } {
+  const flags: ('offline-attempt' | 'clock-skew')[] = [];
 
-**Step 1: Choose the duration.**
-
-```ts packages/core/src/timing.ts
   let durationMs: number;
 
   // Hub times win when both exist
@@ -119,28 +124,25 @@ export function gradedTiming(t: {
     durationMs = t.monotonicMs;
     flags.push('offline-attempt');
   }
-```
 
-If the hub has both start and end timestamps, compute the hub-signed duration. This is the most trustworthy. Otherwise, use the monotonic duration (which is always available) and note that the attempt was offline.
-
-**Step 2: Detect clock skew.**
-
-```ts packages/core/src/timing.ts
   // Check for clock skew: device wall-clock duration vs monotonic duration
   const deviceWallClockDurationMs = t.deviceEnd - t.deviceStart;
   const skewMs = Math.abs(deviceWallClockDurationMs - t.monotonicMs);
   if (skewMs > 60_000) {
     flags.push('clock-skew');
   }
+
+  return { durationMs, flags };
+}
 ```
 
-Compare the device's wall-clock duration against the monotonic duration. A difference >60 seconds is worth flagging. Use absolute value to catch both positive drift (device clock ahead) and negative (device clock behind).
+If the hub has both start and end timestamps, compute the hub-signed duration. This is the most trustworthy. Otherwise, use the monotonic duration (which is always available) and note that the attempt was offline. Then, compare the device's wall-clock duration against the monotonic duration. A difference >60 seconds is worth flagging. Use absolute value to catch both positive drift (device clock ahead) and negative (device clock behind).
 
 ### `effectiveLimitMs` function
 
 Apply a time-limit multiplier for accommodations.
 
-```ts
+```ts packages/core/src/timing.ts
 export function effectiveLimitMs(
   baseMs: number,
   accommodation: { timeMultiplier?: number } | null
@@ -162,35 +164,11 @@ If no accommodation is provided (`null`) or no multiplier is set, use 1 (no chan
 
 In a real grading flow:
 
-```ts
-// 1. Measure the attempt
-const timing = gradedTiming({
-  hubStart: attempt.hubStartMs,
-  hubEnd: attempt.hubEndMs,
-  monotonicMs: attempt.elapsedMs,
-  deviceStart: attempt.deviceStartMs,
-  deviceEnd: attempt.deviceEndMs,
-});
-
-// 2. Check if time was exceeded
-const limit = effectiveLimitMs(
-  attempt.baseTimeLimitMs,
-  learner.accommodation
-);
-
-const exceeds = timing.durationMs > limit;
-if (exceeds) {
-  // Learner ran out of time (or over, depending on policy)
-}
-
-if (timing.flags.includes('offline-attempt')) {
-  // Grade is tentative; learner may dispute it
-}
-
-if (timing.flags.includes('clock-skew')) {
-  // Log this anomaly for instructor review
-}
-```
+1. Call `gradedTiming()` with the attempt's hub times, monotonic duration, and device wall times
+2. Get back the authoritative duration and any flags ('offline-attempt', 'clock-skew')
+3. Call `effectiveLimitMs()` with the base time limit and the learner's accommodation
+4. Compare the duration against the effective limit to decide if time was exceeded
+5. Check flags to decide if the grade needs instructor review
 
 ## Your turn: faulty first
 
