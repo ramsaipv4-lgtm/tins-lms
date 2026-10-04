@@ -121,7 +121,7 @@ Why it matters:
 
 ### createRng: Initialize state from seed
 
-```ts
+```ts packages/core/src/rng.ts
 export function createRng(seed: string): () => number {
   // Initialize the state from the seed using HMAC-SHA-256
   // We use a synchronous PRNG algorithm (xorshift32) with state derived from the seed
@@ -158,7 +158,7 @@ export function createRng(seed: string): () => number {
 
 ### seedFor: Deterministic combination
 
-```ts
+```ts packages/core/src/rng.ts
 /**
  * Generates a stable seed for a graded item within a class.
  * Same class + item always produces the same seed.
@@ -178,7 +178,7 @@ export function seedFor(classSalt: string, itemId: string): string {
 
 ### shuffle: Fisher-Yates in action
 
-```ts
+```ts packages/core/src/rng.ts
 /**
  * Fisher-Yates shuffle using the provided RNG.
  * Returns a new shuffled array without mutating the input.
