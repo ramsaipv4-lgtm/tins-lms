@@ -12,7 +12,7 @@ function lesson(id, n, N, next, extra = {}) {
   return `---\nid: ${id}\ntitle: Step ${n}\nmodule: 0\nest_minutes: ${fm.est_minutes}\nprereqs: []\nobjectives: ${fm.objectives}\nnew_terms: ${fm.new_terms}\nskills: [s${n}]\nsource_refs: ${fm.refs || '[]'}\nnext: ${next}\n---\n` +
     `# MS 0.${n} — Step ${n}\n*Step ${n} of ${N}*\n\n## Prerequisites\nNone.\n## You already understand this\nLists.\n## The detective question\n` +
     `**Problem:** p\n**Options considered:** a, b\n**Choice:** a\n**Why:** simpler\n## Learning objectives\n- one\n## Conceptual understanding\nText.\n` +
-    `## Walkthrough of the real code\n${fm.code || '```js\nconst x = 1;\n```'}\n## Your turn: faulty first\nRun it broken.\n## Technical glossary\n- term\n## Common questions\nQ.\n` +
+    `## Walkthrough of the real code\n${fm.code || 'See the file in the repository.'}\n## Your turn: faulty first\nRun it broken.\n## Technical glossary\n- term\n## Common questions\nQ.\n` +
     `## Reinforcement activity\nDo it.\n## Check yourself\n1. a?\n<details>yes</details>\n2. b?\n<details>yes</details>\n3. c?\n<details>yes</details>\n` +
     `## Quick reference\nx.\n## Connection to the bigger picture\ny.\n## Next\n[next](../${next === 'end' ? id : next}/lesson.md)\n`;
 }
@@ -58,9 +58,9 @@ test('check 13: code excerpt must match the repo at the cited commit', () => {
   execFileSync('git', ['-C', repo, '-c', 'user.email=t@t', '-c', 'user.name=t', 'add', '.']);
   execFileSync('git', ['-C', repo, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'x']);
   const sha = execFileSync('git', ['-C', repo, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  const good = makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst y = 2;\n```' }); });
+  const good = makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst y = 2;\n```' }); f['steps/ms-00.02/lesson.md'] = lesson('ms-00.02', 2, 2, 'end', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst x = 1;\n```' }); });
   assert.deepEqual(check(good, { repo }), []);
-  const bad = makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst y = 3;\n```' }); });
+  const bad = makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst y = 3;\n```' }); f['steps/ms-00.02/lesson.md'] = lesson('ms-00.02', 2, 2, 'end', { refs: `[{ path: a.js, commit: ${sha} }]`, code: '```js a.js\nconst x = 1;\n```' }); });
   assert.deepEqual(checksOf(bad, { repo }), [13]);
 });
 test('--steps-only: skips manifest, README and chain checks but keeps per-step checks', () => {
@@ -68,4 +68,8 @@ test('--steps-only: skips manifest, README and chain checks but keeps per-step c
   assert.deepEqual(check(d, { stepsOnly: true }), []);
   writeFileSync(join(d, 'steps/ms-00.01/recall.md'), '# Recall\n**Q:** only one\n**A:** x\n');
   assert.deepEqual(checksOf(d, { stepsOnly: true }), [8]);
+});
+test('check 13: walkthrough code must name its file and be cited (no quietly dropped source_refs)', () => {
+  assert.deepEqual(checksOf(makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { code: '```js\nconst x = 1;\n```' }); })), [13]);
+  assert.deepEqual(checksOf(makePkg((f) => { f['steps/ms-00.01/lesson.md'] = lesson('ms-00.01', 1, 2, 'ms-00.02', { code: '```js a.js\nconst x = 1;\n```' }); })), [13]);
 });

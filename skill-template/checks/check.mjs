@@ -101,6 +101,13 @@ export function check(dir, { repo = null, stepsOnly = false } = {}) {
     // 12: activity key covers activity
     const kp = join(dir, sd, 'activity_key.md');
     if (existsSync(kp) && /^## Reinforcement activity\s*$/m.test(t) && readFileSync(kp, 'utf8').trim().length < 40) fail(12, `${s.id}: activity_key.md is empty`);
+    // 13: the walkthrough shows real code, so every code block there names its file and is cited
+    const walk = (t.split(/^## Walkthrough of the real code\s*$/m)[1] || '').split(/^## /m)[0];
+    const walkFences = [...walk.matchAll(/^```([a-z]+)(?: (\S+))?$/gm)].filter((_, k) => k % 2 === 0);
+    for (const f of walkFences) {
+      if (!f[2]) fail(13, `${s.id}: walkthrough code block has no file path (use \`\`\`${f[1]} <path>)`);
+      else if (!(fm.source_refs || []).some((r) => r.path === f[2])) fail(13, `${s.id}: walkthrough cites ${f[2]} but source_refs has no entry for it`);
+    }
     // 13: code fidelity
     if (repo) for (const ref of fm.source_refs || []) {
       let src; try { src = execFileSync('git', ['-C', repo, 'show', `${ref.commit}:${ref.path}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); }
