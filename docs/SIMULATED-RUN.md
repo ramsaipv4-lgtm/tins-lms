@@ -1,4 +1,4 @@
-# Simulated run (v2) — one syllabus, one college, one student, one capstone
+# Simulated run (v3) — one syllabus, one college, one student, one capstone
 
 Purpose: let the owner decide the phase-1 scope (PLAN.md OQ-1) by watching one realistic run end to
 end. **v2 applies the owner's corrections from iteration 9** (marked ✎). Companion to `PLAN.md` (v8);
@@ -391,3 +391,27 @@ background services that are not "apps" to the user.
 **Privacy rule that makes one app safe (P-5):** the Coach space's data (money, food, plan,
 relationships) is stored and synced **separately** from Learn/Teach data. Joining a batch never
 grants the trainer or admin access to it.
+
+---
+
+## Part J — The same run when things go wrong (v3, owner's robustness request)
+
+Each line is a realistic failure, what the system does (P-13, §4.4), and what you or Kavya notice.
+
+| When | What goes wrong | What the system does | What you notice |
+|---|---|---|---|
+| Week −2 | The hub laptop has **no Docker or Podman** | The capability check marks containers red; labs switch to **native mode** (Azurite and Functions Core Tools from npm) | Health screen: "Labs: native (containers not found). Install Podman?" One tap installs it later |
+| Week −2 | Python is missing, so **MarkItDown can't run** | Your connected AI converts the spreadsheet instead; the original stays attached | The diff review looks the same |
+| Week −1 | The college says **"no certificates, just a completion report"** | Program switch: certificate off → completion report on | Day 8 produces the report, no certificate |
+| Day 0 | **Forgejo won't start** after a laptop update | Forge sidegrade → **GitHub**: Kavya's repo and the bot accounts move there (GitHub App / bot user); the pulse-wall exercise uses the GitHub mirror | Health: "Forge: GitHub (Forgejo down)". Nothing else changes for Kavya |
+| Day 0 | **No internet** at the college (and GitHub is the active forge) | Forge last resort → **bare git on the hub** over the LAN; PR review happens in the app's diff view | The Git warm-up still runs; PRs sync to GitHub when online |
+| Day 2 | **You couldn't prepare** (a late evening) | You tap "I'm not prepared": **quick-class mode**. The board sidebar shows the day's Mermaid diagrams and images to drag in, plus section summaries; the teleprompter shows summaries only | You teach from the sidebar; the board still exports PDF + Markdown afterwards |
+| Day 3 | The lab needs **Azure Files**, which Azurite doesn't cover | That step declares a sidegrade: run against her **Azure for Students** subscription; offline, the step becomes **recorded responses** | The lab page says "Step 4 runs on real Azure (Azurite has no Files emulation)" |
+| Day 5 | **Kavya's phone is lost** | Her new phone pairs to her personal hub (on her laptop) or restores the **encrypted backup from R2** with her passphrase | She loses nothing since the last sync |
+| Day 5 | Her AI connection **expires mid-Shift** | Requester replies drop back to **scripted** mode | The Shift continues; the report notes "scripted replies from 14:12" |
+| Day 7 | **Document Intelligence quota** on her student subscription is exhausted | Capstone step falls back to **recorded responses** for extraction; everything else stays live | Capstone report marks that step "recorded", and the graded rubric allows it (declared in the pack) |
+| Any | **Handwriting recognition** isn't available (no AI, no on-device ink) | Board exports PDF + images; Markdown has headings and tables from tools but the handwriting stays as images | "Text: 0 handwriting blocks recognised. Retry when AI is connected" |
+| Any | The class hub laptop **dies** | Phones keep working offline (phone-only mode); the **cloud hub** or Kavya's personal hub takes over sync; the class hub restores from the backup when it is back | Nobody loses work |
+
+**What this adds to phase 1:** the capability check, the Health screen, and an acceptance test per
+fallback row (M-35); backup to R2 + local export with a tested restore (M-36).

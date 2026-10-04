@@ -1,4 +1,4 @@
-# Coach LMS — Plan v8 (consolidated)
+# Coach LMS — Plan v9 (consolidated)
 
 Companion: [`SIMULATED-RUN.md`](SIMULATED-RUN.md) walks one syllabus, one college, one student and one capstone end to end; its Part G is the input for OQ-1.
 
@@ -44,6 +44,9 @@ a small hub server adds classes, chat and sync.
 | P-9 | **One validated content format, one validator that fails loudly** (exam-forge D1–D3). |
 | P-10 | **Corrections are new entries.** Money, grades and attempts are append-only ledgers; nothing is silently edited. |
 | P-11 | **Markdown is the content interchange format.** Every teacher upload (PDF, PPTX, DOCX, XLSX, HTML) is converted to Markdown before it enters the content pipeline; the original file is kept alongside. |
+| P-13 | **Nothing is mandatory except the core.** Every external dependency has a primary, at least one **sidegrade** (equal capability, different provider) and a **last resort** (reduced capability that still lets the class run). The hub detects what is available at start-up, picks automatically, shows what it picked, and lets the admin override (§4.4). |
+| P-14 | **Every feature beyond the core is a switch.** Programs and batches turn features on or off (certificates, graded Shifts, leaderboards, Commons, story mode, AI levels, check-in). A switched-off feature leaves no gap, only an alternative or nothing. |
+| P-15 | **Backup and sync are required, not optional.** Personal and class data are always synced to at least one other place and backed up (encrypted) to at least one target; restore is tested. |
 | P-12 | **Agree before acting.** Coaching conversations follow the 4-stage framework (§7.0): confirm the goal, surface constraints and risks, propose a pathway, then produce a versioned, agreed plan. |
 
 ## 3. Cast used in the walkthroughs
@@ -121,6 +124,71 @@ implementations.
 | **Labs** | **Docker or Podman** containers, one image per day; Azure emulators: **Azurite** (Blob/Queue/Table; no Files or Data Lake), Cosmos DB emulator, Functions Core Tools; AWS: floci | Auto-checks run inside the same containers |
 | **Hub** | Laptop on the LAN (offline) and/or a cloud copy | Sync between them when online |
 | **Phones** | Companion app with its **own local store** (fully offline). Paired to a hub by a **pairing QR**; check-ins by scanning the **site QR** | Syncs when a hub is reachable |
+
+### 4.4 Graceful degradation: primaries, sidegrades, last resorts (P-13)
+
+The hub runs a **capability check** at start-up (like `kit doctor`). It records each capability as
+green / amber / red and **which option is active**, shows this on an admin "Health" screen, and
+re-checks when something fails mid-class.
+
+| Capability | Primary | Sidegrade(s) | Last resort | How it switches |
+|---|---|---|---|---|
+| **Code forge** (lab repos, AI-teammate PRs, Git warm-up) | Self-hosted Forgejo | **GitHub** (GitHub App / bot user), GitLab | Bare git repos on the hub over the LAN (no PR UI: reviews happen in the app's diff view); zip upload | Automatic on health failure; admin can pin one |
+| **Catalog: large files** | Google Drive | **Cloudflare R2** (verified free tier: 10 GB-month storage, 1M write ops and 10M read ops a month, free egress), S3, self-hosted MinIO/Garage | Hub's local disk + USB export | Admin chooses; several can be active (mirror) |
+| **Backup and sync** (P-15) | Phone ↔ personal hub ↔ class hub ↔ cloud copy | Encrypted bundle to **R2**, Drive, a private git repo, S3 | Encrypted file export to USB / phone storage | All configured targets are used; restore is an acceptance test |
+| **Labs** | Containers (Docker or Podman) | **Native tools without containers**: Azurite is an npm package (verified: v3.37.0, MIT), Functions Core Tools on npm (verified: 4.15.2), Python tools via `uv` | Real cloud free tier (Azure for Students, AWS free tier), or **recorded responses** (the check replays known outputs) | Automatic: containers if found, else native, else recorded; the lab page says which |
+| **Emulator coverage gaps** (Azurite has no Files / Data Lake; no Document Intelligence emulator) | The emulator | Real service on the student subscription | Recorded responses; or the step becomes a **reasoning check** (explain what the call would return) instead of a live check | Per lab step, declared in the scenario/lab pack |
+| **AI** | User's connected AI over MCP (System 2) | Another harness; on-device System 1 (Needle, Laya) | Rules + forms (P-3) | Automatic by availability and policy |
+| **Content conversion** | MarkItDown (Python sidecar) | Connected AI converts; conversion on the cloud hub | Trainer pastes text; the original file stays attached | Automatic |
+| **Certificates** | Generated certificate | Completion letter / digital badge | **Nothing** (switched off by the program, e.g. the college doesn't want them) | Program switch (P-14) |
+| **Live quiz** | Multiplayer PIN quiz | Ghost / target score (one student) | Paper questions | Automatic by headcount; trainer override |
+| **Commons** | Real channels | Simulated AI teammates | Off | Program/cohort switch (DEC-2) |
+| **Check-in** | Site QR via companion app | Trainer marks attendance manually | Off | Site switch (GPS deferred: DEC-29) |
+| **Hub location** | Trainer laptop on the LAN | Cloud hub | **Phone-only mode**: phones keep working offline and sync later | Automatic |
+| **Teleprompter** | Trainer's phone | Laptop second screen / tablet | Printed handout from the same script | Trainer choice |
+| **Notifications** | Local notifications on the phone | In-app "due now" list | Printed or exported daily plan | Automatic |
+| **Trainer couldn't prepare** | Prepared board pages + teleprompter | **Quick-class mode**: the board sidebar lists today's package diagrams, key points and examples to drag in (§6.4); teleprompter shows section summaries only | Teach from the student guide | Trainer taps "I'm not prepared" |
+| **Handwriting → text** (§6.4) | Connected AI reading the page image (vision) | On-device ink recognition on the companion (to verify) | Pages exported as PDF/images only; text typed later | Automatic |
+| **Content missing from the catalog** | Generated via MCP + skill template + gate | Imported from another package / older bank | Trainer teaches from the syllabus topic list; the content is generated after class | Admin choice |
+
+**Testing rule:** every row's fallback is exercised by an acceptance test that disables the primary
+(e.g. stop Forgejo → lab repo operations continue on the sidegrade).
+
+### 4.5 Installing the hub (on the trainer's computer, and on students' computers)
+
+| Option | Who it's for | Needs |
+|---|---|---|
+| **Single-file download** (Windows / macOS / Linux), built with Node's single-executable-application feature | Everyone; the default | Nothing pre-installed |
+| `npx coach-hub` | People who already have Node | Node ≥ 22 |
+| One-line script (`curl … \| sh`; PowerShell `irm … \| iex`) | Headless servers | A shell |
+
+**First run** opens a setup page in the browser:
+
+1. Choose a role: **class hub** (trainer) or **personal hub** (student).
+2. The **capability check** runs (§4.4) and shows what is available: git, Docker, Podman, Python,
+   disk space, network.
+3. For each missing optional piece it offers:
+   - **install it** (e.g. Podman Desktop, `uv` for Python);
+   - **use a fallback** (native npm tools, recorded responses);
+   - **skip**.
+4. Pairing QR codes are shown for phones.
+
+**Docker or Podman missing:** the hub still works; labs run natively or in recorded mode (§4.4).
+Podman is suggested first, because it runs rootless and Podman Desktop is free. Docker Desktop
+licensing has conditions for larger organisations (not checked in detail here).
+
+**Students' computers (owner's request, iteration 10):** the same download in **personal hub**
+mode:
+- runs the student's labs locally (containers or native);
+- holds her offline store and serves her phone over home Wi-Fi;
+- syncs class data with the class hub when they meet (LAN) or through the cloud copy.
+
+A phone can be paired with **several hubs** (her own and the class's).
+
+**Data authority:**
+- personal data lives on her phone and personal hub;
+- class data lives on the class hub;
+- each syncs to the other only what P-5 allows.
 
 ### 4.2 Technology stack (DEC-13, chosen by Claude at the owner's request)
 
@@ -247,20 +315,44 @@ output is **package5**: 3 tracks × 9 days; 1,074 files (412 `.md`, 307 `.js`, 1
 
 ### 6.4 The Notebook board (modified Excalidraw)
 
-The reference is the owner's whiteboard PDF: four 3840×2160 (16:9) pages of handwriting on ruled
-notebook paper, in several pen colours. Each page follows the same teaching layout: *problem →
-Example → Known → Assumption → Observation → Answer (code) → TRACE TABLE*.
+The reference is the owner's whiteboard PDF: four 3840×2160 (16:9) pages, ruled notebook paper,
+several pen colours, layout *problem → Example → Known → Assumption → Observation → Answer (code)
+→ TRACE TABLE*.
 
-| Change to Excalidraw | Detail |
+**Pages, not an infinite canvas.** Excalidraw's canvas is infinite; the board instead works like a
+notebook:
+- fixed 16:9 pages;
+- page thumbnails;
+- next / previous / insert page;
+- exports per page.
+
+**Auto-hiding sidebar** (like Android's edge panel), the main control surface:
+
+| In the sidebar | Detail |
 |---|---|
-| **Paper** | Ruled-notebook background (light grey with horizontal rules) instead of a blank canvas |
-| **Pages** | Fixed 16:9 pages (3840×2160) as frames; page strip; next/previous page; export **multi-page PDF** matching the reference |
-| **Pens** | Palette taken from the reference: black, red, orange, green, blue, purple. Pressure-sensitive strokes (Wacom / stylus) |
-| **Teaching stamps** | One-tap section labels: *Problem, Example, Known, Assumption, Observation, Answer/Solution* |
-| **Trace table** | Insert a green grid with named columns (e.g. Row (i), Column (j), Condition, Output); add rows while explaining |
-| **Share by QR** | "Share" shows a QR code with the hub address + board id. Scanning it opens the board on a phone: **follow live** during class, or open the pages afterwards. It works on the classroom LAN with no internet. View-only by default; the trainer can allow learners to annotate their own copy |
-| **Into the LMS** | Saved boards attach to the day's skill node, appear in every enrolled learner's "related" panel, and are linked from `whiteboard_dayNN.md` exercises |
-| **Learner use** | Learners do the package's whiteboard exercises on the same board; recall exercises of type *diagram* are drawn here |
+| **Excalidraw's own toolbar** | Hidden by default; one swipe reveals it |
+| **Pens** | The reference palette: black, red, orange, green, blue, purple; pressure-sensitive |
+| **Tables** | Insert an n × m table; the **trace table** preset (green grid with named columns); add rows while talking |
+| **Common shapes** | Boxes/arrows, flowchart, data-structure shapes (array cells, linked-list node, tree node, stack, queue), cloud-architecture blocks. Shape packs are per subject, so the trainer sees only what they need |
+| **Teaching stamps** | Problem, Example, Known, Assumption, Observation, Answer/Solution |
+| **Today's material** | Every `.mmd` diagram and image from the day's package (`assets/`), **draggable onto the page**. Mermaid files are converted into editable board shapes with `@excalidraw/mermaid-to-excalidraw` (verified: MIT, v2.2.2); images drop in as images |
+| **Quick-class mode** (trainer couldn't prepare) | The sidebar also shows the teleprompter's section summaries and the day's worked examples, ready to drag in |
+
+**Outputs of every board:**
+
+1. **PDF** of the pages (matching the reference look).
+2. **Images** per page.
+3. **Markdown**: handwriting → text, with the primary/sidegrade/fallback chain of §4.4. Headings
+   come from stamps (*Known*, *Observation*…), tables come from table tools as Markdown tables,
+   dragged-in Mermaid stays as Mermaid source, and freehand handwriting is recognised as text.
+   The trainer can correct it before publishing.
+
+**Sharing:**
+- The laptop shows the board on the projector.
+- **When a learner scans the board's QR code with the companion app, the board is added to their
+  account** (DEC-27).
+- Follow live or open later.
+- Learners annotate their own copy.
 
 ### 6.5 Trace viewer: Python, JavaScript, Java, C, C++ (DEC-14)
 
@@ -551,12 +643,14 @@ The mechanics are identical; only presentation changes.
 | M-24 | Certificates, academy dashboard, assets with QR codes | 2 |
 | M-25 | **Content conversion**: MarkItDown on the hub, cleanup pass, OCR route for scans | 1 (convert + cleanup), 2 (OCR) |
 | M-26 | **Package import**: skill-template v1.2 folders → lessons, quizzes, cards, teleprompter, whiteboard exercises; the 8-point content gate | 1 |
-| M-27 | **Notebook board**: modified Excalidraw (ruled paper, 16:9 pages, pen palette, stamps, trace-table tool, PDF export, QR share, live follow) | 2 (needs Excalidraw as a dependency; see OQ-4) |
+| M-27 | **Notebook board**: pages, auto-hiding sidebar, tables, shape packs, drag-in `.mmd` and images, quick-class mode, PDF + images + Markdown (handwriting → text), QR adds to account | 1b |
 | M-28 | **Trace viewer**: one trace format; Python and JavaScript (phase 2), Java, C and C++ (phase 3); offline libraries; predict-then-reveal; send to board | 2–3 |
 | M-29 | **Coaching framework engine**: stages 0–5, enforced halts, predicted options (rule tables), Light/Standard/Intense plan cards, versioned plans, friction targets | 1 |
 | M-30 | **Trainer management** (Spark-inspired): profiles, compliance review (masked data), sites with QR or GPS check-in, schedules, delivery reports, expenses, payroll runs, quotations and invoices, approvals inbox, audit | 2 (proposed) |
 | M-32 | **Lab containers**: Docker/Podman images per day, Azurite, Cosmos DB emulator, Functions Core Tools, floci; checks run in containers | 1 |
 | M-33 | **Teleprompter (trainer phone)**: launch, pacing modes, speed, pause, section jump, per-section summary for improvising, behind-schedule indicator | 1 |
+| M-35 | **Capability check + Health screen + fallbacks** (§4.4) and the hub installer (§4.5): single-file download, setup page, personal-hub mode | 1b |
+| M-36 | **Backup and sync targets**: R2, Drive, git repo, S3, local export; tested restore | 1b (R2 + local export), others 2 |
 | M-34 | **Forgejo integration + AI teammate bot accounts**: scripted PRs from prepared branches; AI-driven PRs via MCP tools, scoped and labelled | 1 |
 | M-31 | **Visualizer framework**: algorithm player, predict-the-next-step quizzes, e-Lecture mode, graph and tree editor, send to board | 2 |
 
@@ -683,11 +777,12 @@ Status column:
 | OQ-5 | Should Heading Strike move into phase 1 as a small, testable game core? | Yes/no |
 | OQ-7 | ~~C traces?~~ **Resolved**: Python, JavaScript, Java, C, C++ (DEC-14, §6.5) | — |
 | OQ-8 | ~~Trainer management in phase 1?~~ **Resolved**: minimal only in phase 1 (trainer profile with skills, assignment, site with QR check-in, schedule, prefilled delivery report). Payroll, expenses, quotations and invoices later | — |
-| OQ-9 | Check-in default. **Claude's recommendation:** site QR code (no GPS, no photo). It is enough while you are the only trainer, and GPS/photo can be enabled per site later if you hire trainers | Accept or change |
+| OQ-9 | ~~Check-in default~~ **Resolved**: site QR via the companion app; GPS deferred | — |
 | OQ-10 | Licences of Galles' visualizations, dsa-visualizer and Python Tutor backends must be checked before reusing any code; until then they are inspiration only | Accept |
 | OQ-11 | ~~Friction targets~~ **Accepted** (≤ 5 min, ≤ 25 taps, ≤ 2 sentences) | — |
-| OQ-13 | Phase-1 split proposed in SIMULATED-RUN v2 Part G: **1a** testable core vs **1b** integrations | Choose |
-| OQ-14 | One app with role spaces (recommended, SIMULATED-RUN Part I) vs separate Coach and Academy builds | Choose |
+| OQ-15 | Handwriting recognition sidegrade on the phone (on-device ink recognition) must be verified before relying on it | Accept as a research item |
+| OQ-13 | ~~Phase-1 split~~ **Resolved**: build targets 1a (testable core) and 1b (integrations) | — |
+| OQ-14 | ~~One app or several~~ **Resolved**: one app with role spaces | — |
 | OQ-12 | ~~Azure emulators?~~ **Resolved**: yes, Azurite + Cosmos emulator + Functions Core Tools in lab containers (M-32) | — |
 | OQ-6 | Calorie and money "direct" coaching tone: acceptable as default, or default to "gentle"? | Choose |
 
@@ -722,9 +817,24 @@ Status column:
 | DEC-26 | Default learner goal derived from the syllabus; "accept defaults" everywhere, customise optional | Owner, iteration 9 |
 | DEC-27 | Teleprompter on the trainer's phone (pacing, speed, pause, jump, summaries); board on the laptop; scanning the board QR adds it to the learner's account | Owner, iteration 9 |
 | DEC-28 | Quick learn + diagnostic after class; default Anki cards; describe-a-card via AI or a form | Owner, iteration 9 |
+| DEC-29 | Phase-1 build targets 1a + 1b; one app with role spaces; QR check-in, GPS deferred | Owner, iteration 10 |
+| DEC-30 | Robustness first: primaries + sidegrades + last resorts for every dependency (P-13), feature switches (P-14), mandatory backup and sync (P-15) | Owner, iteration 10 |
+| DEC-31 | Notebook board: pages not infinite canvas, auto-hiding sidebar, tables, shapes, drag-in `.mmd`/images, handwriting → Markdown alongside PDF/images | Owner, iteration 10 |
+| DEC-32 | Cloudflare R2 added as a storage and backup target ("too many options is never wrong") | Owner, iteration 10 |
+| DEC-33 | Hub installs seamlessly (single file / npx / script) on trainer and student computers; containers optional | Owner, iteration 10 |
 | DEC-17 | Admin trainer management inspired by Spark, with masked identity data and QR check-in option | Owner, iteration 7 |
 
 ## Changelog
+
+- **v9**:
+  - Added P-13 to P-15 (degradation, switches, backup) and §4.4 degradation matrix.
+  - Added §4.5 hub installation (incl. students' computers).
+  - Rewrote §6.4 Notebook board: pages, sidebar, tables, drag-in Mermaid/images, quick-class
+    mode, handwriting → Markdown.
+  - Added M-35, M-36; M-27 moved to 1b; DEC-29 to DEC-33.
+  - OQ-9, OQ-13, OQ-14 resolved; new OQ-15.
+  - Verified facts: R2 free tier is **10 GB** (not 5); Azurite and Functions Core Tools run
+    without Docker via npm; mermaid-to-excalidraw exists (MIT).
 
 - **v8**:
   - Added §4.3 storage/hosting/devices; modules M-32 to M-34; DEC-20 to DEC-28.
