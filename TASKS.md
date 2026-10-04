@@ -35,10 +35,27 @@ the orchestrator merges with `kit merge <id>` and pushes. Every task also owns
 | b6-4 | ms-06.04 | sonnet | Sync: replication, schema check, merge pass, personal DB rules | AC-69, AC-70, AC-71, AC-121 | packages/server/src/routes/sync.ts, packages/server/test/sync.test.mjs | todo |
 | b6-5 | ms-06.05 | sonnet | Attempts, grade ledger, appeals, integrity log | AC-72, AC-73 | packages/server/src/routes/grading.ts, packages/server/test/grading.test.mjs | todo |
 | b6-6 | ms-06.06 | sonnet | Export, import, signed class packages, device keys | AC-74, AC-75, AC-76, AC-77 | packages/server/src/routes/export.ts, packages/server/test/export.test.mjs | todo |
-| b6-7 | ms-06.07 | sonnet | Minor profile rules and secret-free logs across routes | AC-120, AC-122 | packages/server/src | todo |
+| b6-7 | ms-06.07 | — | (folded into b11-1) | — | — | dropped |
 | b10-1 | ms-10.01 | sonnet | GitHub App and Forgejo adapters, push-check hook | AC-110, AC-111, AC-112, AC-115 | packages/adapters/src/github.ts, packages/adapters/src/forgejo.ts, packages/adapters/test/github.test.mjs, packages/adapters/test/forgejo.test.mjs | todo |
 | b10-2 | ms-10.02 | haiku | Backup targets and Google adapters | AC-113, AC-114 | packages/adapters/src/backup.ts, packages/adapters/src/google.ts, packages/adapters/test/backup.test.mjs, packages/adapters/test/google.test.mjs | todo |
 | b10-3 | ms-10.03 | haiku | Health digest and morning checklist | AC-117 | packages/adapters/src/health.ts, packages/adapters/test/health.test.mjs | todo |
+
+## Batch B7 (web), B8 (board), B9 (performance), B11 (hardening)
+
+| Task | Step | Model | Title | Rows | Code paths | Status |
+|---|---|---|---|---|---|---|
+| b7-1 | ms-07.01 | sonnet | Web foundation: shell, routing, role spaces, strings + pseudo-locale, data layer, PWA, join flow | AC-81 | packages/web/package.json, packages/web/index.html, packages/web/vite.config.ts, packages/web/public, packages/web/src/main.tsx, packages/web/src/app, packages/web/src/strings, packages/web/src/features/registry.ts, packages/web/src/features, packages/web/test/foundation.test.mjs | todo |
+| b7-2 | ms-07.02 | sonnet | Admin: class setup, verbal syllabus, college outputs, Google opt-in | AC-80, AC-154, AC-165, AC-169 | packages/web/src/features/admin, packages/server/src/routes/features/admin.ts, packages/web/test/admin.test.mjs | todo |
+| b7-3 | ms-07.03 | sonnet | Attendance, wrap-up, messages, trainer notes, digest | AC-82, AC-89, AC-90, AC-159, AC-160 | packages/web/src/features/attend, packages/server/src/routes/features/attend.ts, packages/web/test/attend.test.mjs | todo |
+| b7-4 | ms-07.04 | sonnet | Teleprompter, substitute, trainer pack, rehearsal | AC-83, AC-150, AC-151, AC-157, AC-158 | packages/web/src/features/tele, packages/server/src/routes/features/tele.ts, packages/web/test/tele.test.mjs | todo |
+| b7-5 | ms-07.05 | haiku | Learner day: catch-up, cards, exit ticket, explain-it-back, first run, audio | AC-84, AC-85, AC-92, AC-93, AC-155, AC-163 | packages/web/src/features/learn, packages/server/src/routes/features/learn.ts, packages/web/test/learn.test.mjs | todo |
+| b7-6 | ms-07.06 | sonnet | Shift, sprint rituals, corporate practice, peer review, practice forge | AC-86, AC-87, AC-161, AC-164, AC-170 | packages/web/src/features/shift, packages/server/src/routes/features/shift.ts, packages/web/test/shift.test.mjs | todo |
+| b7-7 | ms-07.07 | haiku | Appeals, doubts, drop, accommodations, content improvement | AC-88, AC-91, AC-152, AC-153, AC-166 | packages/web/src/features/classroom, packages/server/src/routes/features/classroom.ts, packages/web/test/classroom.test.mjs | todo |
+| b7-8 | ms-07.08 | haiku | Coach space, screenshot import, portfolio, engagement | AC-94, AC-156, AC-162, AC-168 | packages/web/src/features/coach, packages/server/src/routes/features/coach.ts, packages/web/test/coach.test.mjs | todo |
+| b7-9 | ms-07.09 | sonnet | Offline phone profile, file exchange, export my data, robustness | AC-95, AC-96, AC-98, AC-167 | packages/web/src/features/files, packages/server/src/routes/features/files.ts, packages/web/test/files.test.mjs | todo |
+| b8-1 | ms-08.01 | sonnet | Board: trimmed Excalidraw fork, pages, Mermaid drop, PDF with ruling | AC-97, AC-101 | packages/board, packages/web/src/features/board, packages/server/src/routes/features/board.ts, packages/web/test/board.test.mjs | todo |
+| b9-1 | ms-09.01 | sonnet | Performance budgets and 200-learner load test CLI | AC-100, AC-102, AC-103 | packages/cli, packages/web/vite.config.ts | todo |
+| b11-1 | ms-11.01 | sonnet | Hardening: MCP server, minor rules, secret-free logs, accessibility and strings across all screens | AC-116, AC-120, AC-122, AC-99, AC-123 | packages/server/src, packages/web/src | todo |
 
 Later batches (server B6, web B7, board B8, perf B9, adapters B10, hardening B11) are added
 here when the core batches are merged, following SPEC §9.1.
