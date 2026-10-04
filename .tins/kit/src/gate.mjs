@@ -17,6 +17,15 @@ export function runGate(root, { quiet = false } = {}) {
   const say = (s) => { log.push(s); if (!quiet) process.stdout.write(s + '\n'); };
   let cfg;
   try { cfg = loadConfig(root); } catch (e) { say(`gate: FAIL config — ${e.message}`); return { ok: false, steps: [{ name: 'config', ok: false }], log: log.join('\n') }; }
+  // setup commands run before the SPEC lint: e.g. linking an acceptance suite kept in another repo,
+  // so a fresh checkout (merge-time check worktree) can resolve AC check files (RF-21).
+  const env0 = { ...process.env, FORCE_COLOR: '0' };
+  for (const k of Object.keys(env0)) if (k.startsWith('NODE_TEST_')) delete env0[k];
+  for (const cmd of cfg.setup || []) {
+    const r = spawnSync(cmd, { cwd: root, shell: true, encoding: 'utf8', timeout: 300000, env: env0 });
+    steps.push({ name: `setup: ${cmd}`, ok: r.status === 0, code: r.status });
+    if (r.status !== 0) say(`  setup ${cmd}: exit ${r.status}\n${`${r.stdout || ''}${r.stderr || ''}`.split(/\r?\n/).slice(-10).join('\n').replace(/^/gm, '    | ')}`);
+  }
   const specPath = join(root, 'SPEC.md');
   const problems = existsSync(specPath) ? lintSpec(readFileSync(specPath, 'utf8'), root) : ['SPEC.md missing'];
   const pkgPath = join(root, 'package.json');
