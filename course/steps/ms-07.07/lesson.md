@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 5
 skills: [feature-group, journey-contract, core-reuse]
-source_refs: [{ path: packages/server/src/routes/features/classroom.ts, commit: 5b9d738 }]
+source_refs: [{ path: packages/server/src/routes/features/classroom.ts, commit: 6058927 }]
 next: end
 ---
 
