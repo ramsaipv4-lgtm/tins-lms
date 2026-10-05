@@ -76,3 +76,20 @@ nothing built `dist` any more, because the foundation test had been the one buil
 other test and journey. A hidden dependency on the racing test itself. Fixed by the gate build above.
 **Lesson for the rebuild course:** tests that write a shared build output are a hidden coupling.
 Give each test its own output folder, and make the server's static folder configurable from day one.
+
+## I-4: the shell-size unit test counted lazy chunks
+
+**Problem:** b8-1 (board) reported `packages/web/test/foundation.test.mjs` failing in its tree:
+"shell JS 2616573 bytes gzip" against the 300 KB budget (SPEC AC-102). The board is lazy-loaded.
+**Cause:** the test (b7-1) summed the gzip size of every `.js` file in `dist/assets`, including chunks
+that are only reached through `import()`: the board's Excalidraw (~1 MB compressed) and every
+feature screen. It measured the whole app, not the shell.
+**Options considered:** raise the budget (hides real growth); exclude files by name (breaks when a
+chunk is renamed); measure what the browser loads first.
+**Choice:** the shell is the scripts and modulepreloads that `index.html` references, plus every chunk
+they import statically (followed transitively); `import()` targets are not followed.
+**Why:** that is what AC-102 means by "app shell", and it does not depend on chunk names.
+**Proof:** on b8-1's build: shell = 2 chunks (runtime + index), 58,615 bytes gzip; all 209 chunks =
+2,609,607 bytes. On main the test passes (1/1).
+**Lesson for the rebuild course:** a budget test must measure the thing the budget is about; "all
+files in the output folder" silently changes meaning as soon as code splitting starts.
