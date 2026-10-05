@@ -4,7 +4,7 @@ import type { FeatureRoute } from '../registry.ts';
 
 export const routes: FeatureRoute[] = [
   { path: '/learn/catch-up', space: 'learn', label: 'learn.nav.catchUp', order: 1, roles: ['learner'], load: () => import('./Catchup.tsx') },
-  { path: '/learn/cards', space: 'learn', label: 'learn.nav.cards', order: 2, roles: ['learner'], load: () => import('./Cards.tsx') },
+  { path: '/learn/cards', space: 'learn', label: 'learn.nav.cards', order: 7.5, roles: ['learner'], load: () => import('./Cards.tsx') },
   { path: '/learn/error-notebook', space: 'learn', label: 'learn.nav.errors', order: 3, roles: ['learner'], load: () => import('./Errors.tsx') },
   { path: '/learn/quick-learn', space: 'learn', label: 'learn.nav.quickLearn', order: 4, roles: ['learner'], load: () => import('./QuickLearn.tsx') },
   { path: '/learn/explain', space: 'learn', label: 'learn.nav.explain', order: 5, roles: ['learner'], load: () => import('./Explain.tsx') },
