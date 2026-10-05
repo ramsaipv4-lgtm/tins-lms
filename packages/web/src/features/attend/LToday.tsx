@@ -4,7 +4,7 @@ import { useAttendCtx, useData, usePoll } from './lib.ts';
 import { useState } from 'react';
 import { api } from '../../app/api.ts';
 
-export default function LToday() {
+export default function LToday({ embedded = false }: { embedded?: boolean } = {}) {
   const { ctx, error } = useAttendCtx();
   const [d, setD] = useState<any | null>(null);
   usePoll(async () => {
@@ -16,7 +16,7 @@ export default function LToday() {
   if (!ctx) return <p role="status">{t('app.loading')}</p>;
   return (
     <section aria-labelledby="lt-h">
-      <h1 id="lt-h">{t('attend.today.title', { day: ctx.day })}</h1>
+      {embedded ? <h2 id="lt-h">{t('attend.today.title', { day: ctx.day })}</h2> : <h1 id="lt-h">{t('attend.today.title', { day: ctx.day })}</h1>}
       <p data-testid="cards-due-count">{t('attend.today.cardsDue', { n: d?.cardsDue ?? 0 })}</p>
       {d?.wrapup ? (
         <ul>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../app/api.ts';
 import { t } from '../../strings/index.ts';
 import { useClass } from './lib.tsx';
+import DraftReports from '../attend/Reports.tsx'; // integration: draft reports after wrap-up (AC-89)
 
 interface Row { dayIndex: number; date: string | null; taughtBy: string; mode: string; handoverRead: boolean | null; queuedQuestions: number }
 
@@ -27,6 +28,7 @@ export default function Reports() {
           ))}
         </tbody>
       </table>
+      <DraftReports />
     </>
   );
 }

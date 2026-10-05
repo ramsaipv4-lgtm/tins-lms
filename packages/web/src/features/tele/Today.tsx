@@ -6,6 +6,7 @@ import { t } from '../../strings/index.ts';
 import { openSection } from '../../../../core/src/release.ts';
 import { DayPicker, usePoll, useClass } from './lib.tsx';
 import { SelfLearn } from './SelfLearn.tsx';
+import AttendToday from '../attend/LToday.tsx'; // integration: wrap-up material (board PDF, quick-learn) on the same page
 
 interface Sec { id: string; title: string; graded: boolean; sealed: string; key?: string }
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -59,6 +60,7 @@ export default function Today() {
           <ul>{locked.map((s) => <li key={s.id}><span translate="no">{s.title}</span> {t('tele.today.lockedHint')}</li>)}</ul>
         </>
       )}
+      <AttendToday embedded />
     </>
   );
 }
