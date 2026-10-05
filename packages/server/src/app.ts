@@ -29,7 +29,7 @@ export function createApp(ctx: Ctx) {
   app.notFound((c) => {
     const p = c.req.path;
     if (c.req.method === 'GET' && !p.startsWith('/api/') && !p.startsWith('/__test') && !p.startsWith('/db')) {
-      const r = serveWeb(ctx.config.webDist, p);
+      const r = serveWeb(ctx.config.webDist, p, c.req.header('accept-encoding') ?? '');
       if (r) return r;
     }
     return c.json({ error: { route: 'not-found' } }, 404);
