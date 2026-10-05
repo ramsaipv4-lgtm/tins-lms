@@ -328,7 +328,7 @@ let prefetched: string | null = null;
 function prefetch(roles: string[]) {
   if (prefetched === person) return;
   prefetched = person;
-  const loads = roles.includes('learner') ? [() => pouch()] : [];
+  const loads = roles.includes('learner') ? [() => pouch(), () => import('../attend/LToday.tsx')] : [];
   for (const load of loads) void load().catch(() => {});
 }
 

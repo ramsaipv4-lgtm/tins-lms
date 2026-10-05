@@ -1,10 +1,20 @@
 // /learn/phone-day (AC-95): the released sections of a class day, opened on this device from the stored copy of the hub
 // bundle and any imported day package. Works with the hub switched off.
-import { useEffect, useState } from 'react';
+import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import { downloadsHeld } from './net.ts';
 import { t } from '../../strings/index.ts';
 import * as phone from './phone.ts';
 import { usePhone } from './ui.ts';
+
+// The wrap-up material (board PDF, quick-learn links) of the attend group sits on the day page too, as on tele's Today page.
+const AttendToday = lazy(() => import('../attend/LToday.tsx'));
+
+// If the wrap-up part cannot load (offline and never fetched), the rest of the page must still show.
+class Quiet extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? null : this.props.children; }
+}
 
 interface Shown { id: string; title: string; text: string | null; released: boolean }
 
@@ -74,6 +84,7 @@ export default function Content() {
           <ul>{locked.map((s) => <li key={s.id}><span translate="no">{s.title}</span> {t('files.day.lockedHint')}</li>)}</ul>
         </>
       )}
+      <Quiet><Suspense fallback={null}><AttendToday embedded /></Suspense></Quiet>
     </section>
   );
 }
