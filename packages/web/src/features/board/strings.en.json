@@ -1,1 +1,20 @@
-{}
+{
+  "board.nav": "Board",
+  "board.title": "Board",
+  "board.class": "Class",
+  "board.pages": "Board pages",
+  "board.pageTitle": "Page {n}",
+  "board.addPage": "Add page",
+  "board.exportPdf": "Export PDF",
+  "board.exporting": "Preparing the PDF...",
+  "board.exported": "PDF saved with {n} pages.",
+  "board.importMermaid": "Import diagram file",
+  "board.importHelp": "Drop a .mmd diagram file on the board, or choose one.",
+  "board.mermaidError": "That diagram could not be drawn: {why}",
+  "board.saved": "Saved",
+  "board.saving": "Saving...",
+  "board.saveFailed": "Could not save the board. Your drawing is still on this screen.",
+  "board.canvas": "Drawing area",
+  "board.loading": "Loading the board...",
+  "board.noClass": "No class yet: this board is not saved until a class exists."
+}

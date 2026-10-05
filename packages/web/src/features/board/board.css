@@ -1,0 +1,19 @@
+.board-screen { display: flex; flex-direction: column; gap: 8px; }
+.board-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.board-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.board-tabs button { background: #fff; color: #1d4ed8; border: 2px solid #1d4ed8; }
+.board-tabs button.active { background: #1d4ed8; color: #fff; }
+.board-import { position: relative; display: inline-flex; }
+.board-import input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.board-import:focus-within .btn { outline: 3px solid #000; outline-offset: 2px; }
+.board-help, .board-save { margin: 0; font-size: 0.9rem; }
+.board-surface { height: calc(100vh - 230px); min-height: 420px; border: 1px solid #767676; }
+/* Phone: keep the whole canvas inside the first screen so every part of it can be reached without scrolling. */
+@media (max-width: 600px) {
+  .board-screen { gap: 4px; }
+  .board-screen h1 { font-size: 1.1rem; margin: 4px 0; }
+  .board-bar { gap: 4px; }
+  .board-bar button, .board-bar .btn { padding: 4px 10px; min-height: 40px; }
+  .board-help { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .board-surface { height: calc(100dvh - 235px); min-height: 280px; }
+}

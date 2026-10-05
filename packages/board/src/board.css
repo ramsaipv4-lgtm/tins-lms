@@ -1,0 +1,26 @@
+/* Trimmed fork: hide the Excalidraw tools and chrome the classroom board does not use.
+   The upstream test ids are kept on the tools we keep (toolbar-rectangle, toolbar-text, ...). */
+.lms-board-canvas { position: relative; width: 100%; height: 100%; }
+.lms-board-canvas label:has([data-testid="toolbar-diamond"]),
+.lms-board-canvas [data-testid="toolbar-diamond"],
+.lms-board-canvas label:has([data-testid="toolbar-image"]),
+.lms-board-canvas [data-testid="toolbar-image"],
+.lms-board-canvas label:has([data-testid="toolbar-embeddable"]),
+.lms-board-canvas [data-testid="toolbar-embeddable"],
+.lms-board-canvas label:has([data-testid="toolbar-frame"]),
+.lms-board-canvas [data-testid="toolbar-frame"],
+.lms-board-canvas label:has([data-testid="toolbar-laser"]),
+.lms-board-canvas [data-testid="toolbar-laser"],
+.lms-board-canvas .App-toolbar__extra-tools-trigger,
+.lms-board-canvas .sidebar-trigger,
+.lms-board-canvas .layer-ui__wrapper__footer-right,
+.lms-board-canvas .welcome-screen-center,
+.lms-board-canvas .help-icon,
+.lms-board-canvas .excalidraw-github-corner { display: none !important; }
+/* Upstream keeps the radio input that carries the test id invisible and click-through (pointer-events: none) under an
+   icon, so a plain click on toolbar-rectangle / toolbar-text is intercepted by the label. Make the input the top layer
+   of its label: it stays invisible but receives the click itself. */
+.lms-board-canvas .ToolIcon { position: relative; }
+.lms-board-canvas .ToolIcon .ToolIcon_type_radio { pointer-events: auto; inset: 0; width: 100%; height: 100%; margin: 0; z-index: 1; cursor: pointer; }
+/* The upstream UI font (Assistant) is three extra downloads on the critical path; the system font is used instead. */
+.lms-board-canvas .excalidraw { --ui-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
