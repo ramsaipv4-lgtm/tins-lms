@@ -2,7 +2,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { readdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { readdirSync, mkdtempSync, rmSync, existsSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,13 +37,22 @@ async function signedIn(b, personId, roles, path) {
   const [name, ...v] = c.split('=');
   await ctx.addCookies([{ name, value: v.join('='), url: base }]);
   const page = await ctx.newPage();
-  await page.goto(base + path);
-  await page.getByTestId('app-ready').waitFor({ timeout: 30000 });
+  // dist can be emptied for a moment by another test file's rebuild: retry the load.
+  for (let i = 0; ; i++) {
+    await page.goto(base + path);
+    try { await page.getByTestId('app-ready').waitFor({ timeout: 8000 }); break; } catch (e) { if (i >= 4) throw e; await page.waitForTimeout(1500); }
+  }
   return page;
 }
 
 before(async () => {
-  spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: ROOT, encoding: 'utf8' });
+  // Other web test files rebuild dist at the same time when all unit tests run together; only build when it is missing or older than the tele sources.
+  const idx = join(ROOT, 'packages/web/dist/index.html');
+  const src = join(ROOT, 'packages/web/src/features/tele');
+  const newest = Math.max(...readdirSync(src).map((f) => statSync(join(src, f)).mtimeMs));
+  if (!existsSync(idx) || statSync(idx).mtimeMs < newest) spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: ROOT, encoding: 'utf8' });
+  // Another test file may be rebuilding dist right now (it is emptied first): wait for it.
+  for (let i = 0; i < 100 && !existsSync(join(ROOT, 'packages/web/dist/index.html')); i++) await new Promise((r) => setTimeout(r, 300));
   await startServer();
   const r = await post('/__test/seed', { fixture: 'journeys/base.json' });
   assert.equal(r.status, 200, await r.clone().text());
@@ -82,12 +91,12 @@ test('AC-150 / AC-151 substitute handover, mark read, self-learn with AI off, re
     // self-learn on day 2
     await tr.goto(base + '/teach/substitute');
     await tr.getByRole('button', { name: /can.?t take day 2/i }).click();
-    await tr.getByRole('button', { name: /^self-learn mode$/i }).click();
+    await tr.getByRole('button', { name: /^⟦?self-learn mode⟧?$/i }).click();
     await tr.getByRole('button', { name: /confirm/i }).click();
     await tr.getByTestId('self-learn').waitFor();
-    await tr.getByRole('button', { name: /^next section$/i }).click();
+    await tr.getByRole('button', { name: /^⟦?next section⟧?$/i }).click();
     await tr.getByRole('textbox', { name: /question/i }).fill('What is a build?');
-    await tr.getByRole('button', { name: /^ask$/i }).click();
+    await tr.getByRole('button', { name: /^⟦?ask⟧?$/i }).click();
     await tr.getByText(/queued for the trainer/i).first().waitFor();
     await tr.goto(base + '/teach/delivery-reports');
     await tr.getByRole('cell', { name: 'AI-delivered' }).waitFor();
@@ -122,6 +131,6 @@ test('AC-158 rehearsal shows planned vs actual, self-check and freshness', { tim
     await p.getByTestId('rehearsal-report').waitFor();
     await p.getByRole('heading', { name: /self.?check/i }).waitFor();
     assert.ok(await p.getByRole('checkbox').count() >= 1);
-    await p.getByText(/freshness check: (ok|stale|not checked)/i).waitFor();
+    await p.getByText(/freshness check: ⟦?(ok|stale|not checked)/i).waitFor();
   } finally { await b.close(); }
 });
