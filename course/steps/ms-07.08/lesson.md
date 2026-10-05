@@ -7,7 +7,7 @@ prereqs: [ms-07.07]
 objectives: 4
 new_terms: 6
 skills: [client-side-encryption, state-machines, lazy-loading]
-source_refs: [{ path: packages/web/src/features/coach/lib.ts, commit: 691c2077d12443afe8315f07dbd5a9460ce12b54 }, { path: packages/web/src/features/coach/strike.ts, commit: 691c2077d12443afe8315f07dbd5a9460ce12b54 }]
+source_refs: [{ path: packages/web/src/features/coach/lib.ts, commit: 17a9b8d70d9ccfd728f6f0d1e0cd9cbee497fe15 }, { path: packages/web/src/features/coach/strike.ts, commit: 17a9b8d70d9ccfd728f6f0d1e0cd9cbee497fe15 }]
 next: end
 ---
 
