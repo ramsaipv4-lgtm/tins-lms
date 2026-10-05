@@ -90,9 +90,18 @@ for (const pseudo of [false, true]) {
 test('foundation: built output has a manifest, a service worker and a small shell', () => {
   const out = build('size');
   for (const f of ['index.html', 'sw.js', 'manifest.webmanifest']) assert.ok(existsSync(join(out, f)), f);
-  const assets = join(out, 'assets');
-  const js = readdirSync(assets).filter((f) => f.endsWith('.js'));
+  // The shell is what index.html loads: its scripts and modulepreloads, plus every chunk those import
+  // statically. Lazy chunks (import()) such as the board are not part of the shell (integration I-4).
+  const html = readFileSync(join(out, 'index.html'), 'utf8');
+  const todo = [...html.matchAll(/(?:src|href)="\/assets\/([^"]+\.js)"/g)].map((m) => m[1]);
+  const seen = new Set();
+  while (todo.length) {
+    const f = todo.pop(); if (seen.has(f)) continue; seen.add(f);
+    const code = readFileSync(join(out, 'assets', f), 'utf8');
+    for (const m of code.matchAll(/(?:^|[;\n}])\s*import\s*(?:[\w$*{}\s,]+from\s*)?["']\.\/([^"']+\.js)["']/g)) todo.push(m[1]);
+  }
+  assert.ok(seen.size >= 1, 'index.html loads no script from /assets');
   let total = 0;
-  for (const f of js) total += spawnSync('gzip', ['-c', join(assets, f)]).stdout.length;
-  assert.ok(total < 300 * 1024, `shell JS ${total} bytes gzip`);
+  for (const f of seen) total += spawnSync('gzip', ['-c', join(out, 'assets', f)]).stdout.length;
+  assert.ok(total < 300 * 1024, `shell JS ${total} bytes gzip in ${seen.size} chunk(s)`);
 });
