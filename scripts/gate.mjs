@@ -43,6 +43,11 @@ for (const p of existsSync(join(root, 'packages')) ? readdirSync(join(root, 'pac
   if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith('.test.mjs') || f.endsWith('.test.ts')) unit.push(join(d, f));
 }
 if (unit.length) {
+  // Build the shared web output once, before any test serves it; tests never rebuild it (integration I-3).
+  if (existsSync(join(root, 'packages', 'web', 'package.json'))) {
+    const b = spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: root, env, encoding: 'utf8' });
+    if (b.status !== 0) { console.error((b.stdout + b.stderr).split('\n').slice(-30).join('\n')); fail('web build fails'); }
+  }
   const r = spawnSync(process.execPath, ['--test', ...unit], { cwd: root, env, encoding: 'utf8' });
   if (r.status !== 0) { console.error((r.stdout + r.stderr).split('\n').slice(-30).join('\n')); fail('builder unit tests fail'); }
 }

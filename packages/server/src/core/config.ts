@@ -34,7 +34,8 @@ export function readConfig(env: Record<string, string | undefined> = process.env
     testMode: env.LMS_TEST_MODE === '1',
     tls: env.LMS_TLS ?? 'on',
     repoRoot: REPO_ROOT,
-    webDist: join(REPO_ROOT, 'packages', 'web', 'dist'),
+    // LMS_WEB_DIST lets a test serve its own build without touching the shared dist (integration I-3).
+    webDist: env.LMS_WEB_DIST || join(REPO_ROOT, 'packages', 'web', 'dist'),
   };
 }
 
