@@ -1,7 +1,8 @@
-// AC-169: the trainer's class schedule. "Sync to calendar" is shown only while the calendarSync switch is on.
+// AC-169: the trainer's class schedule; it also holds substitute cover (AC-150, integration I-2). "Sync to calendar" is shown only while the calendarSync switch is on.
 import { useEffect, useState } from 'react';
 import { api } from '../../app/api.ts';
 import { t } from '../../strings/index.ts';
+import Substitute from '../tele/Substitute.tsx';
 import { ClassPicker, Msg, errText, useLoad, type ClassRow } from './common.tsx';
 
 export default function TrainerSchedule() {
@@ -25,6 +26,7 @@ export default function TrainerSchedule() {
       <Msg error={error || classes.error || s.error} status={status} />
       {s.data && <ol>{s.data.schedule.map((d) => <li key={d.index}>{t('admin.schedule.day', { n: d.index + 1, date: d.date, start: d.start, end: d.end })}</li>)}</ol>}
       {sw.data?.switches.calendarSync && <button type="button" onClick={() => void sync()}>{t('admin.google.syncCalendar')}</button>}
+      <Substitute embedded />
     </section>
   );
 }
