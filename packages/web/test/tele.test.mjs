@@ -82,7 +82,7 @@ test('AC-150 / AC-151 substitute handover, mark read, self-learn with AI off, re
     // self-learn on day 2
     await tr.goto(base + '/teach/substitute');
     await tr.getByRole('button', { name: /can.?t take day 2/i }).click();
-    await tr.getByRole('combobox', { name: /substitute/i }).selectOption({ label: 'Self-learn mode (no substitute)' });
+    await tr.getByRole('button', { name: /^self-learn mode$/i }).click();
     await tr.getByRole('button', { name: /confirm/i }).click();
     await tr.getByTestId('self-learn').waitFor();
     await tr.getByRole('button', { name: /^next section$/i }).click();

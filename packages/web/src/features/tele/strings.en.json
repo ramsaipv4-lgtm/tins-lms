@@ -1,6 +1,6 @@
 {
  "tele.nav.teleprompter": "Teleprompter",
- "tele.nav.substitute": "Substitute",
+ "tele.nav.substitute": "Class schedule",
  "tele.nav.handover": "Handover",
  "tele.nav.pack": "Trainer pack",
  "tele.nav.library": "Package library",
@@ -45,14 +45,14 @@
  "tele.self.ask": "Ask",
  "tele.self.queued": "Your question was queued for the trainer.",
  "tele.self.queueTitle": "Questions queued for the trainer",
- "tele.sub.title": "Day cover",
+ "tele.sub.title": "Class schedule",
  "tele.sub.intro": "Pick a day you cannot take, then choose who covers it or play it in self-learn mode.",
  "tele.sub.cant": "I can't take day {n}",
  "tele.sub.field": "Substitute",
  "tele.sub.choose": "Choose…",
- "tele.sub.selfLearn": "Self-learn mode (no substitute)",
+ "tele.sub.selfLearn": "Self-learn mode",
  "tele.sub.selfLearnName": "AI-delivered (self-learn)",
- "tele.sub.confirm": "Confirm day {n}",
+ "tele.sub.confirm": "Confirm",
  "tele.sub.pickFirst": "Choose a substitute or self-learn mode first.",
  "tele.sub.saved": "Day {n} is covered by {who}.",
  "tele.sub.listTitle": "Covered days",
@@ -131,5 +131,8 @@
  "tele.rep.dayN": "Day {n}",
  "tele.rep.read": "Handover read",
  "tele.rep.unread": "Handover not read",
- "tele.rep.queued": "{n} questions queued"
+ "tele.rep.queued": "{n} questions queued",
+ "tele.sub.selfLearnChosen": "No substitute: the day will play in self-learn mode.",
+ "tele.hand.wrapUp": "Wrap up the day",
+ "tele.hand.wrapDone": "Day wrapped up. The trainer sees it in the delivery report."
 }

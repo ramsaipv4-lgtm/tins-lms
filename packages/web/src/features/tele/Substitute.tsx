@@ -59,10 +59,13 @@ export default function Substitute() {
             <select id="sub-pick" value={choice} onChange={(e) => setChoice(e.target.value)}>
               <option value="">{t('tele.sub.choose')}</option>
               {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              <option value="self-learn">{t('tele.sub.selfLearn')}</option>
             </select>
           </div>
-          <button type="submit">{t('tele.sub.confirm', { n: day })}</button>
+          <div className="row">
+            <button type="button" aria-pressed={choice === 'self-learn'} onClick={() => setChoice('self-learn')}>{t('tele.sub.selfLearn')}</button>
+          </div>
+          {choice === 'self-learn' && <p role="status">{t('tele.sub.selfLearnChosen')}</p>}
+          <button type="submit">{t('tele.sub.confirm')}</button>
         </form>
       )}
       {msg && <p role="status">{msg}</p>}

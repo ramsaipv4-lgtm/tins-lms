@@ -35,6 +35,12 @@ export default function Handover() {
   if (!ready) return <p role="status">{t('app.loading')}</p>;
   if (!cls || day === null) return <><h1>{t('tele.hand.title')}</h1><p role="status">{t('tele.hand.none')}</p></>;
 
+  async function wrapUp() {
+    try {
+      await api(`/api/tele/classes/${cls!.id}/handover/${day}/wrap-up`, { method: 'POST', body: {} });
+      setMsg(t('tele.hand.wrapDone'));
+    } catch { setMsg(t('tele.err.generic')); }
+  }
   async function markRead() {
     try {
       await api(`/api/tele/classes/${cls!.id}/handover/${day}/read`, { method: 'POST', body: {} });
@@ -69,6 +75,7 @@ export default function Handover() {
           <pre translate="no" style={{ whiteSpace: 'pre-wrap', font: 'inherit' }}>{pack.script.trainerNotes || t('tele.hand.noNotes')}</pre>
           {pack.learnerNotes.length > 0 && <ul>{pack.learnerNotes.map((n) => <li key={n.id} translate="no">{n.text}</li>)}</ul>}
           {read ? <p role="status">{t('tele.hand.isRead')}</p> : <button type="button" onClick={markRead}>{t('tele.hand.markRead')}</button>}
+          <button type="button" data-testid="wrap-up" onClick={wrapUp}>{t('tele.hand.wrapUp')}</button>
           {msg && <p role="status">{msg}</p>}
         </section>
       )}

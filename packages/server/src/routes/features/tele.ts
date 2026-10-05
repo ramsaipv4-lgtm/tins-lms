@@ -18,7 +18,7 @@ const substitutionSchema = z.object({
   mode: z.enum(['substitute', 'self-learn']),
 });
 const askSchema = z.object({ text: z.string().trim().min(1).max(500) });
-const nextSchema = z.object({ dayIndex: z.number().int().min(0) });
+const nextSchema = z.object({ dayIndex: z.number().int().min(0), auto: z.boolean().optional() });
 const rehearsalSchema = z.object({
   id: z.string().optional(),
   dayIndex: z.number().int().min(0),
@@ -305,6 +305,17 @@ export function register(app: any, ctx: any): void {
     return c.json({ ok: true });
   });
 
+  // The substitute's wrap-up of the day they taught: stamps the substitution so the delivery report shows it.
+  app.post('/api/tele/classes/:id/handover/:index/wrap-up', ctx.guard.role('substitute'), async (c: any) => {
+    const key = keyOf(c.req.param('id'));
+    const index = Number(c.req.param('index'));
+    await access(c, key, index);
+    const sub = await store.get(`class-${key}`, `substitution:${index}`);
+    if (!sub || !sub.substituteId || keyOf(sub.substituteId) !== personKey(c)) throw new ctx.http.ApiError(403, { error: { class: 'not-assigned' } });
+    await store.put(`class-${key}`, { ...sub, wrappedUpAt: ctx.clock.now(), updatedAt: ctx.clock.now(), updatedBy: personKey(c) });
+    return c.json({ ok: true });
+  });
+
   // ---- self-learn (AI-delivered) ---------------------------------------------------------------------------------
   async function selfLearnDoc(key: string, index: number) {
     return (await store.get(`class-${key}`, `selflearn:${index}`)) ?? {
@@ -341,6 +352,8 @@ export function register(app: any, ctx: any): void {
     if (sub?.mode !== 'self-learn') throw new ctx.http.ApiError(409, { error: { mode: 'not-self-learn' } });
     const day = await store.get(`class-${key}`, `day:${b.dayIndex}`);
     const doc = await selfLearnDoc(key, b.dayIndex);
+    // `auto` (the player opening) only starts the session; it never skips a section another viewer already played.
+    if (b.auto && doc.current >= 0) return c.json(await selfLearnView(key, b.dayIndex));
     const next = Math.min(doc.current + 1, day.sections.length - 1);
     const sec = day.sections[next];
     // Reaching the section also releases it to learners (D-38): the player stands in for the teleprompter.
@@ -378,6 +391,7 @@ export function register(app: any, ctx: any): void {
         taughtBy: s ? (s.mode === 'self-learn' ? 'AI-delivered' : await nameOf(s.substituteId)) : trainer,
         mode: s ? (s.mode === 'self-learn' ? 'AI-delivered' : 'substitute') : 'trainer',
         handoverRead: s?.mode === 'substitute' ? !!s.handoverReadAt : null,
+        wrappedUp: !!s?.wrappedUpAt,
         queuedQuestions: (sl?.queue ?? []).length,
       });
     }

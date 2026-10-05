@@ -1,6 +1,6 @@
 // Self-learn (AI-delivered) player (AC-151): plays the day's script section by section, runs the scripted quiz
 // by itself and queues questions it cannot answer. With AI off it plays text only and answers nothing.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../app/api.ts';
 import { t } from '../../strings/index.ts';
 import { usePoll, type ClassCtx } from './lib.tsx';
@@ -15,6 +15,10 @@ export function SelfLearn({ cls, dayIndex }: { cls: ClassCtx; dayIndex: number }
   const [q, setQ] = useState('');
   const [msg, setMsg] = useState('');
   usePoll(async () => { setV(await api<View>(`/api/tele/classes/${cls.id}/self-learn/${dayIndex}`)); }, 4000, [cls.id, dayIndex]);
+  const needsStart = !!v && v.active && v.current < 0;
+  useEffect(() => {
+    if (needsStart) api<View>(`/api/tele/classes/${cls.id}/self-learn/next`, { method: 'POST', body: { dayIndex, auto: true } }).then(setV).catch(() => {});
+  }, [needsStart, cls.id, dayIndex]);
   if (!v || !v.active) return null;
 
   async function next() {
