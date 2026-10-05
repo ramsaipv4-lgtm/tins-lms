@@ -113,7 +113,7 @@ test('AC-63 join code is one-time; same roll number warns', async () => {
   assert.equal(miss.status, 404);
   const invalid = await s.req('/api/join', { method: 'POST', body: { code: 'x' } });
   assert.equal(invalid.status, 400);
-  assert.ok(invalid.json.error.name && invalid.json.error.tncVersion);
+  assert.ok(invalid.json.error.tncVersion && !invalid.json.error.name, 'name is optional (SPEC Appendix A)');
 });
 
 test('AC-64 T&C acceptance, new version asks again, minors', async () => {
