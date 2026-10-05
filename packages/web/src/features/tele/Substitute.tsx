@@ -1,4 +1,4 @@
-// /teach/substitute (AC-150, AC-151): "I can't take day N", pick a substitute or self-learn mode.
+// /teach/substitute (AC-150, AC-151); also embedded in the trainer's Schedule screen (integration I-2): "I can't take day N", pick a substitute or self-learn mode.
 import { useEffect, useState } from 'react';
 import { api } from '../../app/api.ts';
 import { t } from '../../strings/index.ts';
@@ -7,7 +7,7 @@ import { SelfLearn } from './SelfLearn.tsx';
 
 interface Sub { dayIndex: number; mode: string; substituteName: string; handoverReadAt: number | null }
 
-export default function Substitute() {
+export default function Substitute({ embedded = false }: { embedded?: boolean } = {}) {
   const { cls, ready } = useClass();
   const [subs, setSubs] = useState<Sub[]>([]);
   const [people, setPeople] = useState<{ id: string; name: string }[]>([]);
@@ -45,7 +45,7 @@ export default function Substitute() {
 
   return (
     <>
-      <h1>{t('tele.sub.title')}</h1>
+      {embedded ? <h2>{t('tele.sub.title')}</h2> : <h1>{t('tele.sub.title')}</h1>}
       <p className="help">{t('tele.sub.intro')}</p>
       <ul className="row" style={{ listStyle: 'none', padding: 0 }}>
         {cls.days.map((d) => (

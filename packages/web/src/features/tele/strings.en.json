@@ -45,7 +45,7 @@
  "tele.self.ask": "Ask",
  "tele.self.queued": "Your question was queued for the trainer.",
  "tele.self.queueTitle": "Questions queued for the trainer",
- "tele.sub.title": "Class schedule",
+ "tele.sub.title": "Substitute cover",
  "tele.sub.intro": "Pick a day you cannot take, then choose who covers it or play it in self-learn mode.",
  "tele.sub.cant": "I can't take day {n}",
  "tele.sub.field": "Substitute",

@@ -3,7 +3,7 @@ import type { FeatureRoute } from '../registry.ts';
 
 export const routes: FeatureRoute[] = [
   { path: '/teach/teleprompter', space: 'teach', label: 'tele.nav.teleprompter', order: 10, roles: ['trainer', 'substitute', 'admin'], load: () => import('./Teleprompter.tsx') },
-  { path: '/teach/substitute', space: 'teach', label: 'tele.nav.substitute', order: 20, roles: ['trainer', 'admin'], load: () => import('./Substitute.tsx') },
+  { path: '/teach/substitute', space: 'teach', label: 'tele.nav.substitute', nav: false, order: 20, roles: ['trainer', 'admin'], load: () => import('./Substitute.tsx') },
   { path: '/teach/handover', space: 'teach', label: 'tele.nav.handover', order: 21, roles: ['substitute', 'admin'], load: () => import('./Handover.tsx') },
   { path: '/teach/trainer-pack', space: 'teach', label: 'tele.nav.pack', order: 30, roles: ['trainer', 'substitute', 'admin'], load: () => import('./Pack.tsx') },
   { path: '/teach/package-library', space: 'teach', label: 'tele.nav.library', order: 31, roles: ['trainer', 'admin'], load: () => import('./Library.tsx') },
