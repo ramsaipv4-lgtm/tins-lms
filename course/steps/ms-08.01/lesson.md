@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 6
 skills: [lazy-loading, wrapper-over-library, file-formats]
-source_refs: [{ path: packages/board/src/pdf.ts, commit: d0d3055 }, { path: packages/board/src/BoardCanvas.tsx, commit: d0d3055 }, { path: packages/web/src/features/board/index.tsx, commit: d0d3055 }, { path: packages/server/src/routes/features/board.ts, commit: d0d3055 }]
+source_refs: [{ path: packages/board/src/pdf.ts, commit: 4505e3f }, { path: packages/board/src/BoardCanvas.tsx, commit: 4505e3f }, { path: packages/web/src/features/board/index.tsx, commit: 4505e3f }, { path: packages/server/src/routes/features/board.ts, commit: 4505e3f }]
 next: end
 ---
 
