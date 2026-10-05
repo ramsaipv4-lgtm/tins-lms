@@ -10,7 +10,7 @@ export default defineConfig({
   root,
   // LMS_PSEUDO_LOCALE=1 at build time bakes the pseudo-locale in (Appendix C); a <meta> can also switch it on at run time.
   define: { __LMS_PSEUDO__: JSON.stringify(process.env.LMS_PSEUDO_LOCALE === '1') },
-  build: { outDir: 'dist', emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 400 },
+  build: { outDir: process.env.LMS_WEB_OUT || 'dist', emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 400 },
   plugins: [
     react(),
     VitePWA({

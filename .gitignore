@@ -4,3 +4,4 @@ node_modules
 .artifacts
 packages/web/dist
 .tins/state*
+packages/web/.test-dist

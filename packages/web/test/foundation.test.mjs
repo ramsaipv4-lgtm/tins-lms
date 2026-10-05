@@ -10,14 +10,18 @@ const WEB = new URL('..', import.meta.url).pathname;
 const ROOT = join(WEB, '..', '..');
 const GROUPS = ['admin', 'attend', 'tele', 'learn', 'shift', 'classroom', 'coach', 'files', 'board'];
 
-function build(env = {}) {
-  const r = spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: ROOT, env: { ...process.env, ...env }, encoding: 'utf8' });
+// Each build goes to its own folder under .test-dist and is served from there, so this file never
+// empties the shared dist that other test files and journeys are using (integration I-3).
+function build(name, env = {}) {
+  const out = join(WEB, '.test-dist', name);
+  const r = spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: ROOT, env: { ...process.env, ...env, LMS_WEB_OUT: out }, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stdout + r.stderr);
+  return out;
 }
 
-async function startServer() {
+async function startServer(webDist) {
   const dir = mkdtempSync(join(tmpdir(), 'lms-web-'));
-  const env = { ...process.env, PORT: '0', LMS_PROFILE: 'hub', LMS_DATA_DIR: dir, LMS_TLS: 'off', LMS_TEST_MODE: '1' };
+  const env = { ...process.env, PORT: '0', LMS_PROFILE: 'hub', LMS_DATA_DIR: dir, LMS_TLS: 'off', LMS_TEST_MODE: '1', LMS_WEB_DIST: webDist };
   const child = spawn(process.execPath, [join(ROOT, 'packages/server/src/main.ts')], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   const base = await new Promise((res, rej) => {
@@ -49,8 +53,8 @@ test('registry: one folder per group with routes and strings; shell strings exis
 
 for (const pseudo of [false, true]) {
   test(`AC-81 learner joins: T&C, date of birth, setup check [pseudo-locale ${pseudo}]`, { timeout: 120_000 }, async () => {
-    build(pseudo ? { LMS_PSEUDO_LOCALE: '1' } : {});
-    const b = await browser(); const s = await startServer();
+    const out = build(pseudo ? 'pseudo' : 'plain', pseudo ? { LMS_PSEUDO_LOCALE: '1' } : {});
+    const b = await browser(); const s = await startServer(out);
     try {
       const seed = await s.post('/__test/seed', { fixture: 'journeys/base.json' });
       assert.equal(seed.status, 200, await seed.text());
@@ -79,14 +83,14 @@ for (const pseudo of [false, true]) {
       await p2.getByLabel(/date of birth/i).fill('2004-05-06');
       await p2.getByRole('button', { name: /create account/i }).click();
       await p2.getByRole('alert').first().waitFor();
-    } finally { await b.close(); await s.stop(); if (pseudo) build(); }
+    } finally { await b.close(); await s.stop(); }
   });
 }
 
 test('foundation: built output has a manifest, a service worker and a small shell', () => {
-  build();
-  for (const f of ['index.html', 'sw.js', 'manifest.webmanifest']) assert.ok(existsSync(join(WEB, 'dist', f)), f);
-  const assets = join(WEB, 'dist/assets');
+  const out = build('size');
+  for (const f of ['index.html', 'sw.js', 'manifest.webmanifest']) assert.ok(existsSync(join(out, f)), f);
+  const assets = join(out, 'assets');
   const js = readdirSync(assets).filter((f) => f.endsWith('.js'));
   let total = 0;
   for (const f of js) total += spawnSync('gzip', ['-c', join(assets, f)]).stdout.length;
