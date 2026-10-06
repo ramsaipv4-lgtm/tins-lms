@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 4
 skills: [drop-plan, data-retention, url-generation]
 source_refs: [{ path: packages/core/src/drop.ts, commit: 739e38c }, { path: packages/core/src/retention.ts, commit: 739e38c }, { path: packages/core/src/messages.ts, commit: 739e38c }]
-next: end
+next: ms-05.01
 ---
 
 # MS 4.7 — Drop plan, retention, messages
-
-*Step 1 of N*
+*Step 17 of 42*
 
 ## Prerequisites
 
@@ -247,4 +246,6 @@ Drop handles learner lifecycle. Retention enforces governance. Messages enable o
 
 ## Next
 
-The next batch builds the package import and content gate.
+Before you continue, do [Checkpoint 2](../../checkpoints/checkpoint-2/checkpoint.md).
+
+Next: [MS 5.1 — Package import and content gate](../ms-05.01/lesson.md).

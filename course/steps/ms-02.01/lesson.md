@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [seeded-rng, deterministic-shuffling]
 source_refs: [{ path: packages/core/src/rng.ts, commit: ac0b476 }]
-next: end
+next: ms-02.02
 ---
 
 # MS 2.1 — Seeded randomness
-
-*Step 2 of N*
+*Step 2 of 42*
 
 ## Prerequisites
 
@@ -362,9 +361,4 @@ Without seeded randomness, these systems would be non-deterministic, making audi
 
 ## Next
 
-Next steps build on this foundation:
-- **MS 2.2:** Spaced repetition (cards, due dates)
-- **MS 2.3:** Catch-up gate (using mastery and seeded assignment)
-- **MS 2.4:** Graded timing and accommodations
-
-Your seeded RNG is used in all three.
+Next: [MS 2.2 — Cards and spaced repetition (ts-fsrs)](../ms-02.02/lesson.md).

@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [spaced-repetition, fsrs-algorithm, card-scheduling]
 source_refs: [{ path: packages/core/src/cards.ts, commit: 639065e }]
-next: end
+next: ms-02.03
 ---
 
 # MS 2.2 — Cards and spaced repetition (ts-fsrs)
-*Step 1 of N*
+*Step 3 of 42*
 
 ## Prerequisites
 
@@ -346,4 +346,4 @@ The Card type also serves a later module: when learners export their progress, w
 
 ## Next
 
-The next step (ms-02.03) builds on this: the catch-up gate uses the due dates here to block learners from self-study until they've reviewed catch-up material.
+Next: [MS 2.3 — Catch-up gate and mastery map](../ms-02.03/lesson.md).

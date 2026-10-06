@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [replication-guards, conflict-merge-pass, encrypted-document-rules]
 source_refs: [{ path: packages/server/src/routes/sync.ts, commit: 99983ce }]
-next: end
+next: ms-06.05
 ---
 
 # MS 6.4 — Sync rules and the merge pass
-
-*Step 4 of N*
+*Step 22 of 42*
 
 ## Prerequisites
 
@@ -141,4 +140,4 @@ AC-122 (b6-7) reuses the minor rule; the web app (B7) sends `x-lms-schema` on ev
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Next: [MS 6.5 — Attempts, grade ledger, appeals and integrity log](../ms-06.05/lesson.md).

@@ -8,10 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [shift-engine, server-clock, ui-contracts]
 source_refs: [{ path: packages/web/src/features/shift/Shift.tsx, commit: a733c14 }, { path: packages/server/src/routes/features/shift.ts, commit: a733c14 }]
-next: end
+next: ms-07.07
 ---
 
 # MS 7.6 — Shift, sprint rituals and the practice forge
+*Step 31 of 42*
 
 ## Prerequisites
 
@@ -87,6 +88,15 @@ Real mistake from the build (journal M1): the first version cleared the answer a
 - **Practice forge:** Forgejo on the hub, used before real GitHub.
 - **UI contract:** the test ids and accessible names a journey relies on.
 
+## Common questions
+
+**Q:** Why not a socket?
+**A:** Polling each second is simple and enough for a classroom.
+
+## Reinforcement activity
+
+Add a test that starts a shift, moves the test clock six minutes and checks that two tickets are listed.
+
 ## Check yourself
 
 1. Why does the screen not count time itself?
@@ -98,15 +108,6 @@ Real mistake from the build (journal M1): the first version cleared the answer a
 4. What status does a prod deploy get without an approved change request?
    <details>403 with approval-required.</details>
 
-## Common questions
-
-**Q:** Why not a socket?
-**A:** Polling each second is simple and enough for a classroom.
-
-## Reinforcement activity
-
-Add a test that starts a shift, moves the test clock six minutes and checks that two tickets are listed.
-
 ## Quick reference
 
 - Start: POST /api/shift/start; events: POST /api/shift/events; end: POST /api/shift/finish.
@@ -117,4 +118,4 @@ The same pattern, server clock plus stored events, serves exams (SPEC 4.26) and 
 
 ## Next
 
-Later steps assemble the course.
+Next: [MS 7.7 — Appeals, doubts, drop, accommodations, content improvement](../ms-07.07/lesson.md).

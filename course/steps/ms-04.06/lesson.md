@@ -8,12 +8,11 @@ objectives: 4
 new_terms: 8
 skills: [ocr-parsing, text-similarity, statistical-analysis, clustering, scheduling]
 source_refs: [{ path: packages/core/src/screenshot.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/faq.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/atrisk.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/items.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/cluster.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/reflow.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }]
-next: end
+next: ms-04.07
 ---
 
 # MS 4.6 — Screenshot rules, FAQ, at-risk, item analysis, clusters, re-flow
-
-*Step 1 of N*
+*Step 16 of 42*
 
 ## Prerequisites
 
@@ -359,4 +358,4 @@ Real mistakes from the build journal.
 
 ## Next
 
-End of the chain for now.
+Next: [MS 4.7 — Drop plan, retention, messages](../ms-04.07/lesson.md).

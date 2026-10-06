@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [lazy-loading, wrapper-over-library, file-formats]
 source_refs: [{ path: packages/board/src/pdf.ts, commit: 4505e3f }, { path: packages/board/src/BoardCanvas.tsx, commit: 4505e3f }, { path: packages/web/src/features/board/index.tsx, commit: 4505e3f }, { path: packages/server/src/routes/features/board.ts, commit: 4505e3f }]
-next: end
+next: ms-09.01
 ---
 
 # MS 8.1 — The board, its pages and a PDF with notebook ruling
-
-*Step 1 of N*
+*Step 35 of 42*
 
 ## Prerequisites
 
@@ -140,4 +139,4 @@ The class-database documents are listed in the substitute handover (ms-07.04); t
 
 ## Next
 
-End of this unit for now.
+Next: [MS 9.1 — Performance budgets and the 200-learner load test CLI](../ms-09.01/lesson.md).

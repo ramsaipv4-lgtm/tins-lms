@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [feature-group, private-data, core-reuse]
 source_refs: [{ path: packages/server/src/routes/features/attend.ts, commit: 345b595 }, { path: packages/web/src/features/attend/wa.ts, commit: 345b595 }]
-next: end
+next: ms-07.04
 ---
 
 # MS 7.3 — Attendance, wrap-up, messages, trainer notes, digest
-
-*Step 3 of N*
+*Step 28 of 42*
 
 ## Prerequisites
 
@@ -116,4 +115,4 @@ These screens give the trainer the daily loop; the substitute handover (ms-07.04
 
 ## Next
 
-End of this unit for now.
+Next: [MS 7.4 — Teleprompter, substitute, trainer pack, rehearsal](../ms-07.04/lesson.md).

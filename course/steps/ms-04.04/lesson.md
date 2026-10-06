@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [conflict-merge, property-testing]
 source_refs: [{ path: packages/core/src/merge.ts, commit: 9047a570ed0755336df32b22e3e4a8a6b1c57c40 }]
-next: end
+next: ms-04.05
 ---
 
 # MS 4.4 — Conflict merge
-*Step 4 of N*
+*Step 14 of 42*
 
 ## Prerequisites
 You can read a short TypeScript function and run `node --test` (ms-01.01).
@@ -98,4 +98,5 @@ Add a generator case with three class revisions where the hub revision has no `p
 Sync (D-6, D-24) calls this whenever a hub and a device disagree.
 
 ## Next
-End of chain for now.
+
+Next: [MS 4.5 — Study groups, estimation poker, stand-up bot, explain-it-back](../ms-04.05/lesson.md).

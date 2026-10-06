@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [polling, sealed-sections, pacing]
 source_refs: [{ path: packages/web/src/features/tele/Today.tsx, commit: 940e3ba61a07d3cda1f43a9691593b623e066dbb }, { path: packages/web/src/features/tele/Prompter.tsx, commit: 940e3ba61a07d3cda1f43a9691593b623e066dbb }]
-next: end
+next: ms-07.05
 ---
 
 # MS 7.4 — Teleprompter, substitute, trainer pack, rehearsal
-*Step 1 of N*
+*Step 29 of 42*
 
 ## Prerequisites
 
@@ -125,4 +125,4 @@ Wrap-up and delivery reports read the substitution documents written here.
 
 ## Next
 
-End of the chain for now.
+Next: [MS 7.5 — Learner day — catch-up, cards, exit ticket, explain-it-back, first run, audio](../ms-07.05/lesson.md).

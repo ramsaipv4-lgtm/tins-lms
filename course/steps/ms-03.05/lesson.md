@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [recovery-key, crypto-shredding]
 source_refs: [{ path: packages/core/src/keys.ts, commit: 3c4f923f66810152e55cb83088241066a64e62a0 }]
-next: end
+next: ms-04.01
 ---
 
 # MS 3.5 — Recovery words and crypto-shredding
-*Step 5 of N*
+*Step 10 of 42*
 
 ## Prerequisites
 You know what a byte is (0 to 255) and that AES-GCM seals data with a key (ms-01.01).
@@ -99,4 +99,5 @@ recoveryWords, wordsToEntropy, wrapPersonKey, unwrapPersonKey, shred.
 Learner erasure (F-24) and recovery (F-20) both depend on this.
 
 ## Next
-End of chain for now.
+
+Next: [MS 4.1 — Teleprompter pacing and script parsing](../ms-04.01/lesson.md).

@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [shell-hooks, nav-contract, service-worker]
 source_refs: [{ path: packages/web/src/app/nav.ts, commit: 234f30a }, { path: packages/web/src/sw.ts, commit: 234f30a }]
-next: end
+next: ms-12.01
 ---
 
-# MS 11.2 - Web shell integration: hooks, nav collisions and the service worker
-
-*Step 2 of N*
+# MS 11.2 — Web shell integration — hooks, nav collisions and the service worker
+*Step 41 of 42*
 
 ## Prerequisites
 
@@ -125,4 +124,6 @@ This is the integration step: the groups stay independent and the shell offers t
 
 ## Next
 
-End of this unit for now.
+Before you continue, do [Checkpoint 6](../../checkpoints/checkpoint-6/checkpoint.md).
+
+This is the last lesson. After the checkpoint, build the [final project](../../final-project/brief.md); the post-ship fixes in [Appendix A](../../appendix/A-post-ship-fixes.md) show what merging all of this still broke.

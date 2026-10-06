@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [manifest, tar-ustar, ecdsa-signing]
 source_refs: [{ path: packages/core/src/export.ts, commit: 415c2ebf29dc4d715fc607edc2b51a92c86f389f }]
-next: end
+next: ms-03.05
 ---
 
 # MS 3.4 — Manifests, tar archives, signed class packages
-*Step 4 of N*
+*Step 9 of 42*
 
 ## Prerequisites
 
@@ -157,4 +157,4 @@ The export route `GET /api/classes/:id/package` returns this container, and pack
 
 ## Next
 
-Recovery words and crypto-shredding.
+Next: [MS 3.5 — Recovery words and crypto-shredding](../ms-03.05/lesson.md).

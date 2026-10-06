@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [hotp-codes, immutable-state, keyed-ids]
 source_refs: [{ path: packages/core/src/attendance.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }, { path: packages/core/src/pairing.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }, { path: packages/core/src/certificate.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }]
-next: end
+next: ms-03.02
 ---
 
 # MS 3.1 — Rotating attendance code, pairing codes, certificate ids
-*Step 1 of N*
+*Step 6 of 42*
 
 ## Prerequisites
 
@@ -144,4 +144,4 @@ The server's attendance and pairing routes (SPEC 5.3, 5.4) call these functions 
 
 ## Next
 
-End of the chain for now.
+Next: [MS 3.2 — Section keys and teleprompter-paced release](../ms-03.02/lesson.md).

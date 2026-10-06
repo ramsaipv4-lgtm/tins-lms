@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [admin-screens, rule-based-draft, feature-switches]
 source_refs: [{ path: packages/server/src/routes/features/admin.ts, commit: 58abe2b }]
-next: end
+next: ms-07.03
 ---
 
 # MS 7.2 — Admin class setup, syllabus, college outputs, Google opt-in
-
-*Step 2 of N*
+*Step 27 of 42*
 
 ## Prerequisites
 
@@ -108,4 +107,4 @@ Admin output feeds the college and the trainers' schedule screens.
 
 ## Next
 
-End of this chain for now.
+Next: [MS 7.3 — Attendance, wrap-up, messages, trainer notes, digest](../ms-07.03/lesson.md).

@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 4
 skills: [teleprompter-pacing, script-parsing]
 source_refs: [{ path: packages/core/src/pace.ts, commit: e345507 }]
-next: end
+next: ms-04.02
 ---
 
 # MS 4.1 — Teleprompter pacing and script parsing
-
-*Step 1 of N*
+*Step 11 of 42*
 
 ## Prerequisites
 
@@ -265,4 +264,4 @@ The system respects that classrooms are unpredictable. A trainer might spend ext
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Next: [MS 4.2 — Shift engine](../ms-04.02/lesson.md).

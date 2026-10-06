@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [fetch-adapters, fake-servers, secret-scan]
 source_refs: [{ path: packages/adapters/src/github.ts, commit: 3befeb0ceddb2ff1c6c67be57b7bbade18b61375 }, { path: packages/adapters/src/forgejo.ts, commit: 3befeb0ceddb2ff1c6c67be57b7bbade18b61375 }]
-next: end
+next: ms-10.02
 ---
 
 # MS 10.1 — GitHub App and Forgejo adapters, push-check hook
-*Step 1 of N*
+*Step 37 of 42*
 
 ## Prerequisites
 
@@ -132,4 +132,4 @@ The server's forge exercises (SPEC D-34) run on Forgejo first and call these ada
 
 ## Next
 
-End of the chain for now.
+Next: [MS 10.2 — Encrypted backup targets and Google API adapters](../ms-10.02/lesson.md).

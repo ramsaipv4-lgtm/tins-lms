@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [load-testing, percentiles, test-mode-hubs]
 source_refs: [{ path: packages/cli/src/loadtest.ts, commit: 5099bad50419a4f7e9d6ab828e8257c18b8852fa }, { path: packages/cli/src/stats.ts, commit: 5099bad50419a4f7e9d6ab828e8257c18b8852fa }]
-next: end
+next: ms-10.01
 ---
 
 # MS 9.1 — Performance budgets and the 200-learner load test CLI
-*Step 1 of N*
+*Step 36 of 42*
 
 ## Prerequisites
 
@@ -140,4 +140,6 @@ AC-100 and AC-102 protect the phone experience; AC-103 protects the classroom mo
 
 ## Next
 
-End of the chain for now.
+Before you continue, do [Checkpoint 5](../../checkpoints/checkpoint-5/checkpoint.md).
+
+Next: [MS 10.1 — GitHub App and Forgejo adapters, push-check hook](../ms-10.01/lesson.md).

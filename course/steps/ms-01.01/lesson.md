@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [core-crypto, feature-switches, version-compat]
 source_refs: [{ path: packages/core/src/util.ts, commit: c5b7bff }, { path: packages/core/src/switches.ts, commit: c5b7bff }]
-next: end
+next: ms-02.01
 ---
 
 # MS 1.1 — Core scaffold, shared byte helpers, feature switches, version compat
-*Step 1 of N*
+*Step 1 of 42*
 
 ## Prerequisites
 
@@ -305,4 +305,4 @@ Without these three, the rest of the system cannot run.
 
 ## Next
 
-This is the first step of the core logic rebuild. Next (later tasks): seeded randomness, cards and spaced repetition, catch-up gate, graded timing.
+Next: [MS 2.1 — Seeded randomness](../ms-02.01/lesson.md).

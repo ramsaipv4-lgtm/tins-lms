@@ -8,11 +8,11 @@ objectives: 4
 new_terms: 5
 skills: [timing, accommodations, clock-skew, monotonic-time, offline-work]
 source_refs: [{ path: packages/core/src/timing.ts, commit: bb6614112b654cb00aafed4aef9307b851f687d8 }]
-next: ms-02.05
+next: ms-03.01
 ---
 
 # MS 2.4 — Graded Timing and Accommodations
-*Step 4 of 5 in Module 2*
+*Step 5 of 42*
 
 ## Prerequisites
 
@@ -304,4 +304,6 @@ Together, these mechanisms balance automation with human judgment—the system g
 
 ## Next
 
-In ms-02.05, we'll see how to use timing and accommodations to **score an attempt** and handle disputes via appeals.
+Before you continue, do [Checkpoint 1](../../checkpoints/checkpoint-1/checkpoint.md).
+
+Next: [MS 3.1 — Rotating attendance code, pairing codes, certificate ids](../ms-03.01/lesson.md).

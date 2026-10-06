@@ -8,10 +8,12 @@ objectives: 3
 new_terms: 4
 skills: [health-monitoring, offline-first, async-iteration]
 source_refs: [{ path: packages/adapters/src/health.ts, commit: c6653dd7722af186c248f1a0287b482b06e3bd4a }]
-next: end
+next: ms-11.01
 ---
 
 # MS 10.3 — Health digest and morning checklist
+*Step 39 of 42*
+
 *Building health checks into the adapter layer*
 
 ## Prerequisites
@@ -218,4 +220,4 @@ The health digest is the system's heartbeat. Trainers need to see at a glance th
 
 ## Next
 
-End of this step.
+Next: [MS 11.1 — Server hardening and integration](../ms-11.01/lesson.md).
