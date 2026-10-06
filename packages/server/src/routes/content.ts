@@ -117,7 +117,7 @@ export function register(app: any, ctx: any): void {
       for (const d of parsed.days) {
         if (seen.has(d.index)) continue;
         seen.add(d.index);
-        const script = Object.entries<string>(pkg.files).find(([p]) => /(^|\/)day0*${d.index}\/instructor_script\.md$/.test(p) || new RegExp(`instructor_script_day0*${d.index}\\.md$`).test(p))?.[1];
+        const script = Object.entries<string>(pkg.files).find(([p]) => new RegExp(`(^|/)day0*${d.index}/instructor_script\\.md$`).test(p) || new RegExp(`instructor_script_day0*${d.index}\\.md$`).test(p))?.[1];
         const prev = await store.get(`class-${key}`, `day:${d.index}`);
         await store.put(`class-${key}`, {
           type: 'day', id: `day:${d.index}`, schema: ctx.schema, updatedAt: ctx.clock.now(), updatedBy: 'hub:package',
@@ -200,7 +200,7 @@ export function register(app: any, ctx: any): void {
     const s = c.get('session');
     const staff = (s?.roles ?? []).some((r: string) => ['admin', 'trainer', 'substitute', 'coordinator'].includes(r));
     if (!staff) {
-      const en = await store.get(`class-${classKey}`, `enrolment:${s?.personId}`);
+      const en = (await store.list(`class-${classKey}`, 'enrolment:')).find((e: any) => ctx.ids.keyOf(String(e.personId ?? e.id)) === s?.personId);
       if (!en || en.status !== 'active') throw new ctx.http.ApiError(403, { error: { class: 'not-enrolled' } });
     }
     const { cls, day } = await loadDay(classKey, index);

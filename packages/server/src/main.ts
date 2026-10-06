@@ -11,9 +11,7 @@ import { createCtx } from './core/ctx.ts';
 import { createDbMount } from './core/dbmount.ts';
 import { loadOrCreateCa } from './core/ca.ts';
 import { randomCode } from './core/ids.ts';
-import { Hono } from 'hono';
-import { hashCode, registerSignin } from './routes/accounts.ts';
-import { ApiError } from './core/http.ts';
+import { hashCode } from './routes/accounts.ts';
 
 const config = readConfig();
 const ctx = createCtx(config);
@@ -29,22 +27,11 @@ if (created) {
 
 const app = createApp(ctx);
 
-// Sign-in routes (/api/signin/*) need no session; they live on their own small app so the session gate in app.ts is not involved.
-const signinApp = new Hono();
-signinApp.use('*', async (c, next) => { c.set('session' as any, null); await next(); });
-signinApp.onError((err, c) => {
-  if (err instanceof ApiError) return c.json(err.body as any, err.status as any);
-  ctx.log(`unhandled error: ${(err as Error)?.name ?? 'Error'}`);
-  return c.json({ error: { server: 'internal' } }, 500);
-});
-registerSignin(signinApp, ctx);
-
 // LMS_PSEUDO_LOCALE=1: inject <meta name="lms-pseudo-locale" content="1"> into the HTML the server sends (SPEC Appendix C).
 const pseudoLocale = process.env.LMS_PSEUDO_LOCALE === '1';
 const PSEUDO_META = '<meta name="lms-pseudo-locale" content="1">';
 async function fetchWithExtras(req: Request): Promise<Response> {
-  const path = new URL(req.url).pathname;
-  const res = path.startsWith('/api/signin/') ? await signinApp.fetch(req) : await app.fetch(req);
+  const res = await app.fetch(req);
   if (!pseudoLocale || !(res.headers.get('content-type') ?? '').startsWith('text/html')) return res;
   const html = await res.text();
   if (/<meta[^>]*name="lms-pseudo-locale"/.test(html.replace(/<!--[\s\S]*?-->/g, ''))) return new Response(html, { status: res.status, headers: res.headers });

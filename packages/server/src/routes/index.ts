@@ -32,6 +32,7 @@ import { register as content } from './content.ts';
 import { register as sync } from './sync.ts';
 import { register as grading } from './grading.ts';
 import { register as exportRoutes } from './export.ts';
+import { register as mcp } from './mcp.ts';
 // Web feature groups (B7/B8 tasks) add their server routes in routes/features/<group>.ts.
 import { register as fAdmin } from './features/admin.ts';
 import { register as fAttend } from './features/attend.ts';
@@ -46,7 +47,7 @@ import { register as fBoard } from './features/board.ts';
 export type RouteModule = (app: any, ctx: any) => void;
 
 export function registerRoutes(app: any, ctx: any): void {
-  const modules: RouteModule[] = [health, accounts, pairing, attendance, content, sync, grading, exportRoutes,
+  const modules: RouteModule[] = [health, accounts, pairing, attendance, content, sync, grading, exportRoutes, mcp,
     fAdmin, fAttend, fTele, fLearn, fShift, fClassroom, fCoach, fFiles, fBoard];
   if (ctx.config.testMode) modules.push(testmode); // without LMS_TEST_MODE=1 /__test/* is a plain 404 (AC-78)
   for (const register of modules) register(app, ctx);

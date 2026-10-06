@@ -20,10 +20,10 @@ export function createGuards() {
   return { auth, role };
 }
 
-// Routes that need no session (SPEC AC-62): health, join, sign-in and pairing claim.
+// Routes that need no session (SPEC AC-62): health, join, signin and pairing claim.
 export function isPublicApi(path: string): boolean {
   return path === '/api/health'
     || path === '/api/join' || path.startsWith('/api/join/')
-    || path === '/api/sign-in' || path.startsWith('/api/sign-in/')
+    || path === '/api/signin' || path.startsWith('/api/signin/')
     || path === '/api/pairing/claim';
 }

@@ -95,3 +95,17 @@ test('AC-66 printed fallback marks verified false; roles and enrolment are enfor
   assert.equal((await trainer('/api/classes/nope/attendance-code')).status, 404);
   await trainer('/__test/clock', { method: 'POST', body: { now: null } });
 });
+
+test('b11-1 seeded enrolment ids (enrolment:c1-l1) are found by personId; a scheduled day without package content is recorded as that day', async () => {
+  const trainer = await as('tr1', ['trainer']);
+  assert.equal((await trainer('/__test/seed', { method: 'POST', body: { fixture: 'journeys/base.json' } })).status, 200);
+  const learner = await as('l1', ['learner']);
+  const sched = (await trainer('/api/classes/c1/days/0')).status; void sched;
+  // the fourth scheduled day (index 3) has no package content in the fixture: it must be recorded as day 3, not day 2
+  await trainer('/__test/clock', { method: 'POST', body: { now: Date.parse('2026-11-05T10:00:00Z') } });
+  const code = (await trainer('/api/classes/c1/attendance-code')).json.code;
+  const ok = await learner('/api/classes/c1/attendance', { method: 'POST', body: { code } });
+  assert.equal(ok.status, 200, ok.text);
+  assert.equal(ok.json.dayIndex, 3);
+  await trainer('/__test/clock', { method: 'POST', body: { now: null } });
+});

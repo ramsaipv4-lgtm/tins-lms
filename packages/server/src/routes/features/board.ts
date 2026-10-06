@@ -2,9 +2,8 @@
 // the class database (the trainer pack and handover read them), and the Excalidraw fonts are served locally so the
 // board never calls a CDN (AC-102).
 import { z } from 'zod';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { brotliCompress, brotliCompressSync, gzipSync, constants as zc } from 'node:zlib';
-import { extname, join, normalize, resolve, sep } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { extname, normalize, resolve, sep } from 'node:path';
 
 const STAFF = ['admin', 'trainer', 'substitute', 'coordinator'];
 const pageSchema = z.object({
@@ -85,67 +84,6 @@ export function register(app: any, ctx: any): void {
     await classDoc(key);
     await store.remove(`class-${key}`, `board:${idOf(c.req.param('pid'))}`);
     return c.json({ ok: true });
-  });
-
-  // The board is about 3 MB of JavaScript, so on a slow phone link it only meets the 3 s budget (AC-101) when sent
-  // compressed. The static server sends files as they are; this middleware compresses built assets (brotli when the browser accepts it, cached by mtime).
-  const gz = new Map<string, { mtime: number; enc: string; body: Uint8Array }>();
-  const TYPES: Record<string, string> = { '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json' };
-  const compress = (file: string, enc: string, mtime: number) => {
-    const raw = readFileSync(file);
-    const hit = { mtime, enc, body: enc === 'br' ? brotliCompressSync(raw, { params: { [zc.BROTLI_PARAM_QUALITY]: 5 } }) : gzipSync(raw, { level: 6 }) };
-    gz.set(`${enc}:${file}`, hit);
-    return hit;
-  };
-  // Warm the cache just after start so the first phone to open the board pays no compression time: a fast pass over
-  // every large file, then the slow, smallest-output brotli (quality 11, on the thread pool, so requests are not blocked)
-  // for the board chunk and the chunks it statically imports (found by reading its `from"./x.js"` imports).
-  const best = (file: string) => new Promise<void>((resolveBest) => {
-    const mtime = statSync(file).mtimeMs;
-    const raw = readFileSync(file);
-    brotliCompress(raw, { params: { [zc.BROTLI_PARAM_QUALITY]: 11, [zc.BROTLI_PARAM_SIZE_HINT]: raw.length } }, (err, body) => {
-      if (!err) gz.set(`br:${file}`, { mtime, enc: 'br', body });
-      resolveBest();
-    });
-  });
-  setTimeout(async () => {
-    try {
-      const dir = join(resolve(ctx.config.webDist), 'assets');
-      if (!existsSync(dir)) return;
-      const files = readdirSync(dir).filter((x) => x.endsWith('.js') || x.endsWith('.css'));
-      // The board chunk and every chunk it statically imports (read from its `from"./x.js"` imports), smallest first.
-      const critical = new Set<string>(files.filter((x) => /^Board-/.test(x)));
-      const todo = [...critical].filter((x) => x.endsWith('.js'));
-      while (todo.length) {
-        const text = readFileSync(join(dir, todo.pop()!), 'utf8');
-        for (const m of text.matchAll(/(?:from|import)\s*"\.\/([^"]+\.js)"/g)) if (!critical.has(m[1]) && existsSync(join(dir, m[1]))) { critical.add(m[1]); todo.push(m[1]); }
-      }
-      const order = [...critical].map((f) => join(dir, f)).sort((x, y) => statSync(x).size - statSync(y).size);
-      // Slow brotli (quality 11) on the thread pool, in parallel, so requests are not blocked; the fast pass follows.
-      const slow = Promise.all(order.map(best));
-      for (const f of files) {
-        const file = join(dir, f);
-        if (statSync(file).size < 20000 || critical.has(f)) continue;
-        compress(file, 'br', statSync(file).mtimeMs);
-        await new Promise((r) => setImmediate(r));
-      }
-      await slow;
-    } catch { /* warming is best effort */ }
-  }, 0).unref();
-  app.use('/assets/*', async (c: any, next: any) => {
-    const ext = extname(c.req.path);
-    if (c.req.method !== 'GET' || !TYPES[ext] || !/\b(br|gzip)\b/.test(c.req.header('accept-encoding') ?? '')) return next();
-    const enc = /\bbr\b/.test(c.req.header('accept-encoding')) ? 'br' : 'gzip';
-    const root = resolve(ctx.config.webDist);
-    let rel: string;
-    try { rel = normalize(decodeURIComponent(c.req.path)); } catch { return next(); }
-    const file = resolve(root, '.' + sep + rel);
-    if (!file.startsWith(root + sep) || !existsSync(file)) return next();
-    const mtime = statSync(file).mtimeMs;
-    const key = `${enc}:${file}`;
-    let hit = gz.get(key);
-    if (!hit || hit.mtime !== mtime) hit = compress(file, enc, mtime);
-    return new Response(hit.body as BodyInit, { headers: { 'content-type': TYPES[ext], 'content-encoding': hit.enc, vary: 'accept-encoding', 'cache-control': 'public, max-age=31536000, immutable' } });
   });
 
   // Fonts for the canvas (EXCALIDRAW_ASSET_PATH = /board-assets/). Public: the files are the MIT-licensed Excalidraw fonts.

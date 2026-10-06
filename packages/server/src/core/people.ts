@@ -44,3 +44,9 @@ export function isMinor(dob: string, now: number): boolean {
   const eighteen = Date.UTC(+m[1] + 18, +m[2] - 1, +m[3]);
   return now < eighteen;
 }
+
+// True when the person has the minor profile: the stored flag, or a date of birth under 18 at the clock's now (D-33).
+export async function isMinorPerson(ctx: any, key: string): Promise<boolean> {
+  const p = await getPerson(ctx, key);
+  return !!p && (p.minor === true || (typeof p.dob === 'string' && p.dob !== '' && isMinor(p.dob, ctx.clock.now())));
+}

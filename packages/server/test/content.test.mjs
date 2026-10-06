@@ -125,3 +125,19 @@ test('seeded package publishes days with sealed sections', async () => {
   assert.equal(d.json.sections.length, 5);
   assert.ok(d.json.sections.every((x) => x.sealed && !x.key));
 });
+
+test('b11-1 a published package seals the instructor script text, not just the section titles', async () => {
+  await s.login('admin1', ['admin']);
+  assert.equal((await s.req('/__test/seed', { method: 'POST', body: { fixture: 'journeys/base.json' } })).status, 200);
+  await s.login('tr1', ['trainer']);
+  const sealedDay = await s.req('/api/classes/c1/days/1');
+  const target = sealedDay.json.sections.find((x) => !x.graded);
+  assert.equal((await s.req('/api/classes/c1/teleprompter', { method: 'POST', body: { sectionId: target.id, dayIndex: 1 } })).status, 200);
+  await s.login('l1', ['learner']);
+  const d = await s.req('/api/classes/c1/days/1');
+  assert.equal(d.status, 200);
+  const first = d.json.sections.find((x) => x.id === target.id);
+  assert.ok(first.key, 'the released section carries its key');
+  const plain = new TextDecoder().decode(await openSection(new Uint8Array(Buffer.from(first.key, 'base64')), new Uint8Array(Buffer.from(first.sealed, 'base64'))));
+  assert.ok(plain.split('\n').length > 1, `body is the script section, not the bare title: ${JSON.stringify(plain.slice(0, 80))}`);
+});
