@@ -12,7 +12,7 @@ next: ms-02.04
 ---
 
 # MS 2.3 — Catch-up gate and mastery map
-*Step 4 of 41*
+*Step 4 of 42*
 
 ## Prerequisites
 

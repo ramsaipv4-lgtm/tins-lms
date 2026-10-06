@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [shell-hooks, nav-contract, service-worker]
 source_refs: [{ path: packages/web/src/app/nav.ts, commit: 234f30a }, { path: packages/web/src/sw.ts, commit: 234f30a }]
-next: end
+next: ms-12.01
 ---
 
 # MS 11.2 — Web shell integration — hooks, nav collisions and the service worker
-*Step 41 of 41*
+*Step 41 of 42*
 
 ## Prerequisites
 

@@ -12,7 +12,7 @@ next: ms-07.09
 ---
 
 # MS 7.8 — Coach space, screenshot import, portfolio, engagement
-*Step 33 of 41*
+*Step 33 of 42*
 
 ## Prerequisites
 

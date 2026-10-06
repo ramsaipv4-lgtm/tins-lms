@@ -12,7 +12,7 @@ next: ms-02.02
 ---
 
 # MS 2.1 — Seeded randomness
-*Step 2 of 41*
+*Step 2 of 42*
 
 ## Prerequisites
 

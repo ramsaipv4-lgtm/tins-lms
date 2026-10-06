@@ -12,7 +12,7 @@ next: ms-07.05
 ---
 
 # MS 7.4 — Teleprompter, substitute, trainer pack, rehearsal
-*Step 29 of 41*
+*Step 29 of 42*
 
 ## Prerequisites
 

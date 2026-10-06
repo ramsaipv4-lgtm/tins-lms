@@ -12,7 +12,7 @@ next: ms-10.01
 ---
 
 # MS 9.1 — Performance budgets and the 200-learner load test CLI
-*Step 36 of 41*
+*Step 36 of 42*
 
 ## Prerequisites
 

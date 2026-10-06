@@ -12,7 +12,7 @@ next: ms-03.05
 ---
 
 # MS 3.4 — Manifests, tar archives, signed class packages
-*Step 9 of 41*
+*Step 9 of 42*
 
 ## Prerequisites
 

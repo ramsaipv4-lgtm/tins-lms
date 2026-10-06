@@ -12,7 +12,7 @@ next: ms-07.02
 ---
 
 # MS 7.1 — Web foundation
-*Step 26 of 41*
+*Step 26 of 42*
 
 ## Prerequisites
 

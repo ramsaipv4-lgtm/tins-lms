@@ -12,7 +12,7 @@ next: ms-07.03
 ---
 
 # MS 7.2 — Admin class setup, syllabus, college outputs, Google opt-in
-*Step 27 of 41*
+*Step 27 of 42*
 
 ## Prerequisites
 

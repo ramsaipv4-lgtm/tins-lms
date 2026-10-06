@@ -12,7 +12,7 @@ next: ms-06.06
 ---
 
 # MS 6.5 — Attempts, grade ledger, appeals and integrity log
-*Step 23 of 41*
+*Step 23 of 42*
 
 ## Prerequisites
 

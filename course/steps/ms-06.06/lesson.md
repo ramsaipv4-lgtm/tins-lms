@@ -12,7 +12,7 @@ next: ms-06.08
 ---
 
 # MS 6.6 — Export, import and signed class packages
-*Step 24 of 41*
+*Step 24 of 42*
 
 ## Prerequisites
 

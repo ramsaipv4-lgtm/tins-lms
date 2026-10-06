@@ -12,7 +12,7 @@ next: ms-07.06
 ---
 
 # MS 7.5 — Learner day — catch-up, cards, exit ticket, explain-it-back, first run, audio
-*Step 30 of 41*
+*Step 30 of 42*
 
 ## Prerequisites
 

@@ -12,7 +12,7 @@ next: ms-10.03
 ---
 
 # MS 10.2 — Encrypted backup targets and Google API adapters
-*Step 38 of 41*
+*Step 38 of 42*
 
 *Adapter integrations: backup encryption, Google Meet/Calendar/Forms*
 

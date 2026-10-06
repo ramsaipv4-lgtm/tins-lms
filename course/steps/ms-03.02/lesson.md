@@ -12,7 +12,7 @@ next: ms-03.03
 ---
 
 # MS 3.2 — Section keys and teleprompter-paced release
-*Step 7 of 41*
+*Step 7 of 42*
 
 ## Prerequisites
 

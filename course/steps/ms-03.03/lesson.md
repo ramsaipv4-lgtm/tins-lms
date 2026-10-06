@@ -12,7 +12,7 @@ next: ms-03.04
 ---
 
 # MS 3.3 — Append-only hash-chained ledger
-*Step 8 of 41*
+*Step 8 of 42*
 
 ## Prerequisites
 

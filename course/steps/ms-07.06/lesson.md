@@ -12,7 +12,7 @@ next: ms-07.07
 ---
 
 # MS 7.6 — Shift, sprint rituals and the practice forge
-*Step 31 of 41*
+*Step 31 of 42*
 
 ## Prerequisites
 

@@ -12,7 +12,7 @@ next: ms-02.01
 ---
 
 # MS 1.1 — Core scaffold, shared byte helpers, feature switches, version compat
-*Step 1 of 41*
+*Step 1 of 42*
 
 ## Prerequisites
 

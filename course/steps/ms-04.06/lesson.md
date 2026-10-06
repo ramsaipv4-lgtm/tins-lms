@@ -12,7 +12,7 @@ next: ms-04.07
 ---
 
 # MS 4.6 — Screenshot rules, FAQ, at-risk, item analysis, clusters, re-flow
-*Step 16 of 41*
+*Step 16 of 42*
 
 ## Prerequisites
 

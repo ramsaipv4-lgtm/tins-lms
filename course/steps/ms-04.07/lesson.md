@@ -12,7 +12,7 @@ next: ms-05.01
 ---
 
 # MS 4.7 — Drop plan, retention, messages
-*Step 17 of 41*
+*Step 17 of 42*
 
 ## Prerequisites
 

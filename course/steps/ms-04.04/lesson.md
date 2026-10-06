@@ -12,7 +12,7 @@ next: ms-04.05
 ---
 
 # MS 4.4 — Conflict merge
-*Step 14 of 41*
+*Step 14 of 42*
 
 ## Prerequisites
 You can read a short TypeScript function and run `node --test` (ms-01.01).

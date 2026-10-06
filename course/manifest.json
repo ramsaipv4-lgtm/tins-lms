@@ -1,0 +1,294 @@
+{
+  "title": "Build the Coach LMS from scratch: a case study",
+  "variant": "case-study",
+  "steps": [
+    {
+      "id": "ms-01.01",
+      "title": "Core scaffold, shared byte helpers, feature switches, version compat",
+      "module": 1,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-02.01",
+      "title": "Seeded randomness",
+      "module": 2,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-02.02",
+      "title": "Cards and spaced repetition (ts-fsrs)",
+      "module": 2,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-02.03",
+      "title": "Catch-up gate and mastery map",
+      "module": 2,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-02.04",
+      "title": "Graded Timing and Accommodations",
+      "module": 2,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-03.01",
+      "title": "Rotating attendance code, pairing codes, certificate ids",
+      "module": 3,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-03.02",
+      "title": "Section keys and teleprompter-paced release",
+      "module": 3,
+      "est_minutes": 20
+    },
+    {
+      "id": "ms-03.03",
+      "title": "Append-only hash-chained ledger",
+      "module": 3,
+      "est_minutes": 30
+    },
+    {
+      "id": "ms-03.04",
+      "title": "Manifests, tar archives, signed class packages",
+      "module": 3,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-03.05",
+      "title": "Recovery words and crypto-shredding",
+      "module": 3,
+      "est_minutes": 25
+    },
+    {
+      "id": "ms-04.01",
+      "title": "Teleprompter pacing and script parsing",
+      "module": 4,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-04.02",
+      "title": "Shift engine",
+      "module": 4,
+      "est_minutes": 30
+    },
+    {
+      "id": "ms-04.03",
+      "title": "Appeals and AI policy",
+      "module": 4,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-04.04",
+      "title": "Conflict merge",
+      "module": 4,
+      "est_minutes": 30
+    },
+    {
+      "id": "ms-04.05",
+      "title": "Study groups, estimation poker, stand-up bot, explain-it-back",
+      "module": 4,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-04.06",
+      "title": "Screenshot rules, FAQ, at-risk, item analysis, clusters, re-flow",
+      "module": 4,
+      "est_minutes": 60
+    },
+    {
+      "id": "ms-04.07",
+      "title": "Drop plan, retention, messages",
+      "module": 4,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-05.01",
+      "title": "Package import and content gate",
+      "module": 5,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.01",
+      "title": "Server foundation",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.02",
+      "title": "Pairing, devices, attendance",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.03",
+      "title": "Packages, gate on upload, sealed sections and teleprompter release",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.04",
+      "title": "Sync rules and the merge pass",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.05",
+      "title": "Attempts, grade ledger, appeals and integrity log",
+      "module": 6,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-06.06",
+      "title": "Export, import and signed class packages",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-06.08",
+      "title": "Sign-out, passkeys and the sign-in gate",
+      "module": 6,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.01",
+      "title": "Web foundation",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.02",
+      "title": "Admin class setup, syllabus, college outputs, Google opt-in",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.03",
+      "title": "Attendance, wrap-up, messages, trainer notes, digest",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.04",
+      "title": "Teleprompter, substitute, trainer pack, rehearsal",
+      "module": 7,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-07.05",
+      "title": "Learner day - catch-up, cards, exit ticket, explain-it-back, first run, audio",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.06",
+      "title": "Shift, sprint rituals and the practice forge",
+      "module": 7,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-07.07",
+      "title": "Appeals, doubts, drop, accommodations, content improvement",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.08",
+      "title": "Coach space, screenshot import, portfolio, engagement",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-07.09",
+      "title": "Offline phone profile, file exchange, export my data, robustness",
+      "module": 7,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-08.01",
+      "title": "The board, its pages and a PDF with notebook ruling",
+      "module": 8,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-09.01",
+      "title": "Performance budgets and the 200-learner load test CLI",
+      "module": 9,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-10.01",
+      "title": "GitHub App and Forgejo adapters, push-check hook",
+      "module": 10,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-10.02",
+      "title": "Encrypted backup targets and Google API adapters",
+      "module": 10,
+      "est_minutes": 50
+    },
+    {
+      "id": "ms-10.03",
+      "title": "Health digest and morning checklist",
+      "module": 10,
+      "est_minutes": 35
+    },
+    {
+      "id": "ms-11.01",
+      "title": "Server hardening and integration",
+      "module": 11,
+      "est_minutes": 40
+    },
+    {
+      "id": "ms-11.02",
+      "title": "Web shell integration - hooks, nav collisions and the service worker",
+      "module": 11,
+      "est_minutes": 45
+    },
+    {
+      "id": "ms-12.01",
+      "title": "The last two rows",
+      "module": 12,
+      "est_minutes": 45
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "checkpoint-1",
+      "after": "ms-02.04"
+    },
+    {
+      "id": "checkpoint-2",
+      "after": "ms-04.07"
+    },
+    {
+      "id": "checkpoint-3",
+      "after": "ms-06.08"
+    },
+    {
+      "id": "checkpoint-4",
+      "after": "ms-07.09"
+    },
+    {
+      "id": "checkpoint-5",
+      "after": "ms-09.01"
+    },
+    {
+      "id": "checkpoint-6",
+      "after": "ms-12.01"
+    }
+  ],
+  "extra_files": [
+    "00-syllabus.md",
+    "01-strategy.md",
+    "final-project/brief.md",
+    "final-project/rubric.md",
+    "appendix/A-post-ship-fixes.md",
+    "appendix/B-decision-log.md",
+    "marketing/non-technical.txt",
+    "marketing/technical.txt"
+  ]
+}

@@ -12,7 +12,7 @@ next: ms-09.01
 ---
 
 # MS 8.1 — The board, its pages and a PDF with notebook ruling
-*Step 35 of 41*
+*Step 35 of 42*
 
 ## Prerequisites
 

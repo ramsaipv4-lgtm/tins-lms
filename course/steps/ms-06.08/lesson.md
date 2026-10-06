@@ -12,7 +12,7 @@ next: ms-07.01
 ---
 
 # MS 6.8 — Sign-out, passkeys and the sign-in gate
-*Step 25 of 41*
+*Step 25 of 42*
 
 ## Prerequisites
 

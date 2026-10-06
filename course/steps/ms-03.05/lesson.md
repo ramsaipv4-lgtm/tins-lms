@@ -12,7 +12,7 @@ next: ms-04.01
 ---
 
 # MS 3.5 — Recovery words and crypto-shredding
-*Step 10 of 41*
+*Step 10 of 42*
 
 ## Prerequisites
 You know what a byte is (0 to 255) and that AES-GCM seals data with a key (ms-01.01).

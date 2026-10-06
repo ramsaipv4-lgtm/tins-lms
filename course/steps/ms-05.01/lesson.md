@@ -12,7 +12,7 @@ next: ms-06.01
 ---
 
 # MS 5.1 — Package import and content gate
-*Step 18 of 41*
+*Step 18 of 42*
 
 ## Prerequisites
 

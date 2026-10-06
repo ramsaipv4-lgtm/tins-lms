@@ -12,7 +12,7 @@ next: ms-04.02
 ---
 
 # MS 4.1 — Teleprompter pacing and script parsing
-*Step 11 of 41*
+*Step 11 of 42*
 
 ## Prerequisites
 

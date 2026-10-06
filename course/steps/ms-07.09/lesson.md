@@ -12,7 +12,7 @@ next: ms-08.01
 ---
 
 # MS 7.9 — Offline phone profile, file exchange, export my data, robustness
-*Step 34 of 41*
+*Step 34 of 42*
 
 ## Prerequisites
 

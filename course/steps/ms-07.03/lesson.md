@@ -12,7 +12,7 @@ next: ms-07.04
 ---
 
 # MS 7.3 — Attendance, wrap-up, messages, trainer notes, digest
-*Step 28 of 41*
+*Step 28 of 42*
 
 ## Prerequisites
 

@@ -12,7 +12,7 @@ next: ms-04.06
 ---
 
 # MS 4.5 — Study groups, estimation poker, stand-up bot, explain-it-back
-*Step 15 of 41*
+*Step 15 of 42*
 
 > **Read this first.** The builder of task b4-5 never wrote this step. The course editor wrote it afterwards, from the merged code (`packages/core/src/groups.ts`, `poker.ts`, `standup.ts`, `explain.ts`), their unit tests and `docs/build-journal/b4-5.md`. The audit in `docs/build-journal/AUDIT.md` also found that the original builder read hidden acceptance tests for these four functions, which SPEC D-40 forbids. So treat the code below as one working answer, not as proof that a clean build from the SPEC gets there. **Implement from SPEC §4.14 to §4.17 only**, and use the acceptance suite as your check.
 

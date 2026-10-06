@@ -12,6 +12,8 @@ next: end
 ---
 
 # MS 12.1 — The last two rows
+
+*Step 42 of 42*
 *Two failures that were not what they looked like*
 
 ## Prerequisites

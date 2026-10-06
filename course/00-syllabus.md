@@ -40,7 +40,7 @@ Each module ends with all of its acceptance rows green. Times are the sum of the
 ### Notes on the table
 
 - Step ms-04.05 (study groups, poker, stand-up, explain-it-back) was written by the course editor after the fact. Its original builder read hidden acceptance tests, so that lesson tells you to implement from the SPEC only.
-- Module 12 had no lesson when this course was assembled: task b12-1 was still in progress (CONTINUE.md, 2026-10-06). Checkpoint 6 uses the SPEC rows for AC-153 and AC-94 and the integration notes, not a lesson.
+- Module 12 (step ms-12.01, task b12-1: the accommodation timer AC-153 and phone screenshot OCR AC-94) was written by its builder and merged last; checkpoint 6 covers it.
 - The rows AC-118, AC-119, AC-130, AC-131 and AC-140 to AC-145 are manual checks in the SPEC and are not part of a module.
 
 ## Checkpoints and the final project

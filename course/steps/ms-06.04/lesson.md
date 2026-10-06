@@ -12,7 +12,7 @@ next: ms-06.05
 ---
 
 # MS 6.4 — Sync rules and the merge pass
-*Step 22 of 41*
+*Step 22 of 42*
 
 ## Prerequisites
 

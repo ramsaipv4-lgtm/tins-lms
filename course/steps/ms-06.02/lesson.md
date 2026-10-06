@@ -12,7 +12,7 @@ next: ms-06.03
 ---
 
 # MS 6.2 — Pairing, devices, attendance
-*Step 20 of 41*
+*Step 20 of 42*
 
 ## Prerequisites
 

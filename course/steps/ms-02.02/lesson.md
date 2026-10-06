@@ -12,7 +12,7 @@ next: ms-02.03
 ---
 
 # MS 2.2 — Cards and spaced repetition (ts-fsrs)
-*Step 3 of 41*
+*Step 3 of 42*
 
 ## Prerequisites
 

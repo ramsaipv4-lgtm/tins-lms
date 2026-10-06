@@ -12,7 +12,7 @@ next: ms-11.01
 ---
 
 # MS 10.3 — Health digest and morning checklist
-*Step 39 of 41*
+*Step 39 of 42*
 
 *Building health checks into the adapter layer*
 

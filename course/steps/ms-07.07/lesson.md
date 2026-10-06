@@ -12,7 +12,7 @@ next: ms-07.08
 ---
 
 # MS 7.7 — Appeals, doubts, drop, accommodations, content improvement
-*Step 32 of 41*
+*Step 32 of 42*
 
 ## Prerequisites
 

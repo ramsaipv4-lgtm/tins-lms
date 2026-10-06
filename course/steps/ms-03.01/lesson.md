@@ -12,7 +12,7 @@ next: ms-03.02
 ---
 
 # MS 3.1 — Rotating attendance code, pairing codes, certificate ids
-*Step 6 of 41*
+*Step 6 of 42*
 
 ## Prerequisites
 

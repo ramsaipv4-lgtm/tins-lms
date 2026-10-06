@@ -12,7 +12,7 @@ next: ms-06.02
 ---
 
 # MS 6.1 — Server foundation
-*Step 19 of 41*
+*Step 19 of 42*
 
 ## Prerequisites
 

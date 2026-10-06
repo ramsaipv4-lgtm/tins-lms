@@ -12,7 +12,7 @@ next: ms-03.01
 ---
 
 # MS 2.4 — Graded Timing and Accommodations
-*Step 5 of 41*
+*Step 5 of 42*
 
 ## Prerequisites
 

@@ -12,7 +12,7 @@ next: ms-10.02
 ---
 
 # MS 10.1 — GitHub App and Forgejo adapters, push-check hook
-*Step 37 of 41*
+*Step 37 of 42*
 
 ## Prerequisites
 

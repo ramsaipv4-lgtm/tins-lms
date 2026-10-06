@@ -12,7 +12,7 @@ next: ms-06.04
 ---
 
 # MS 6.3 — Packages, gate on upload, sealed sections and teleprompter release
-*Step 21 of 41*
+*Step 21 of 42*
 
 ## Prerequisites
 - The server foundation (ms-06.01): `ctx`, the store and role guards.

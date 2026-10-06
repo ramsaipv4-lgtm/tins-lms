@@ -12,7 +12,7 @@ next: ms-11.02
 ---
 
 # MS 11.1 — Server hardening and integration
-*Step 40 of 41*
+*Step 40 of 42*
 
 *Fixing what only shows up when the pieces meet*
 

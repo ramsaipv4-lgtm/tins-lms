@@ -12,7 +12,7 @@ next: ms-04.03
 ---
 
 # MS 4.2 — Shift engine
-*Step 12 of 41*
+*Step 12 of 42*
 
 ## Prerequisites
 
