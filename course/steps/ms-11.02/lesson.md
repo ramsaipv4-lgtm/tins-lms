@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 5
 skills: [shell-hooks, nav-contract, service-worker]
-source_refs: [{ path: packages/web/src/app/nav.ts, commit: cf4afc5 }, { path: packages/web/src/sw.ts, commit: cf4afc5 }]
+source_refs: [{ path: packages/web/src/app/nav.ts, commit: 234f30a }, { path: packages/web/src/sw.ts, commit: 234f30a }]
 next: end
 ---
 
