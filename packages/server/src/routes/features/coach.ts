@@ -7,6 +7,7 @@
 // learner's personal database and travels through /db/* (the sync guard refuses plaintext and minors).
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { gunzipSync } from 'node:zlib';
 import { dirname, join, resolve } from 'node:path';
 import { isOn, switchDefaults } from '../../../../core/src/index.ts';
 import { compressed, pickEncoding } from '../../core/static.ts';
@@ -79,6 +80,14 @@ export function register(app: any, ctx: any): void {
     return asset(OCR_CORE.has(name) && dir ? join(dir, name) : null, 'text/javascript', c);
   });
   app.get('/api/coach/ocr/lang/eng.traineddata.gz', (c: any) => asset(tessdataPath(root, ctx.config.dataDir), 'application/gzip', c));
+  // The same data under the name tesseract.js asks for when it is told not to unzip (`gzip: false`): the bytes stay gzip
+  // and say so in Content-Encoding, so the phone's browser inflates them natively instead of the worker doing it in script.
+  app.get('/api/coach/ocr/lang/eng.traineddata', (c: any) => {
+    const file = tessdataPath(root, ctx.config.dataDir);
+    if (!file || !existsSync(file)) return c.json({ error: { file: 'not-available' } }, 404);
+    if (!/gzip/.test(c.req.header('accept-encoding') ?? '')) return c.body(gunzipSync(readFileSync(file)), 200, { 'content-type': 'application/octet-stream', 'cache-control': 'public, max-age=86400' });
+    return c.body(readFileSync(file), 200, { 'content-type': 'application/octet-stream', 'content-encoding': 'gzip', vary: 'accept-encoding', 'cache-control': 'public, max-age=86400' });
+  });
   app.get('/api/coach/ocr/status', (c: any) => c.json({ english: tessdataPath(root, ctx.config.dataDir) !== null }));
 
   // ---- approved screenshot rules (P-16): the phone never runs rules a person has not approved ----
