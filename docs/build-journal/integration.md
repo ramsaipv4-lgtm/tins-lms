@@ -139,3 +139,15 @@ cleanly in 22 s instead of eating memory.
 **Lesson for the rebuild course:** a feature that hides another feature's links must use that
 feature's declared routes (a shell hook), not a guessed URL prefix; and never put a live browser object
 inside an assertion that may need to print it.
+
+## I-11: pseudo-locale meta injected into a compressed page
+
+**Problem:** b11-2 found every AC-123 page hanging once index.html grew past 1,024 bytes.
+**Cause:** I-8 made static.ts compress text files of 1 KB and more; main.ts (pseudo-locale test mode)
+then read the compressed body as text, injected `<meta name="lms-pseudo-locale">` into it and sent
+corrupt bytes with `content-encoding` still set.
+**Choice:** in pseudo-locale mode, decode br/gzip first, inject, and send the page uncompressed (the
+mode exists only for the strings check; production never takes this path).
+**Proof:** a11y journey (AC-99, AC-123) passes after the change (see the I-11 verify run); the gate run on close covers the rest.
+**Lesson for the rebuild course:** response middleware that rewrites bodies must run before compression,
+or decode what it rewrites.
