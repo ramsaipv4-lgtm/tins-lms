@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [append-only-ledger, appeal-window, evidence-pack]
 source_refs: [{ path: packages/server/src/routes/grading.ts, commit: 05dcdea }]
-next: end
+next: ms-06.06
 ---
 
 # MS 6.5 — Attempts, grade ledger, appeals and integrity log
-*Step 5 of 7*
+*Step 23 of 41*
 
 ## Prerequisites
 
@@ -111,4 +111,4 @@ The export (ms-06.06) writes these ledgers and events to the class archive.
 
 ## Next
 
-End of chain for now.
+Next: [MS 6.6 — Export, import and signed class packages](../ms-06.06/lesson.md).

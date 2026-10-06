@@ -8,10 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [content-gate, sealed-sections, debugging-by-observation]
 source_refs: [{ path: packages/server/src/routes/content.ts, commit: 9983740 }]
-next: end
+next: ms-06.04
 ---
+
 # MS 6.3 — Packages, gate on upload, sealed sections and teleprompter release
-*Step 1 of N*
+*Step 21 of 41*
 
 ## Prerequisites
 - The server foundation (ms-06.01): `ctx`, the store and role guards.
@@ -94,4 +95,5 @@ Upload a tar of the fixture with one required file removed. Predict which check 
 Sync (next steps) replicates class databases, so what is stored there must already be safe.
 
 ## Next
-End of module so far.
+
+Next: [MS 6.4 — Sync rules and the merge pass](../ms-06.04/lesson.md).

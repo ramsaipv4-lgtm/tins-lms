@@ -8,12 +8,11 @@ objectives: 4
 new_terms: 6
 skills: [client-side-encryption, state-machines, lazy-loading]
 source_refs: [{ path: packages/web/src/features/coach/lib.ts, commit: 17a9b8d70d9ccfd728f6f0d1e0cd9cbee497fe15 }, { path: packages/web/src/features/coach/strike.ts, commit: 17a9b8d70d9ccfd728f6f0d1e0cd9cbee497fe15 }]
-next: end
+next: ms-07.09
 ---
 
 # MS 7.8 — Coach space, screenshot import, portfolio, engagement
-
-*Step 1 of N*
+*Step 33 of 41*
 
 ## Prerequisites
 
@@ -120,4 +119,4 @@ This step uses the keys from the core (ms-04) and the sync guard that refuses pl
 
 ## Next
 
-End of the chain for now.
+Next: [MS 7.9 — Offline phone profile, file exchange, export my data, robustness](../ms-07.09/lesson.md).

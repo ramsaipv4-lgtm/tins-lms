@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 4
 skills: [catch-up-gate, mastery-tracking, study-group-formation]
 source_refs: [{ path: packages/core/src/catchup.ts, commit: c0f99ad }, { path: packages/core/src/mastery.ts, commit: c0f99ad }]
-next: end
+next: ms-02.04
 ---
 
 # MS 2.3 — Catch-up gate and mastery map
-
-*Step N of M*
+*Step 4 of 41*
 
 ## Prerequisites
 
@@ -330,4 +329,4 @@ Without these, learners who miss class fall further behind, and trainers can't f
 
 ## Next
 
-This step completes the learner journey through the core grading and unlock systems. Next tasks build on top of these foundations: appeals, AI policy, and study group formation.
+Next: [MS 2.4 — Graded Timing and Accommodations](../ms-02.04/lesson.md).

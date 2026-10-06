@@ -8,10 +8,11 @@ objectives: 4
 new_terms: 6
 skills: []
 source_refs: [{ path: packages/adapters/src/backup.ts, commit: 2dec128 }, { path: packages/adapters/src/google.ts, commit: 2dec128 }]
-next: end
+next: ms-10.03
 ---
 
 # MS 10.2 — Encrypted backup targets and Google API adapters
+*Step 38 of 41*
 
 *Adapter integrations: backup encryption, Google Meet/Calendar/Forms*
 
@@ -246,23 +247,6 @@ A: Acceptance tests verify that files are actually written to disk. They call `f
 **Q: How does the switch system work?**  
 A: Each switch has a default value (from `switchDefaults()`). The adapter receives `switches: { meetLinks: true, ... }` which overrides the defaults. The check `switches[name] === true` ensures the switch must be explicitly set to true (not just truthy).
 
-## Check yourself
-
-1. **Why is the salt prepended to the encrypted data instead of stored separately?**
-   <details>
-   Decrypt needs the same salt to re-derive the same key. By including it in the download, the restore function can extract it and decrypt without needing external metadata.
-   </details>
-
-2. **If a Google feature switch is off, where does the adapter reject the call?**
-   <details>
-   At the start of the method, before any fetch call. Each method calls `checkSwitch(name)` first, which throws immediately if `switches[name] !== true`.
-   </details>
-
-3. **What's the order of bytes in a backup file: salt, IV, ciphertext, or something else?**
-   <details>
-   Salt (16 bytes) + IV (12 bytes) + ciphertext + auth tag. The IV and auth tag come from AES-GCM, which returns them concatenated with the ciphertext.
-   </details>
-
 ## Reinforcement activity
 
 Write a function that validates a backup without decrypting it:
@@ -282,6 +266,23 @@ Test it with:
 - Empty data (should have saltSize: null)
 - 40 bytes (too short for IV and tag)
 - 100 bytes (valid)
+
+## Check yourself
+
+1. **Why is the salt prepended to the encrypted data instead of stored separately?**
+   <details>
+   Decrypt needs the same salt to re-derive the same key. By including it in the download, the restore function can extract it and decrypt without needing external metadata.
+   </details>
+
+2. **If a Google feature switch is off, where does the adapter reject the call?**
+   <details>
+   At the start of the method, before any fetch call. Each method calls `checkSwitch(name)` first, which throws immediately if `switches[name] !== true`.
+   </details>
+
+3. **What's the order of bytes in a backup file: salt, IV, ciphertext, or something else?**
+   <details>
+   Salt (16 bytes) + IV (12 bytes) + ciphertext + auth tag. The IV and auth tag come from AES-GCM, which returns them concatenated with the ciphertext.
+   </details>
 
 ## Quick reference
 
@@ -305,4 +306,4 @@ Google integrations (calendar, Forms) allow learners to use familiar tools witho
 
 ## Next
 
-The rebuild course (SPEC §11) will be generated from this code, your build journal, and real mistakes, showing learners both the "clean" architecture and the debugging process.
+Next: [MS 10.3 — Health digest and morning checklist](../ms-10.03/lesson.md).

@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [feature-group, journey-contract, core-reuse]
 source_refs: [{ path: packages/server/src/routes/features/classroom.ts, commit: 6058927 }]
-next: end
+next: ms-07.08
 ---
 
 # MS 7.7 — Appeals, doubts, drop, accommodations, content improvement
-
-*Step 7 of N*
+*Step 32 of 41*
 
 ## Prerequisites
 
@@ -125,4 +124,4 @@ The Shift screen (ms-07.06) reads `person.accommodations` for its timer limit.
 
 ## Next
 
-End of this unit for now.
+Next: [MS 7.8 — Coach space, screenshot import, portfolio, engagement](../ms-07.08/lesson.md).

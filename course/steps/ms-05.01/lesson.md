@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [content-validation, layout-tolerant-parsing, expiring-waivers]
 source_refs: [{ path: packages/core/src/gate.ts, commit: 0d69d2fe3e0bb1525f66b2624049bedb6679e7a6 }]
-next: end
+next: ms-06.01
 ---
 
 # MS 5.1 — Package import and content gate
-*Step 1 of N*
+*Step 18 of 41*
 
 ## Prerequisites
 
@@ -162,4 +162,4 @@ The server's import route (SPEC 5.8) runs this gate on an uploaded package befor
 
 ## Next
 
-End of the chain for now.
+Next: [MS 6.1 — Server foundation](../ms-06.01/lesson.md).

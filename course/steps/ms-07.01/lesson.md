@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [web-shell, feature-registry, pseudo-locale]
 source_refs: [{ path: packages/web/src/features/registry.ts, commit: 9c21b82 }, { path: packages/web/src/strings/index.ts, commit: 9c21b82 }]
-next: end
+next: ms-07.02
 ---
 
 # MS 7.1 — Web foundation
-
-*Step 1 of N*
+*Step 26 of 41*
 
 ## Prerequisites
 
@@ -130,4 +129,4 @@ Every later screen task plugs into this shell.
 
 ## Next
 
-Admin class setup (ms-07.02).
+Next: [MS 7.2 — Admin class setup, syllabus, college outputs, Google opt-in](../ms-07.02/lesson.md).

@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [hash-chain, append-only-ledger]
 source_refs: [{ path: packages/core/src/ledger.ts, commit: 94555fc188f43f2fb8f05f642211c26c213ed142 }]
-next: end
+next: ms-03.04
 ---
 
 # MS 3.3 — Append-only hash-chained ledger
-*Step 3 of N*
+*Step 8 of 41*
 
 ## Prerequisites
 
@@ -153,4 +153,4 @@ Grades, appeals and attendance (SPEC §4.9, §5.7) use this ledger. It reuses `s
 
 ## Next
 
-Manifests, tar archives and signed class packages.
+Next: [MS 3.4 — Manifests, tar archives, signed class packages](../ms-03.04/lesson.md).

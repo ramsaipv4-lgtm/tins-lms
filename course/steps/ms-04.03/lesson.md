@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [state-machines, immutable-state, policy-enforcement]
 source_refs: [{ path: packages/core/src/appeal.ts, commit: 1f3fb653f01ebac843dc08e5ac4996d544077905 }, { path: packages/core/src/aipolicy.ts, commit: 1f3fb653f01ebac843dc08e5ac4996d544077905 }]
-next: end
+next: ms-04.04
 ---
 
 # MS 4.3 — Appeals and AI policy
-
-*Step 1 of N*
+*Step 13 of 41*
 
 ## Prerequisites
 
@@ -222,4 +221,4 @@ The server's appeal routes (SPEC 5.5, 5.6) call `openAppeal` and `appealStep` to
 
 ## Next
 
-End of the chain for now.
+Next: [MS 4.4 — Conflict merge](../ms-04.04/lesson.md).

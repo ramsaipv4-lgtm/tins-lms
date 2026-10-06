@@ -8,10 +8,12 @@ objectives: 4
 new_terms: 6
 skills: [integration-testing, regex, http-caching, json-rpc, least-privilege]
 source_refs: [{ path: packages/server/src/core/guard.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/content.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/attendance.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/grading.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/mcp.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/core/static.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }]
-next: end
+next: ms-11.02
 ---
 
 # MS 11.1 — Server hardening and integration
+*Step 40 of 41*
+
 *Fixing what only shows up when the pieces meet*
 
 ## Prerequisites
@@ -170,4 +172,4 @@ Rows AC-102, AC-116, AC-120 and AC-122 close the spec's cross-cutting rules. AC-
 
 ## Next
 
-This is the last step for now (`next: end`).
+Next: [MS 11.2 — Web shell integration — hooks, nav collisions and the service worker](../ms-11.02/lesson.md).

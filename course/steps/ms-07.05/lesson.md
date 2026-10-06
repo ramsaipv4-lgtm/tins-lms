@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [feature-group, core-reuse, test-contract]
 source_refs: [{ path: packages/server/src/routes/features/learn.ts, commit: b498335 }, { path: packages/web/src/features/learn/index.tsx, commit: b498335 }]
-next: end
+next: ms-07.06
 ---
 
-# MS 7.5 - Learner day: catch-up, cards, exit ticket, explain-it-back, first run, audio
-
-*Step 5 of N*
+# MS 7.5 — Learner day — catch-up, cards, exit ticket, explain-it-back, first run, audio
+*Step 30 of 41*
 
 ## Prerequisites
 
@@ -117,4 +116,4 @@ These screens are the learner's daily loop; the offline phone profile (ms-07.09)
 
 ## Next
 
-End of this unit for now.
+Next: [MS 7.6 — Shift, sprint rituals and the practice forge](../ms-07.06/lesson.md).

@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [one-time-codes, device-revocation, rotating-code-verification]
 source_refs: [{ path: packages/server/src/routes/pairing.ts, commit: 8970f8bb537d9814580216136512c2c5c0fdf66a }, { path: packages/server/src/routes/attendance.ts, commit: 8970f8bb537d9814580216136512c2c5c0fdf66a }]
-next: end
+next: ms-06.03
 ---
 
 # MS 6.2 — Pairing, devices, attendance
-
-*Step 2 of N*
+*Step 20 of 41*
 
 ## Prerequisites
 
@@ -139,4 +138,4 @@ Pairing feeds the hub path in the first-run journeys; attendance verified flags 
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Next: [MS 6.3 — Packages, gate on upload, sealed sections and teleprompter release](../ms-06.03/lesson.md).

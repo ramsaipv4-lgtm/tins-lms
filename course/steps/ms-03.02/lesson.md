@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 4
 skills: [key-derivation, content-release]
 source_refs: [{ path: packages/core/src/release.ts, commit: fadc0ff }]
-next: end
+next: ms-03.03
 ---
 
 # MS 3.2 — Section keys and teleprompter-paced release
-*Step 2 of N*
+*Step 7 of 41*
 
 ## Prerequisites
 
@@ -127,4 +127,4 @@ The server (SPEC 5.5) hands out section keys as the teleprompter advances.
 
 ## Next
 
-End of chain for now.
+Next: [MS 3.3 — Append-only hash-chained ledger](../ms-03.03/lesson.md).

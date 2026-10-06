@@ -8,12 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [http-server-foundation, role-guard, test-mode-gating]
 source_refs: [{ path: packages/server/src/core/guard.ts, commit: 8364ba6 }, { path: packages/server/src/core/store.ts, commit: 8364ba6 }, { path: packages/server/src/core/http.ts, commit: 8364ba6 }]
-next: end
+next: ms-06.02
 ---
 
 # MS 6.1 — Server foundation
-
-*Step 1 of N*
+*Step 19 of 41*
 
 ## Prerequisites
 
@@ -156,4 +155,4 @@ Every later server row (AC-65 to AC-77) registers inside the module this step cr
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Next: [MS 6.2 — Pairing, devices, attendance](../ms-06.02/lesson.md).

@@ -8,12 +8,11 @@ objectives: 4
 new_terms: 6
 skills: [webauthn, challenge-response, ecdsa-verify, session-cookie]
 source_refs: [{ path: packages/server/src/routes/accounts.ts, commit: c791c7e }]
-next: end
+next: ms-07.01
 ---
 
 # MS 6.8 — Sign-out, passkeys and the sign-in gate
-
-*Step 8 of N*
+*Step 25 of 41*
 
 ## Prerequisites
 
@@ -178,4 +177,6 @@ AC-62 says anonymous requests get 401 except health, join, sign-in and pairing c
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Before you continue, do [Checkpoint 3](../../checkpoints/checkpoint-3/checkpoint.md).
+
+Next: [MS 7.1 — Web foundation](../ms-07.01/lesson.md).

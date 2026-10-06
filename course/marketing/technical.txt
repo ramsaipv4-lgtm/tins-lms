@@ -1,0 +1,17 @@
+COACH LMS REBUILD COURSE: TECHNICAL SUMMARY
+
+What it is: a case-study course that walks a working developer through rebuilding Coach LMS (classroom hub, learner app, board, adapters) from SPEC.md, in the order the original tasks were built. It teaches the architecture and the failures.
+
+Stack the course covers (pinned in SPEC section 1.1): TypeScript in the erasable subset run directly by Node 22.22 or newer; zero-dependency pure core with ts-fsrs for card scheduling; Hono, Zod and express-pouchdb on one Node HTTP server; React 19 and Vite as an offline PWA; CouchDB replication protocol with PouchDB; a trimmed Excalidraw fork; Playwright journeys under node:test; Web Crypto for AES-GCM, HKDF, PBKDF2 and ECDSA P-256.
+
+Shape (as of 2026-10-06): 41 steps in 11 modules (core logic, package gate, server, web, board, performance, adapters, hardening), 1,745 estimated minutes of reading and guided work, six checkpoints with rubrics and answer keys, a final project specified in SPEC style, and two appendices. Every code excerpt is checked against the repository at the commit the step cites.
+
+The method it teaches: SPEC first; one task per tins-kit session with its file scope declared; claim an acceptance row only after the gate has shown it green; build from failing output and not from hidden tests (SPEC D-40); keep a journal of every failure with its exact output.
+
+The part most courses leave out: Appendix A records twelve integration failures found only after parallel branches merged, with cause, how each was found and the fix. Examples: two feature groups owning the same screen idea, so the wrong nav entry won; unit tests racing on a shared build folder; two copies of React between a worktree and the main checkout; a control rendered before its data had loaded; a failing assertion that printed a live browser object and grew a Node process to about 13.6 GB. It also covers six branches that had to be re-recorded, and the AC-101 and AC-102 budget handovers.
+
+Model comparison: Appendix B reproduces the audit of builders' self-reports against their transcripts (Haiku and Sonnet), including four builders that read hidden tests.
+
+Caveats: step ms-04.05 was written after the fact by the editor because the original builder read hidden tests. Module 12 (AC-153 and AC-94) had no lesson when the course was assembled. SPEC AC-145, a fresh agent rebuilding from the course to a passing acceptance suite, had not been run yet.
+
+Needs: Node 22.22 or newer, a Chromium that Playwright can drive, about 16 GB of memory, and the public acceptance repository tins-lms-tests.

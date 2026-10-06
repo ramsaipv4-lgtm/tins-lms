@@ -8,12 +8,11 @@ objectives: 4
 new_terms: 6
 skills: [export-manifest, signed-package, device-key, secret-scrubbing]
 source_refs: [{ path: packages/server/src/routes/export.ts, commit: adbf74e }]
-next: end
+next: ms-06.08
 ---
 
 # MS 6.6 — Export, import and signed class packages
-
-*Step 6 of N*
+*Step 24 of 41*
 
 ## Prerequisites
 
@@ -172,4 +171,4 @@ AC-74 to AC-77 sit on the core functions of §4.24 (AC-42 to AC-44). The web exp
 
 ## Next
 
-[Next step — fill in when sequences are known]
+Next: [MS 6.8 — Sign-out, passkeys and the sign-in gate](../ms-06.08/lesson.md).

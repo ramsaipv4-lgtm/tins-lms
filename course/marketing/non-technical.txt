@@ -1,0 +1,20 @@
+REBUILD A REAL CLASSROOM SYSTEM, AND LEARN FROM ITS MISTAKES
+
+Coach LMS is a system for trainers and learners: attendance with a code that changes every minute, a teleprompter that releases lesson sections as the trainer reaches them, a catch-up path for people who join late, daily review cards, a simulated workday called the Shift, appeals for disputed scores, a whiteboard, and phones that keep working without a connection.
+
+This course shows how it was built, in the order it was built, and lets you build it again yourself.
+
+What makes it different: it keeps the mistakes. The system was written by AI builders working from one written specification. Every lesson shows what actually went wrong, the exact message that appeared, how the problem was found and how it was fixed. A separate section covers what still broke after the pieces were put together.
+
+What you get (as of 2026-10-06):
+- 41 short lessons, in build order, with recall cards, trainer notes and answer keys
+- six checkpoints with a marking guide
+- a final project: add a new feature, written the way the original features were
+- a log of the main decisions, each with the options that were considered
+- a plain account of which AI model did which job, and where the self-reports did not match what really happened
+
+Who it is for: people who already write code and want to see a finished project from the inside, and trainers who want to teach from a real case instead of a toy example.
+
+What it asks of you: patience. It takes many hours, and you build the system step by step. You also work from the specification and not by reading the hidden tests, because the point is to learn how to work from a written requirement.
+
+Honest limits: the last two behaviours of the system were still being finished when the course was assembled, so the final module has no lesson yet. The test that a fresh builder can follow the course from the first step to a passing result had not been run when this text was written.

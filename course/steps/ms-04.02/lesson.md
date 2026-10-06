@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 5
 skills: [pure-state-machines, seeded-choice, sla-status]
 source_refs: [{ path: packages/core/src/shift.ts, commit: 8047257f1ef2de25ad02bfb3dd2f08cf2c0b1daa }]
-next: end
+next: ms-04.03
 ---
 
 # MS 4.2 — Shift engine
-*Step 1 of N*
+*Step 12 of 41*
 
 ## Prerequisites
 
@@ -119,4 +119,4 @@ The shift runs the graded simulations of SPEC 4.10; times are hub-signed (D-27).
 
 ## Next
 
-End of the chain for now.
+Next: [MS 4.3 — Appeals and AI policy](../ms-04.03/lesson.md).

@@ -8,11 +8,11 @@ objectives: 3
 new_terms: 6
 skills: [offline-first, replication, signed-files]
 source_refs: [{ path: packages/web/src/features/files/phone.ts, commit: c4117568b905055221763675551bc228d8055749 }, { path: packages/web/src/features/files/net.ts, commit: c4117568b905055221763675551bc228d8055749 }]
-next: end
+next: ms-08.01
 ---
 
 # MS 7.9 — Offline phone profile, file exchange, export my data, robustness
-*Step 1 of N*
+*Step 34 of 41*
 
 ## Prerequisites
 
@@ -140,4 +140,6 @@ The phone profile is the proof that the hub is optional (D-20). The same bundle 
 
 ## Next
 
-The step chain is fixed by the editor after v1.
+Before you continue, do [Checkpoint 4](../../checkpoints/checkpoint-4/checkpoint.md).
+
+Next: [MS 8.1 — The board, its pages and a PDF with notebook ruling](../ms-08.01/lesson.md).
