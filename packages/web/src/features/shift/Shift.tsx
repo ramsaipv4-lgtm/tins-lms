@@ -55,6 +55,7 @@ export default function Shift() {
       <section aria-labelledby="sh-h">
         <h1 id="sh-h">{t('shift.shift.title')}</h1>
         {data.hasPack === false ? <p>{t('shift.shift.nopack')}</p> : <p className="help">{t('shift.shift.intro')}</p>}
+        {data.limitMs !== undefined && <p data-testid="shift-timer">{t('shift.shift.limit', { min: Math.round(data.limitMs / 60000) })}</p>}
         <button type="button" data-testid="shift-start" disabled={data.hasPack === false}
           onClick={() => run(async () => { await api('/api/shift/start', { method: 'POST', body: {} }); await reload(); })}>{t('shift.shift.start')}</button>
         <ErrorNote error={error} />

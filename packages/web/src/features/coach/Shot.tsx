@@ -5,7 +5,8 @@ import { t } from '../../strings/index.ts';
 import { applyParseRules, type ParseRules } from '../../../../core/src/screenshot.ts';
 import PinGate from './Gate.tsx';
 import { bestRules, kindOfFields, parseNumber } from './fields.ts';
-import { listEntries, saveEntry, type Entry } from './lib.ts';
+import { listEntries, metaReady, saveEntry, type Entry } from './lib.ts';
+import { prewarmOcr, readScreenshot, releaseOcr } from './ocr.ts';
 import './coach.css';
 
 type Phase = 'idle' | 'reading' | 'confirm' | 'saved' | 'failed';
@@ -21,11 +22,14 @@ function ShotImport({ person, keyBytes }: { person: string; keyBytes: Uint8Array
   const [values, setValues] = useState<Record<string, string>>({});
   const [entries, setEntries] = useState<Entry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false); // PIN record confirmed on the hub and on this device
+  const [picked, setPicked] = useState<File | null>(null); // a file chosen before the screen was ready waits here, never dropped
 
   const refresh = () => listEntries(person, keyBytes).then((e) => setEntries(e.filter((x) => x.source === 'screenshot'))).catch(() => {});
   useEffect(() => {
     api<{ rules: ParseRules[] }>('/api/coach/parse-rules').then((r) => setRules(r.rules)).catch(() => setRules([]));
     void refresh();
+    void metaReady(person).then(() => setReady(true));
   }, [person]);
 
   const current = rules?.find((r) => r.app === app) ?? null;
@@ -34,11 +38,11 @@ function ShotImport({ person, keyBytes }: { person: string; keyBytes: Uint8Array
     setValues(Object.fromEntries(r.fields.map((f) => [f.name, found[f.name]?.value == null ? '' : String(found[f.name].value)])));
   }
 
-  async function onFile(file: File | undefined) {
-    if (!file || !rules) return;
+  useEffect(() => { if (picked && rules && ready) { const f = picked; setPicked(null); void onFile(f); } }, [picked, rules, ready]);
+
+  async function onFile(file: File) {
     setError(null); setPhase('reading'); setStatus('');
     try {
-      const { readScreenshot } = await import('./ocr.ts');
       const res = await readScreenshot(file, setStatus);
       setLines(res.lines);
       const best = bestRules(res.lines, rules);
@@ -70,7 +74,7 @@ function ShotImport({ person, keyBytes }: { person: string; keyBytes: Uint8Array
       <p className="help">{t('coach.shot.intro')}</p>
       <div className="field">
         <label htmlFor="coach-shot-file">{t('coach.shot.upload')}</label>
-        <input id="coach-shot-file" data-testid="shot-upload" type="file" accept="image/*" disabled={!rules || phase === 'reading'} onChange={(e) => { void onFile(e.target.files?.[0]); e.target.value = ''; }} />
+        <input id="coach-shot-file" data-testid="shot-upload" type="file" accept="image/*" disabled={phase === 'reading'} onChange={(e) => { const f = e.target.files?.[0]; if (f) { setError(null); setPhase('reading'); setPicked(f); } e.target.value = ''; }} />
       </div>
       {phase === 'reading' && <p role="status">{t('coach.shot.reading')} {status}</p>}
       {error && <p role="alert" className="err">{error}</p>}
@@ -111,5 +115,7 @@ function ShotImport({ person, keyBytes }: { person: string; keyBytes: Uint8Array
 }
 
 export default function Shot() {
+  // Start the recognition worker as soon as the screen opens, while the learner is still on the PIN screen.
+  useEffect(() => { void prewarmOcr().catch(() => {}); return () => { void releaseOcr(); }; }, []);
   return <PinGate needTrackers>{(key, person) => <ShotImport person={person} keyBytes={key} />}</PinGate>;
 }

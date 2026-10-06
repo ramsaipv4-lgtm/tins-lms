@@ -2,7 +2,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { t } from '../../strings/index.ts';
 import { useSession } from '../../app/session.tsx';
-import { createPin, hasPin, lockCoach, onLockChange, pinProblem, unlockWithPin, unlockedKey } from './lib.ts';
+import { createPin, hasPin, lockCoach, reserveMeta, onLockChange, pinProblem, unlockWithPin, unlockedKey } from './lib.ts';
 
 type Mode = 'loading' | 'setup' | 'unlock' | 'open';
 const MAX_TRIES = 5;
@@ -22,7 +22,7 @@ export default function PinGate({ children, needTrackers = false }: { children: 
     let live = true;
     if (unlockedKey(person)) { setMode('open'); } else {
       setMode('loading');
-      void hasPin(person).then((has) => { if (live && !unlockedKey(person)) setMode(has ? 'unlock' : 'setup'); }).catch(() => { if (live) setMode('setup'); });
+      void hasPin(person).then(async (has) => { if (!has) await reserveMeta(person).catch(() => {}); if (live && !unlockedKey(person)) setMode(has ? 'unlock' : 'setup'); }).catch(() => { if (live) setMode('setup'); });
     }
     const off = onLockChange(() => { if (live) { setPin(''); setConfirm(''); setMode(unlockedKey(person) ? 'open' : 'unlock'); } });
     return () => { live = false; off(); };
