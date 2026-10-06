@@ -1,5 +1,6 @@
 // Entry point: node packages/server/src/main.ts (SPEC §2). Reads PORT, LMS_PROFILE, LMS_DATA_DIR, LMS_TEST_MODE, LMS_TLS.
 // One Node HTTP server: /db goes to express-pouchdb (D-9), everything else to Hono.
+import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { createServer as createHttp } from 'node:http';
 import { createServer as createHttps } from 'node:https';
 import { existsSync, readFileSync } from 'node:fs';
@@ -33,12 +34,15 @@ const PSEUDO_META = '<meta name="lms-pseudo-locale" content="1">';
 async function fetchWithExtras(req: Request): Promise<Response> {
   const res = await app.fetch(req);
   if (!pseudoLocale || !(res.headers.get('content-type') ?? '').startsWith('text/html')) return res;
-  const html = await res.text();
-  if (/<meta[^>]*name="lms-pseudo-locale"/.test(html.replace(/<!--[\s\S]*?-->/g, ''))) return new Response(html, { status: res.status, headers: res.headers });
+  // Static HTML may already be brotli/gzip-compressed (static.ts): decode it before injecting, and send the
+  // result uncompressed (pseudo-locale is a test-build mode; integration I-11).
+  const enc = res.headers.get('content-encoding');
+  const raw = Buffer.from(await res.arrayBuffer());
+  const html = (enc === 'br' ? brotliDecompressSync(raw) : enc === 'gzip' ? gunzipSync(raw) : raw).toString('utf8');
+  const plain = new Headers(res.headers); plain.delete('content-encoding'); plain.delete('content-length');
+  if (/<meta[^>]*name="lms-pseudo-locale"/.test(html.replace(/<!--[\s\S]*?-->/g, ''))) return new Response(html, { status: res.status, headers: plain });
   const out = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => `${m}${PSEUDO_META}`) : PSEUDO_META + html;
-  const headers = new Headers(res.headers);
-  headers.delete('content-length');
-  return new Response(out, { status: res.status, headers });
+  return new Response(out, { status: res.status, headers: plain });
 }
 const honoListener = getRequestListener(fetchWithExtras);
 const dbApp = createDbMount(ctx.store, config.dataDir, ctx.dbGuards);
