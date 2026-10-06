@@ -37,12 +37,21 @@ export function register(app: any, ctx: any): void {
     return String(parseInt(hex.slice(0, 8), 16) % 100000000).padStart(8, '0');
   }
 
-  // The class day for "today": the day whose date matches the clock (UTC), else the last day not after today, else 0.
-  async function todayIndex(db: string, now: number): Promise<number> {
+  // Enrolment documents are found by their personId field, not by id: seeds use ids like `enrolment:c1-l1`.
+  async function enrolmentOf(db: string, personKey: string) {
+    return (await store.list(db, 'enrolment:')).find((e: any) => ids.keyOf(String(e.personId ?? e.id)) === personKey) ?? null;
+  }
+
+  // The class day for "today" (UTC date): the schedule entry whose date is today, even when no package content exists
+  // for that day; otherwise the last day (schedule or package) not after today, else 0.
+  async function todayIndex(db: string, classKey: string, now: number): Promise<number> {
     const today = new Date(now).toISOString().slice(0, 10);
-    const days = (await store.list(db, 'day:')).sort((a: any, b: any) => a.index - b.index);
+    const sched: any[] = (await store.get(db, `class:${classKey}`))?.schedule ?? [];
+    const exact = sched.findIndex((d: any) => String(d?.date) === today);
+    if (exact >= 0) return exact;
     let idx = 0;
-    for (const d of days) if (String(d.date) <= today) idx = d.index;
+    sched.forEach((d: any, i: number) => { if (String(d?.date) <= today) idx = Math.max(idx, i); });
+    for (const d of await store.list(db, 'day:')) if (String(d.date) <= today) idx = Math.max(idx, d.index);
     return idx;
   }
 
@@ -57,7 +66,7 @@ export function register(app: any, ctx: any): void {
   app.get('/api/classes/:id/printed-code', ctx.guard.role('trainer', 'substitute'), async (c: any) => {
     const { key, db } = await classOr404(c.req.param('id'));
     const q = c.req.query('day');
-    let day = await todayIndex(db, ctx.clock.now());
+    let day = await todayIndex(db, key, ctx.clock.now());
     if (q !== undefined) {
       if (!/^\d+$/.test(q)) throw http.fieldError('day', 'invalid');
       day = Number(q);
@@ -69,13 +78,13 @@ export function register(app: any, ctx: any): void {
     const b = await http.validateBody(c, markSchema);
     const { key, db } = await classOr404(c.req.param('id'));
     const s = c.get('session');
-    const enrol = await store.get(db, `enrolment:${s.personId}`);
+    const enrol = await enrolmentOf(db, s.personId);
     if (!enrol || enrol.status === 'dropped') throw new http.ApiError(403, { error: { class: 'not-enrolled' } });
     const now = ctx.clock.now();
     const secret = await secretOf(key);
 
     let method: 'rotating' | 'printed' | null = null;
-    let dayIndex = await todayIndex(db, now);
+    let dayIndex = await todayIndex(db, key, now);
     if (/^\d{6}$/.test(b.code) && await verifyAttendanceCode(b.code, secret, now, PERIOD_SEC)) {
       method = 'rotating';
     } else if (/^\d{8}$/.test(b.code)) {

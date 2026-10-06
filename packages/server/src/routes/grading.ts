@@ -124,6 +124,8 @@ export function register(app: any, ctx: any): void {
   app.post('/api/classes/:id/integrity', ctx.guard.role('learner'), async (c: any) => {
     const b = await ctx.http.validateBody(c, integritySchema);
     const s = c.get('session');
+    // D-33: a minor's integrity log keeps exam events only; practice events are dropped, not stored.
+    if (b.context !== 'exam' && await ctx.people.isMinorPerson(ctx, s.personId)) return c.json({ ok: true, stored: false }, 202);
     const key = ctx.ids.randomKey();
     await ctx.store.put(dbOf(c), {
       type: 'integrity', id: `integrity:${key}`, schema: ctx.schema, personId: s.personId,

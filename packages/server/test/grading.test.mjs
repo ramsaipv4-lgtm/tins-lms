@@ -109,3 +109,20 @@ test('AC-73 appeal within 7 days appears in the inbox with evidence; later is wi
   const late = await s.req('/api/classes/c1/appeals', { method: 'POST', body: { attemptId: id2, reason: 'late' } });
   assert.ok(late.status >= 400 && late.text.includes('window-closed'), late.text);
 });
+
+test('AC-122 a minor learner\'s integrity log keeps exam events only (D-33); an adult keeps both', async () => {
+  writeFileSync(join(s.dir, 'acc', 'fixtures', 'api', 'minor.json'), JSON.stringify({ databases: { org: [
+    { type: 'person', id: 'person:kid1', schema: 1, updatedAt: 1, updatedBy: 'x', name: 'Kid', roles: ['learner'], minor: true },
+  ] } }));
+  assert.equal((await s.req('/__test/seed', { method: 'POST', body: { fixture: 'api/minor.json' } })).status, 200);
+  await login('kid1', ['learner']);
+  assert.equal((await s.req('/api/classes/c1/integrity', { method: 'POST', body: { context: 'exam', kind: 'blur', at: 10 } })).status, 201);
+  assert.equal((await s.req('/api/classes/c1/integrity', { method: 'POST', body: { context: 'practice', kind: 'blur', at: 11 } })).status, 202);
+  await login('l1', ['learner']);
+  assert.equal((await s.req('/api/classes/c1/integrity', { method: 'POST', body: { context: 'practice', kind: 'blur', at: 12 } })).status, 201);
+  await login('tr1', ['trainer']);
+  const kid = (await s.req('/api/classes/c1/integrity?personId=kid1')).json;
+  assert.deepEqual(kid.map((e) => e.context), ['exam']);
+  const adult = (await s.req('/api/classes/c1/integrity?personId=l1')).json;
+  assert.ok(adult.some((e) => e.context === 'practice'));
+});

@@ -47,6 +47,7 @@ export function register(app: any, ctx: any): void {
   });
 
   registerPasskeyRegistration(app, ctx);
+  registerSignin(app, ctx);
 
   app.get('/api/join/tnc', async (c: any) => c.json(await people.currentTnc(ctx)));
 
@@ -378,9 +379,8 @@ function registerPasskeyRegistration(app: any, ctx: any): void {
   app.post('/api/passkeys/register', w.register);
 }
 
-// Sign-in routes need no session. The central guard (core/guard.ts) lists /api/sign-in, not /api/signin,
-// so main.ts mounts these on a small separate app that skips the session check.
-export function registerSignin(app: any, ctx: any): void {
+// Sign-in routes need no session: the central guard (core/guard.ts) lists /api/signin (SPEC Appendix A).
+function registerSignin(app: any, ctx: any): void {
   const w = webauthnFor(ctx);
   app.post('/api/signin/passkey/options', w.signinOptions);
   app.post('/api/signin/passkey', w.signin);

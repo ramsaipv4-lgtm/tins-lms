@@ -2,7 +2,7 @@
 import { Hono } from 'hono';
 import { isPublicApi } from './core/guard.ts';
 import { ApiError } from './core/http.ts';
-import { serveWeb } from './core/static.ts';
+import { serveWeb, warmWeb } from './core/static.ts';
 import { registerRoutes } from './routes/index.ts';
 import type { Ctx } from './core/ctx.ts';
 
@@ -25,6 +25,7 @@ export function createApp(ctx: Ctx) {
   });
 
   registerRoutes(app, ctx);
+  warmWeb(ctx.config.webDist);
 
   app.notFound((c) => {
     const p = c.req.path;

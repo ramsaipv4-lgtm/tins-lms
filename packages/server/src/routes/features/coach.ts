@@ -5,10 +5,11 @@
 //   - the portfolio builder (B-7) and the team-level wall (G-2, G-3)
 // Coach data itself (plan versions, tracker entries) never reaches this module: it lives encrypted in the
 // learner's personal database and travels through /db/* (the sync guard refuses plaintext and minors).
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { isOn, switchDefaults } from '../../../../core/src/index.ts';
+import { compressed, pickEncoding } from '../../core/static.ts';
 
 const esc = (s: unknown): string => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] as string));
 
@@ -25,9 +26,11 @@ function packageDir(name: string, root: string): string | null {
   } catch { return null; }
 }
 
-// Where the English data may live on the hub: LMS_TESSDATA_DIR first, then the hub's own data folder.
+// Where the English data may live on the hub: LMS_TESSDATA_DIR first, then the hub's own data folder, then the pinned
+// `@tesseract.js-data/eng` 1.0.0 package (D-11), whose `4.0.0_best_int` folder is the small one tesseract.js uses by default.
 export function tessdataPath(root: string, dataDir: string, env: Record<string, string | undefined> = process.env): string | null {
-  const dirs = [env.LMS_TESSDATA_DIR, join(dataDir, 'tessdata'), join(root, 'packages', 'server', 'assets', 'tessdata')].filter(Boolean) as string[];
+  const pkg = packageDir('@tesseract.js-data/eng', root);
+  const dirs = [env.LMS_TESSDATA_DIR, join(dataDir, 'tessdata'), join(root, 'packages', 'server', 'assets', 'tessdata'), pkg ? join(pkg, '4.0.0_best_int') : undefined].filter(Boolean) as string[];
   for (const d of dirs) {
     const f = resolve(d, 'eng.traineddata.gz');
     if (existsSync(f)) return f;
@@ -59,7 +62,12 @@ export function register(app: any, ctx: any): void {
   // ---- OCR files from the hub (D-11) ----
   const asset = (file: string | null, type: string, c: any) => {
     if (!file || !existsSync(file)) return c.json({ error: { file: 'not-available' } }, 404);
-    return c.body(readFileSync(file), 200, { 'content-type': type, 'cache-control': 'public, max-age=86400' });
+    const raw = readFileSync(file);
+    // The tesseract core scripts are ~4 MB of base64 text: compress them like every other static file (on a phone link
+    // this decides whether the first screenshot is read in seconds or in a minute). The .gz data is already compressed.
+    const enc = type === 'text/javascript' ? pickEncoding(c.req.header('accept-encoding') ?? '') : null;
+    if (enc) return c.body(compressed(file, raw, statSync(file).mtimeMs, enc), 200, { 'content-type': type, 'content-encoding': enc, vary: 'accept-encoding', 'cache-control': 'public, max-age=86400' });
+    return c.body(raw, 200, { 'content-type': type, 'cache-control': 'public, max-age=86400' });
   };
   app.get('/api/coach/ocr/worker.min.js', (c: any) => {
     const dir = packageDir('tesseract.js', root);

@@ -6,7 +6,7 @@ import { createSessions } from './sessions.ts';
 import { createStore } from './store.ts';
 import { ApiError, fieldError, parseWith, validateBody, validateQuery } from './http.ts';
 import { randomCode, randomKey, sha256Hex, keyOf } from './ids.ts';
-import { ORG_DB, currentTnc, ensureOrg, getPerson, isMinor, savePerson } from './people.ts';
+import { ORG_DB, currentTnc, ensureOrg, getPerson, isMinor, isMinorPerson, savePerson } from './people.ts';
 import { SCHEMA, VERSION } from './config.ts';
 import type { Config } from './config.ts';
 import type { CaInfo } from './ca.ts';
@@ -27,7 +27,7 @@ export function createCtx(config: Config) {
     policy: createPolicy(),
     http: { ApiError, fieldError, parseWith, validateBody, validateQuery },
     ids: { randomCode, randomKey, sha256Hex, keyOf },
-    people: { ORG_DB, currentTnc, ensureOrg, getPerson, savePerson, isMinor },
+    people: { ORG_DB, currentTnc, ensureOrg, getPerson, savePerson, isMinor, isMinorPerson },
     ca: null as CaInfo | null,
     hubId: undefined as string | undefined,
     // Express-style functions run before express-pouchdb handles /db/* (sync.ts adds auth and schema checks).

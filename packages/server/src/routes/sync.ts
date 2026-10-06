@@ -159,6 +159,11 @@ export function register(_app: any, ctx: any): void {
       const docs: any[] = bulk ? (Array.isArray(parsed?.docs) ? parsed.docs : []) : [parsed];
       const idOf = (d: any) => (single && seg.length === 2 ? decodeURIComponent(seg[1]) : String(d?._id ?? ''));
       const coach = docs.filter((d) => d && !d._deleted && (d.type === 'coachEntry' || idOf(d).startsWith('coachEntry:')));
+      // D-33: a minor's integrity log keeps exam events only, also through replication.
+      for (const d of docs) {
+        if (d && !d._deleted && d.type === 'integrity' && d.context !== 'exam' && typeof d.personId === 'string'
+          && await ctx.people.isMinorPerson(ctx, ctx.ids.keyOf(d.personId))) return send(res, 403, 'forbidden', 'integrity refused: minor profile logs exam events only');
+      }
       if (coach.length === 0) return next();
       if (!dbName.startsWith('person-')) return send(res, 400, 'bad_request', 'coachEntry-only-in-personal-database');
       const person = await ctx.people.getPerson(ctx, dbName.slice('person-'.length));

@@ -50,3 +50,11 @@ test('no encoding, small files and images are sent as they are; SPA fallback sti
     assert.equal(serveWeb(d, '/assets/missing.js', 'br'), null);
   } finally { rmSync(d, { recursive: true, force: true }); }
 });
+
+test('b11-1 hashed build files under /assets are immutable; the index is never cached', () => {
+  const d = site();
+  try {
+    assert.equal(serveWeb(d, '/assets/app.js', 'br').headers.get('cache-control'), 'public, max-age=31536000, immutable');
+    assert.equal(serveWeb(d, '/', 'br').headers.get('cache-control'), 'no-cache');
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
