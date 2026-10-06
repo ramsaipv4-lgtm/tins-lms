@@ -81,7 +81,7 @@ for (const l of spec.split('\n')) {
 for (const id of want) if (![...rowFiles.values()].flat().includes(id)) fail(`${id} is listed in build/progress/ but has no automated check in SPEC.md`);
 if (rowFiles.size) {
   const files = [...rowFiles.keys()];
-  const r = spawnSync(process.execPath, ['--test', '--test-concurrency=1', '--test-reporter=tap', ...files], { cwd: root, env, encoding: 'utf8', timeout: 1800000 });
+  const r = spawnSync(process.execPath, ['--test', '--test-concurrency=1', '--test-reporter=tap', ...files], { cwd: root, env, encoding: 'utf8', timeout: 3300000 }); // 55 min: the suite outgrew 30 min (kit's own limit is 60)
   const out = (r.stdout || '') + (r.stderr || '');
   const seen = new Map(); // AC -> {pass, fail}
   for (const line of out.split('\n')) {
