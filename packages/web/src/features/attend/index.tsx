@@ -16,6 +16,4 @@ export const routes: FeatureRoute[] = [
   { path: '/learn/wrapup-today', space: 'learn', label: 'attend.nav.today', nav: false, order: 11, roles: ['learner'], load: () => import('./LToday.tsx') },
   { path: '/learn/lab-feedback', space: 'learn', label: 'attend.nav.labFeedback', order: 12, roles: ['learner'], load: () => import('./LFeedback.tsx') },
   { path: '/learn/profile', space: 'learn', label: 'attend.nav.profile', order: 13, roles: ['learner'], load: () => import('./LProfile.tsx') },
-  // Stopgap until the learn group's Cards screen lands: shows cards-due-count for the wrap-up journey (AC-89).
-  { path: '/learn/day-cards', space: 'learn', label: 'attend.nav.cards', order: 14, roles: ['learner'], load: () => import('./LCards.tsx') },
 ];

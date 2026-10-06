@@ -1,7 +1,9 @@
 // Small things the shell loads at start (kept tiny, no libraries): the data meter, "Wi-Fi only downloads",
-// the file-download helper, and kiosk mode (Coach space hidden, sign-out after 30 minutes idle).
+// the file-download helper, and the kiosk idle sign-out (the shell hides the Coach space, app/kiosk.ts).
 // Settings live in localStorage (per device); every access is wrapped because private windows can throw.
-const K = { bytes: 'lms.meter', wifi: 'lms.wifiOnly', kiosk: 'lms.kiosk', me: 'lms.me' };
+import { kioskOn, onKiosk, setKiosk as setShellKiosk } from '../../app/kiosk.ts';
+
+const K = { bytes: 'lms.meter', wifi: 'lms.wifiOnly', me: 'lms.me' };
 export const IDLE_MS = 30 * 60 * 1000;
 
 function read(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } }
@@ -86,19 +88,10 @@ export function saveFile(name: string, bytes: Uint8Array | string, type = 'appli
 }
 
 // ---- kiosk mode (F-2): shared device ----
-export const kioskOn = () => read(K.kiosk) === '1';
+// The flag and the hiding of the Coach space belong to the shell (app/kiosk.ts); this file keeps the idle sign-out.
+export { kioskOn, onKiosk };
 let lastActive = Date.now();
-const kioskListeners = new Set<() => void>();
-export function onKiosk(fn: () => void): () => void { kioskListeners.add(fn); return () => { kioskListeners.delete(fn); }; }
-
-const inCoach = () => /^\/(learn\/)?coach(\/|$)/.test(location.pathname);
-function applyKiosk() {
-  const on = kioskOn();
-  document.documentElement.toggleAttribute('data-kiosk', on);
-  if (on && inCoach()) { history.replaceState(null, '', '/learn'); dispatchEvent(new PopStateEvent('popstate')); }
-  for (const l of kioskListeners) l();
-}
-export function setKiosk(on: boolean) { write(K.kiosk, on ? '1' : null); lastActive = Date.now(); applyKiosk(); }
+export function setKiosk(on: boolean) { lastActive = Date.now(); setShellKiosk(on); }
 
 async function idleSignOut() {
   try { await (await import('./phone.ts')).wipeDevice(); } catch { /* best effort */ }
@@ -108,15 +101,9 @@ async function idleSignOut() {
 }
 
 function installKiosk() {
-  const style = document.createElement('style');
-  // The Coach space is personal; on a shared device it is not offered at all (display:none also removes it from the accessibility tree).
-  style.textContent = 'html[data-kiosk] a[href^="/coach"],html[data-kiosk] a[href^="/learn/coach"]{display:none!important}';
-  document.head.appendChild(style);
   const touch = () => { lastActive = Date.now(); };
   for (const ev of ['pointerdown', 'keydown', 'touchstart', 'wheel']) addEventListener(ev, touch, { passive: true });
-  addEventListener('popstate', () => { if (kioskOn() && inCoach()) applyKiosk(); });
   setInterval(() => { if (kioskOn() && Date.now() - lastActive >= IDLE_MS) { lastActive = Date.now(); void idleSignOut(); } }, 1000);
-  applyKiosk();
 }
 
 // Called once from the feature's index.tsx when the shell loads.

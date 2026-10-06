@@ -13,6 +13,17 @@
  *   - load returns a module whose default export is a React component (code-split per screen; heavy code such as
  *     the board MUST sit behind load() so it is fetched only on its route). The component gets props { params }.
  *   - roles (optional) narrows who sees the entry/route inside the space (default: everyone allowed in the space).
+ *   - home (optional, roles): the shell renders this screen at /<space> (the space home, inside data-testid="home-<role>")
+ *     for a person whose roles in that space are all listed, instead of the generic welcome page. The route stays an
+ *     ordinary route too. Example: the coordinator lands on the batch view: `home: ['coordinator']` on /teach/batch;
+ *     the Coach space opens on the PIN screen: `home: ['learner']` on /coach/plan. First by `order` wins.
+ *   - switch (optional, a feature switch name from SPEC 4.27, or a list of names, any one on is enough): while the
+ *     switch is off the shell hides the nav entry (GET /api/switches). The route itself stays reachable by URL, and the
+ *     screen may still explain why it is off.
+ *   - link (optional, a path): the nav entry points there instead of at `path`, so a space can offer a door to another
+ *     space's screen (Coach's "Today" opens the course content). The route itself still renders if opened by URL.
+ *   - Kiosk mode (a shared device, set by features/files Settings): the shell hides the Coach space entirely; a group
+ *     never hides it itself. Read the flag with `useKiosk()` / `kioskOn()` from '../../app/kiosk.ts'.
  *   - Routes are deep-linkable: the server falls back to index.html for any path without an extension.
  *
  * STRINGS. `import { t } from '../../strings/index.ts'` then t('learn.nav.cards', { n: 3 }) ("{n}" placeholders).
@@ -40,6 +51,9 @@ export interface FeatureRoute {
   nav?: boolean;
   order?: number;
   roles?: Role[];
+  home?: Role[];
+  link?: string;
+  switch?: string | string[];
   load: () => Promise<{ default: ComponentType<{ params: Record<string, string> }> }>;
 }
 

@@ -7,9 +7,12 @@ function hubSchema(): Promise<number> {
   return schemaPromise;
 }
 
-async function pouch(): Promise<any> {
-  return (await import('pouchdb-browser')).default;
+// vite.config.ts resolves 'pouchdb-browser' to the self-contained browser build (the stock one imports Node's `events`).
+export async function loadPouch(): Promise<any> {
+  const m: any = await import('pouchdb-browser');
+  return m.default ?? m;
 }
+const pouch = loadPouch;
 
 export const classDbName = (classKey: string) => `class-${classKey}`;
 export const personDbName = (personKey: string) => `person-${personKey}`;

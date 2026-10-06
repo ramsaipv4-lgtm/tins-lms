@@ -10,7 +10,6 @@
   "attend.nav.reports": "Delivery reports",
   "attend.nav.labFeedback": "Lab results",
   "attend.nav.profile": "My profile",
-  "attend.nav.cards": "Cards",
   "attend.cards.title": "Cards from your classes",
   "attend.t.title": "Attendance for day {day}",
   "attend.t.codeHelp": "Show this code to the learners. It changes every minute.",
