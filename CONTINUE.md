@@ -6,10 +6,10 @@ Update this file with every push. A new session (or a person) resumes from here.
 
 | Item | State (2026-10-06) |
 |---|---|
-| Phase | v1 build: all feature groups and hardening merged; last two rows in b12-1 |
-| Merged | core (b1–b5), server (b6-*), adapters (b10-*), web shell b7-1 and groups admin b7-2, attend b7-3, tele b7-4, learn b7-5, shift b7-6, classroom b7-7, coach b7-8, files b7-9, board b8-1, perf/load b9-1, hardening b11-1 (server) and b11-2 (web), integration fixes I-1 … I-11 (docs/build-journal/integration.md) |
-| In progress | b12-1: AC-153 (accommodation extra time in the Shift timer), AC-94 (screenshot OCR on the phone profile) |
-| Next | the rebuild course (SPEC §11): assemble manifest, editor pass, full skill-template check, a fresh agent rebuilds from it |
+| Phase | **v1 complete**: all 134 automated acceptance rows green on main; rebuild course assembled (course/, 42 steps, full skill-template check passes) |
+| Merged | core (b1–b5), server (b6-*), adapters (b10-*), web shell b7-1 and groups admin b7-2, attend b7-3, tele b7-4, learn b7-5, shift b7-6, classroom b7-7, coach b7-8, files b7-9, board b8-1, perf/load b9-1, hardening b11-1 (server) and b11-2 (web), last rows b12-1, integration fixes I-1 … I-12, course c-1 (docs/build-journal/integration.md) |
+| Open | manual rows for the owner: AC-118 (Android alarm intent, needs a phone), AC-119 (DuckDNS certificate renewal, needs the account); AC-145 (a fresh agent rebuilds from the course) not yet run; known issue: core stand-up negation check is a substring match (v1.1) |
+| Next | owner tries v1 live; tins-kit knowledge transfer (kit capture/harvest commands, then promote findings RF-21 … RF-31 into kit checks and templates); v2 SPEC after live use |
 | Check command | `node .tins/kit/bin/kit.mjs gate` (needs the tests repo next to this one, or `LMS_ACCEPTANCE_DIR`; full output in `.tins/state-gate-last.tap`) |
 
 ## How a task runs (orchestrator)
