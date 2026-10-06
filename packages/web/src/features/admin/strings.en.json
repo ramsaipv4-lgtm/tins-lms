@@ -11,7 +11,7 @@
  "admin.nav.schedule": "Schedule",
  "admin.nav.quizzes": "Quizzes",
  "admin.nav.feedback": "Feedback",
- "admin.nav.batch": "Batch view",
+ "admin.nav.batch": "Attendance",
  "admin.setup.title": "Set up a class",
  "admin.setup.intro": "Create the program, cohort and class, then upload the content package.",
  "admin.setup.program": "Program name",

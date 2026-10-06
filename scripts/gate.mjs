@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Project gate (run by `kit gate` via tins.json). Staged: only acceptance rows listed in
 // build/progress/<task>.json must pass, and that list may only grow (checked against the last commit).
-// Steps: 1 acceptance link, 2 dependency pins, 3 builder unit tests, 4 progress monotonic,
+// Steps: 1 acceptance link, 2 dependency pins (2b nav labels), 3 builder unit tests, 4 progress monotonic,
 // 5 acceptance rows, 6 course steps (skill-template gate).
-import { existsSync, readFileSync, readdirSync, symlinkSync, lstatSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, symlinkSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync, execFileSync } from 'node:child_process';
 
@@ -34,6 +34,12 @@ for (const pf of pkgFiles.filter((p) => existsSync(join(root, p)))) {
     if (!locked.includes(`\`${name}\``) && !locked.includes(` ${name} `)) fail(`${pf}: ${name} is not named in a locked D-row (D-14)`);
     else if (!locked.includes(ver)) fail(`${pf}: ${name}@${ver} differs from the version in SPEC (D-14)`);
   }
+}
+
+// 2b. nav labels: no Appendix D `nav /pattern/` matches two entries one role sees in one space (scripts/navcheck.mjs)
+{
+  const nc = spawnSync(process.execPath, [join(root, 'scripts', 'navcheck.mjs'), root], { cwd: root, env, encoding: 'utf8' });
+  if (nc.status !== 0) { console.error(nc.stdout + nc.stderr); fail('nav labels collide with an Appendix D pattern (scripts/navcheck.mjs)'); }
 }
 
 // 3. builder unit tests
@@ -87,7 +93,29 @@ if (rowFiles.size) {
     if (!s) fail(`${id}: no test ran for it`);
     else if (s.fail) fail(`${id}: ${s.fail} failing test(s)`);
   }
-  if (process.exitCode) console.error(out.split('\n').filter((l) => /not ok|Error|expected|actual/.test(l)).slice(0, 40).join('\n'));
+  // The full TAP output is kept for the person debugging (.tins/state-gate-last.tap, already ignored by .tins/state*); the terminal gets, for each
+  // failing test, its name and the first lines of its `error: |-` block (the journey's message and artifacts folder).
+  try { mkdirSync(join(root, '.tins'), { recursive: true }); writeFileSync(join(root, '.tins', 'state-gate-last.tap'), out); } catch { /* read-only checkout */ }
+  if (process.exitCode) {
+    const lines = out.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (!/^\s*not ok \d+ - /.test(lines[i])) continue;
+      console.error(lines[i].trim());
+      let shown = 0;
+      for (let j = i + 1; j < lines.length && !/^\s*(not ok|ok) \d+ - /.test(lines[j]); j++) {
+        if (/^\s*error: /.test(lines[j])) {
+          const base = lines[j].match(/^\s*/)[0].length;
+          for (let k = j; k < lines.length && shown < 6; k++) {
+            if (k > j && (lines[k].match(/^\s*/)[0].length <= base || /^\s*code: /.test(lines[k]))) break;
+            console.error('    ' + lines[k].trim()); shown++;
+          }
+          break;
+        }
+      }
+    }
+    console.error(out.split('\n').filter((l) => /^\s*(expected|actual):/.test(l)).slice(0, 20).join('\n'));
+    console.error('gate: full acceptance output in .tins/state-gate-last.tap');
+  }
   else console.log(`gate: ${want.size} acceptance rows green`);
 }
 

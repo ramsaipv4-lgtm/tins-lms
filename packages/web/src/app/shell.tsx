@@ -7,6 +7,10 @@ import { SessionProvider, spacesFor, useSession } from './session.tsx';
 import { SignIn } from './signin.tsx';
 import { Join } from './join.tsx';
 import { SetupCheck } from './setupcheck.tsx';
+import { useKiosk } from './kiosk.ts';
+import { switchOn, useSwitches, type Switches } from './switches.ts';
+import { homeRoute, navEntries } from './nav.ts';
+import type { Me } from './session.tsx';
 
 // Appendix C: home-<space> uses the role name (home-learner).
 const HOME_ID: Record<Space, string> = { admin: 'admin', teach: 'trainer', learn: 'learner', coach: 'coach' };
@@ -17,8 +21,13 @@ function componentOf(r: FeatureRoute) {
   return lazyCache.get(r)!;
 }
 
-function Home({ space }: { space: Space }) {
-  const entries = navEntries(space);
+function Home({ space, me }: { space: Space; me: Me }) {
+  const entries = navFor(space, me.roles);
+  const hr = homeRoute(featureRoutes, space, me.roles, t);
+  if (hr) {
+    const C = componentOf(hr);
+    return <div data-testid={`home-${HOME_ID[space]}`}><Suspense fallback={<p role="status">{t('app.loading')}</p>}><C params={{}} /></Suspense></div>;
+  }
   return (
     <section data-testid={`home-${HOME_ID[space]}`} aria-labelledby="home-h">
       <h1 id="home-h">{t('home.title', { space: t(`space.${space}`) })}</h1>
@@ -27,27 +36,30 @@ function Home({ space }: { space: Space }) {
   );
 }
 
-function navEntries(space: Space, roles?: string[]) {
-  return featureRoutes
-    .filter((r) => r.space === space && r.nav !== false && (!r.roles || !roles || r.roles.some((x) => roles.includes(x))))
-    .sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || t(a.label).localeCompare(t(b.label)));
-}
+const navFor = (space: Space, roles?: string[], sw?: Switches | null) => navEntries(featureRoutes, space, roles, sw ?? null, t);
 
 function spaceOfPath(path: string): Space | null {
   const first = path.split('/')[1];
   return (SPACES as string[]).includes(first) ? (first as Space) : null;
 }
 
+// Spaces a person may open right now: kiosk mode (a shared device) takes the personal Coach space away.
+function useSpaces(me: Me | null, kiosk: boolean): Space[] {
+  return me ? spacesFor(me.roles).filter((s) => !(kiosk && s === 'coach')) : [];
+}
+
 function Content() {
   const path = usePath();
   const { me, ready } = useSession();
+  const kiosk = useKiosk();
   const space = spaceOfPath(path);
-  const spaces = me ? spacesFor(me.roles) : [];
+  const spaces = useSpaces(me, kiosk);
 
   useEffect(() => {
     if (!ready) return;
     if (path === '/' && me) navigate(`/${spaces[0] ?? 'learn'}`, true);
-  }, [ready, path, me]);
+    if (me && kiosk && space === 'coach') navigate('/learn', true);
+  }, [ready, path, me, kiosk, space]);
   useEffect(() => {
     if (ready && !me && space) navigate(`/signin?next=${encodeURIComponent(path)}`, true);
   }, [ready, me, space, path]);
@@ -59,7 +71,7 @@ function Content() {
   if (path === '/setup') return <SetupCheck />;
   if (space) {
     if (!spaces.includes(space)) return <p role="alert">{t('app.notAllowed')}</p>;
-    if (path === `/${space}`) return <Home space={space} />;
+    if (path === `/${space}`) return <Home space={space} me={me} />;
     for (const r of featureRoutes) {
       const params = r.space === space ? matchPath(r.path, path) : null;
       if (!params) continue;
@@ -75,16 +87,19 @@ function Header() {
   const path = usePath();
   const { me, signOut, online } = useSession();
   const space = spaceOfPath(path);
-  const spaces = me ? spacesFor(me.roles) : [];
-  const entries = useMemo(() => (space && me ? navEntries(space, me.roles) : []), [space, me]);
+  const kiosk = useKiosk();
+  const spaces = useSpaces(me, kiosk);
+  const candidates = useMemo(() => (space && me ? navFor(space, me.roles) : []), [space, me]);
+  const sw = useSwitches(candidates.some((r) => r.switch), path);
+  const entries = useMemo(() => candidates.filter((r) => switchOn(sw, r.switch)), [candidates, sw]);
   return (
     <header className="bar">
       <Link to="/" className="brand">{t('app.name')}</Link>
-      {me && space && (
+      {me && space && spaces.includes(space) && (
         <nav aria-label={t(`space.${space}`) + ' ' + t('nav.main')} data-space={space} className="spacenav">
           <ul>
             <li><Link to={`/${space}`}>{t('nav.home')}</Link></li>
-            {entries.map((r) => <li key={r.path}><Link to={r.path}>{t(r.label)}</Link></li>)}
+            {entries.map((r) => <li key={r.path}><Link to={r.link ?? r.path}>{t(r.label)}</Link></li>)}
             {space === 'learn' && <li><Link to="/setup">{t('nav.setup')}</Link></li>}
           </ul>
         </nav>
@@ -103,9 +118,15 @@ function Header() {
 }
 
 function Frame() {
-  const { ready } = useSession();
+  const { ready, me } = useSession();
   const [interactive, setInteractive] = useState(false);
   useEffect(() => { document.title = t('app.name'); setInteractive(true); }, []);
+  // Staff phones fetch the board's code in the background (service worker, src/sw.ts) so the board opens fast; a learner's never does.
+  const staff = !!me && me.roles.some((r) => r === 'admin' || r === 'trainer' || r === 'substitute');
+  useEffect(() => {
+    if (!staff || !('serviceWorker' in navigator)) return;
+    void navigator.serviceWorker.ready.then((reg) => reg.active?.postMessage({ type: 'warm-board' })).catch(() => {});
+  }, [staff]);
   return (
     <div className="app" {...(ready && interactive ? { 'data-testid': 'app-ready' } : {})}>
       <a className="skip" href="#main" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }}>{t('app.skip')}</a>

@@ -2,6 +2,7 @@
 // hub. The hub bundle (sealed sections, keys of released sections, diagnostics, hub public key) lives in IndexedDB;
 // cards and mastery checks live in the personal PouchDB, which replicates with the hub whenever it is reachable.
 import { api } from '../../app/api.ts';
+import { loadPouch, openPersonDb, remoteDb } from '../../app/db.ts';
 import { generateSigningKeys, signPackage, openPackage, tarPack, verifyManifest, buildManifest } from '../../../../core/src/export.ts';
 import { openSection } from '../../../../core/src/release.ts';
 import { masteryMap } from '../../../../core/src/mastery.ts';
@@ -50,22 +51,7 @@ let readyPromise: Promise<void> = new Promise((r) => { readyResolve = r; });
 // Resolves when the first replication of the personal database caught up, the hub is unreachable, or after a few seconds.
 export function whenReady(): Promise<void> { return Promise.race([readyPromise, new Promise<void>((r) => setTimeout(r, 6000))]); }
 
-// ---- PouchDB ----
-// The browser build `pouchdb-browser` imports Node's `events`, which Vite leaves out of a browser bundle, so it throws
-// "Class extends value #<Object>" when it loads. The self-contained browser bundle shipped in the `pouchdb` package
-// (same version 9.0.0, events inlined) works, so the phone profile loads that one.
-async function pouch(): Promise<any> {
-  const m: any = await import('pouchdb/dist/pouchdb.js');
-  return m.default ?? m;
-}
-const openPersonDb = async (key: string) => new (await pouch())(`person-${key}`);
-async function remoteDb(name: string): Promise<any> {
-  const PouchDB = await pouch();
-  const schema = bundle?.schema ?? 1;
-  return new PouchDB(`${location.origin}/db/${name}`, {
-    fetch: (url: any, o: any) => { o.headers.set('x-lms-schema', String(schema)); o.credentials = 'include'; return PouchDB.fetch(url, o); },
-  });
-}
+// PouchDB comes from the app-wide helper in app/db.ts (loadPouch, openPersonDb, remoteDb); it loads on first use.
 
 // ---- the personal database ----
 let dbPromise: Promise<any> | null = null;
@@ -328,7 +314,7 @@ let prefetched: string | null = null;
 function prefetch(roles: string[]) {
   if (prefetched === person) return;
   prefetched = person;
-  const loads = roles.includes('learner') ? [() => pouch(), () => import('../attend/LToday.tsx')] : [];
+  const loads = roles.includes('learner') ? [() => loadPouch(), () => import('../attend/LToday.tsx')] : [];
   for (const load of loads) void load().catch(() => {});
 }
 

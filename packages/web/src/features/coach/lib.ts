@@ -3,6 +3,7 @@
 // `coachMeta:main`. Entries are sealed with the data key, so changing the PIN never re-encrypts them.
 import { aesGcmOpen, aesGcmSeal, base64Decode, base64Encode, utf8Decode, utf8Encode } from '../../../../core/src/util.ts';
 import { unwrapPersonKey, wrapPersonKey } from '../../../../core/src/keys.ts';
+import { personDbName, remoteDb } from '../../app/db.ts';
 
 export const PBKDF2_ITERATIONS = 600_000;
 export const MIN_PIN = 4;
@@ -29,29 +30,23 @@ async function wrappingKey(pin: string, salt: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PBKDF2_ITERATIONS }, base, 256));
 }
 
-// The personal database is reached through the hub's /db/person-<key> endpoint (CouchDB protocol over fetch). The
-// app-wide PouchDB helper in app/db.ts does not load in the browser bundle yet (its `events` import is externalised),
-// so Coach talks to the hub directly; entries are still sealed on this device before they leave it (D-26).
-const dbUrl = (person: string, path = '') => `/db/person-${person}${path}`;
-const dbHeaders = { 'x-lms-schema': '1', accept: 'application/json' };
+// The personal database is reached through app/db.ts: the hub's /db/person-<key> endpoint over PouchDB's http adapter
+// (it sends x-lms-schema and the session cookie). Entries are still sealed on this device before they leave it (D-26).
+const remotes = new Map<string, Promise<any>>();
+const remote = (person: string) => { if (!remotes.has(person)) remotes.set(person, remoteDb(personDbName(person))); return remotes.get(person)!; };
 
 async function dbGet(person: string, id: string): Promise<any | null> {
-  const res = await fetch(dbUrl(person, `/${encodeURIComponent(id)}`), { headers: dbHeaders, credentials: 'same-origin' });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`db get ${res.status}`);
-  return res.json();
+  try { return await (await remote(person)).get(id); } catch (e: any) {
+    if (e?.status === 404) return null;
+    throw new Error(`db get ${e?.status ?? e?.message}`);
+  }
 }
 async function dbPut(person: string, doc: { _id: string } & Record<string, unknown>): Promise<void> {
-  const res = await fetch(dbUrl(person, `/${encodeURIComponent(doc._id)}`), {
-    method: 'PUT', headers: { ...dbHeaders, 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(doc),
-  });
-  if (!res.ok) throw new Error(`db put ${res.status}`);
+  try { await (await remote(person)).put(doc); } catch (e: any) { throw new Error(`db put ${e?.status ?? e?.message}`); }
 }
 async function dbRows(person: string, prefix: string): Promise<any[]> {
-  const q = `include_docs=true&startkey=${encodeURIComponent(JSON.stringify(prefix))}&endkey=${encodeURIComponent(JSON.stringify(`${prefix}\ufff0`))}`;
-  const res = await fetch(dbUrl(person, `/_all_docs?${q}`), { headers: dbHeaders, credentials: 'same-origin' });
-  if (!res.ok) throw new Error(`db list ${res.status}`);
-  return ((await res.json()).rows ?? []) as any[];
+  try { return (await (await remote(person)).allDocs({ include_docs: true, startkey: prefix, endkey: `${prefix}\ufff0` })).rows as any[]; }
+  catch (e: any) { throw new Error(`db list ${e?.status ?? e?.message}`); }
 }
 
 export async function hasPin(person: string): Promise<boolean> {

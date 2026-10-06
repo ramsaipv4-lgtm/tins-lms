@@ -7,6 +7,8 @@
     <!-- A server may inject <meta name="lms-pseudo-locale" content="1"> to switch on the pseudo-locale at run time. -->
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>Coach LMS</title>
+    <!-- Registers at once, not on load: src/sw.ts -->
+    <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});</script>
   </head>
   <body>
     <div id="root"></div>

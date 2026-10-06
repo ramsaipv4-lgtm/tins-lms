@@ -9,7 +9,7 @@ mountDroppedNotice();
 export const routes: FeatureRoute[] = [
   { path: '/learn/grades', space: 'learn', label: 'classroom.nav.grades', order: 20, roles: ['learner'], load: () => import('./LGrades.tsx') },
   { path: '/learn/doubts', space: 'learn', label: 'classroom.nav.doubts', order: 21, roles: ['learner'], load: () => import('./LDoubts.tsx') },
-  { path: '/learn/accommodations', space: 'learn', label: 'classroom.nav.accommodations', order: 9, roles: ['learner'], load: () => import('./LSettings.tsx') },
+  { path: '/learn/accommodations', space: 'learn', label: 'classroom.nav.accommodations', order: 1.5, roles: ['learner'], load: () => import('./LSettings.tsx') },
   { path: '/teach/appeals', space: 'teach', label: 'classroom.nav.appeals', order: 20, roles: ['trainer'], load: () => import('./TAppeals.tsx') },
   { path: '/teach/doubts', space: 'teach', label: 'classroom.nav.doubts', order: 21, roles: ['trainer'], load: () => import('./TDoubts.tsx') },
   { path: '/teach/class-roster', space: 'teach', label: 'classroom.nav.roster', order: 11.5, roles: ['trainer'], load: () => import('./TRoster.tsx') },

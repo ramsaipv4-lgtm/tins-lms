@@ -11,6 +11,6 @@ export const routes: FeatureRoute[] = [
   { path: '/teach/schedule', space: 'teach', label: 'admin.nav.schedule', order: 30, roles: ['trainer', 'substitute', 'coordinator'], load: () => import('./TrainerSchedule.tsx') },
   { path: '/teach/quizzes', space: 'teach', label: 'admin.nav.quizzes', order: 31, roles: ['trainer', 'substitute'], load: () => import('./TrainerQuizzes.tsx') },
   { path: '/teach/feedback', space: 'teach', label: 'admin.nav.feedback', order: 32, roles: ['trainer', 'coordinator'], load: () => import('./Feedback.tsx') },
-  { path: '/teach/batch', space: 'teach', label: 'admin.nav.batch', order: 33, roles: ['coordinator', 'trainer'], load: () => import('./Batch.tsx') },
+  { path: '/teach/batch', space: 'teach', label: 'admin.nav.batch', order: 33, roles: ['coordinator'], home: ['coordinator'], load: () => import('./Batch.tsx') },
   { path: '/learn/feedback', space: 'learn', label: 'admin.nav.feedback', order: 80, load: () => import('./LearnerFeedback.tsx') },
 ];
