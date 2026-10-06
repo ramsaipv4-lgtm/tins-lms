@@ -1,1 +1,1 @@
-{ "name": "@lms/cli", "version": "0.1.0", "private": true, "type": "module", "dependencies": { "@lms/core": "*" } }
+{ "name": "@lms/cli", "version": "0.1.0", "private": true, "type": "module", "bin": { "lms": "src/main.ts" }, "dependencies": { "@lms/core": "*" } }

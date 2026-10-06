@@ -59,7 +59,7 @@ tins-kit gate rejects any dependency not named here. Versions were read from npm
 | D-8 | Tests and journeys: Node's built-in test runner (`node --test`) and `@playwright/test` 1.63.0 driving the Chromium already installed in the build environment | locked | DEC-65 |
 | D-9 | The hub serves the replication endpoint `/db/*` with `express-pouchdb` 4.2.0 on `express` 4.22.3, mounted beside Hono on the **same** Node HTTP server; everything else is Hono | locked | experiments/sync |
 | D-10 | QR: `qrcode` 1.5.4 to draw codes; `jsqr` 1.4.0 to read them from the camera in the web app | locked | DEC-22 |
-| D-11 | Screen text recognition (P-16, screenshot import): `tesseract.js` 7.0.0 in the web app, with the English data loaded from the hub (never a third-party CDN at runtime) | locked | DEC-70 |
+| D-11 | Screen text recognition (P-16, screenshot import): `tesseract.js` 7.0.0 in the web app, with the English data loaded from the hub (never a third-party CDN at runtime); the hub serves it from `@tesseract.js-data/eng` 1.0.0 (MIT), pinned in packages/server | locked | DEC-70 |
 | D-12 | Native shell (1b): `@capacitor/core` 8.5.2 and `@capacitor/cli` 8.5.2, Android only, used for clock-app alarms, reliable notifications and file sharing | locked | DEC-45, DEC-47 |
 | D-13 | Content conversion: Microsoft MarkItDown (Python) as an optional sidecar process. Never the npm package named `markitdown` | locked | DEC-12 |
 | D-14 | No other dependency may be added without a new locked D-row. Versions are pinned exactly (no `^` or `~`), and `package-lock.json` is committed | locked | DEC-53 |

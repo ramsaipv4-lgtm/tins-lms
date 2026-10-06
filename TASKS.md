@@ -56,7 +56,8 @@ the orchestrator merges with `kit merge <id>` and pushes. Every task also owns
 | b7-9 | ms-07.09 | sonnet | Offline phone profile, file exchange, export my data, robustness | AC-95, AC-96, AC-98, AC-167 | packages/web/src/features/files, packages/server/src/routes/features/files.ts, packages/web/test/files.test.mjs | todo |
 | b8-1 | ms-08.01 | sonnet | Board: trimmed Excalidraw fork, pages, Mermaid drop, PDF with ruling | AC-97, AC-101 | packages/board, packages/web/src/features/board, packages/server/src/routes/features/board.ts, packages/web/test/board.test.mjs | todo |
 | b9-1 | ms-09.01 | sonnet | Performance budgets and 200-learner load test CLI | AC-100, AC-102, AC-103 | packages/cli, packages/web/vite.config.ts | todo |
-| b11-1 | ms-11.01 | sonnet | Hardening: MCP server, minor rules, secret-free logs, accessibility and strings across all screens | AC-116, AC-120, AC-122, AC-99, AC-123 | packages/server/src, packages/web/src | todo |
+| b11-1 | ms-11.01 | sonnet | Server hardening and integration: MCP server, minor rules, secret-free logs, OCR data, compression | AC-116, AC-120, AC-122, AC-94, AC-102 | packages/server/src, packages/server/test | todo |
+| b11-2 | ms-11.02 | sonnet | Web shell integration: hooks, one bundle, nav-collision check, accessibility and strings | AC-99, AC-123, AC-165, AC-153, AC-101 | packages/web/src, packages/web/test, packages/web/vite.config.ts, scripts/navcheck.mjs, scripts/gate.mjs | todo |
 
 Later batches (server B6, web B7, board B8, perf B9, adapters B10, hardening B11) are added
 here when the core batches are merged, following SPEC §9.1.
