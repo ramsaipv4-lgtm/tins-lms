@@ -3,7 +3,7 @@
 // `coachMeta:main`. Entries are sealed with the data key, so changing the PIN never re-encrypts them.
 import { aesGcmOpen, aesGcmSeal, base64Decode, base64Encode, utf8Decode, utf8Encode } from '../../../../core/src/util.ts';
 import { unwrapPersonKey, wrapPersonKey } from '../../../../core/src/keys.ts';
-import { personDbName, remoteDb } from '../../app/db.ts';
+import { openPersonDb, personDbName, remoteDb } from '../../app/db.ts';
 
 export const PBKDF2_ITERATIONS = 600_000;
 export const MIN_PIN = 4;
@@ -49,15 +49,42 @@ async function dbRows(person: string, prefix: string): Promise<any[]> {
   catch (e: any) { throw new Error(`db list ${e?.status ?? e?.message}`); }
 }
 
+// A PIN exists once the record carries the wrapped data key. Before that the record may hold only the salt (reserveMeta).
 export async function hasPin(person: string): Promise<boolean> {
-  return (await dbGet(person, META_ID)) !== null;
+  const meta = await dbGet(person, META_ID);
+  return !!meta && typeof meta.wrapped === 'string';
+}
+
+// The PIN record is created when the PIN screen opens, with just the salt, and the key is added to the same record when
+// the PIN is chosen. Stretching a PIN takes a while on a phone, so writing the whole record at the end made the first
+// document of the personal database appear at an unpredictable moment, in the middle of whatever the learner did next.
+export async function reserveMeta(person: string): Promise<void> {
+  if ((await dbGet(person, META_ID)) !== null) return;
+  await dbPut(person, { _id: META_ID, type: 'coachMeta', id: META_ID, schema: 1, updatedAt: Date.now(), updatedBy: `person:${person}`, salt: base64Encode(crypto.getRandomValues(new Uint8Array(16))) });
+}
+
+// True once the PIN record is readable back from the hub AND the device's own copy of the personal database (filled by
+// the live replication in files/phone.ts) has it, so the PIN record can no longer "land" in the middle of an import.
+// The upload stays disabled until then (AC-94). The wait for the local copy is bounded: replication may be off.
+export async function metaReady(person: string, waitLocalMs = 8000): Promise<boolean> {
+  try { if ((await dbGet(person, META_ID)) === null) return false; } catch { return false; }
+  try {
+    const local = await openPersonDb(person);
+    const until = Date.now() + waitLocalMs;
+    for (;;) {
+      try { await local.get(META_ID); break; } catch (e: any) { if (e?.status !== 404 || Date.now() > until) break; }
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  } catch { /* no local database: the hub copy is enough */ }
+  return true;
 }
 
 export async function createPin(person: string, pin: string): Promise<void> {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const prev = await dbGet(person, META_ID);
+  const salt = prev?.salt ? base64Decode(prev.salt) : crypto.getRandomValues(new Uint8Array(16));
   const dataKey = crypto.getRandomValues(new Uint8Array(32));
   const wrapped = await wrapPersonKey(dataKey, await wrappingKey(pin, salt));
-  await dbPut(person, { _id: META_ID, type: 'coachMeta', id: META_ID, schema: 1, updatedAt: Date.now(), updatedBy: `person:${person}`, salt: base64Encode(salt), wrapped: base64Encode(wrapped) });
+  await dbPut(person, { _id: META_ID, ...(prev?._rev ? { _rev: prev._rev } : {}), type: 'coachMeta', id: META_ID, schema: 1, updatedAt: Date.now(), updatedBy: `person:${person}`, salt: base64Encode(salt), wrapped: base64Encode(wrapped) });
   setUnlocked(person, dataKey);
 }
 

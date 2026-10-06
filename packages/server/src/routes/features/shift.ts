@@ -100,7 +100,11 @@ export function register(app: any, ctx: any): void {
     const runs = await runsOf(db, team);
     const run = runs[runs.length - 1];
     const pack = await loadPack(key, run?.packId);
-    if (!run || !pack) return { status: 'none', hasPack: !!(pack ?? (await loadPack(key))), team };
+    if (!run || !pack) {
+      // No run yet: still tell the learner the (accommodated) limit so the Shift screen can show it before the start.
+      const any = pack ?? (await loadPack(key));
+      return { status: 'none', hasPack: !!any, team, ...(any ? { limitMs: await limitFor(any, me), durationMin: any.durationMin } : {}) };
+    }
     const limitMs = await limitFor(pack, me);
     const finished = !!run.state.finished;
     const eff = finished ? (run.state.finishedAtMs ?? 0) : Math.min(Math.max(0, now() - run.state.startedAt), limitMs);
