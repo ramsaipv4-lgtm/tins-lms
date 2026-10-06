@@ -31,11 +31,13 @@ const ROLES = Object.keys(SPACES_OF);
 // anchors some patterns, e.g. /^(shift|the shift)$/ for nav /shift/). The pin makes a NEW collision, or a change of
 // the winner, fail the gate until someone looks at the journey again. AC-153 was the one case where the winner was
 // wrong (Settings beat Accommodations; fixed by order 1.5 on the classroom entry, I-10 in b11-2's journal).
+// Pins for the shift group's entries (cards, forge, offline, peer) were added after shift merged; those journeys
+// (AC-85, AC-170, AC-95, AC-161) passed in that merge's gate with these winners.
 const REVIEWED = Object.fromEntries([
   'accommodations.journey.mjs|settings|profile|accommodations?|learn|Accommodations',
   'appeal.journey.mjs|grades|results|scores|learn|Lab results',
   'audio.journey.mjs|today|day 0|learn|Day 0',
-  'cards.journey.mjs|cards|review|daily cards|learn|Review',
+  'cards.journey.mjs|cards|review|daily cards|learn|Peer review',
   'catchup.journey.mjs|catch.?up|today|my days|learn|Catch-up',
   'coach.journey.mjs|today|day 0|learn|Day 0',
   'content-improve.journey.mjs|library|packages|teach|Packages',
@@ -43,11 +45,13 @@ const REVIEWED = Object.fromEntries([
   'drop.journey.mjs|roster|learners|class|teach|Roster',
   'export.journey.mjs|settings|my data|profile|privacy|learn|Settings',
   'files.journey.mjs|packages?|files|file exchange|teach|File exchange',
-  'forge.journey.mjs|settings|profile|accounts|learn|Settings',
-  'offline.journey.mjs|cards|review|learn|Review',
+  'forge.journey.mjs|settings|profile|accounts|learn|Accounts',
+  'offline.journey.mjs|cards|review|learn|Peer review',
   'offline.journey.mjs|diagnostic|quick.?learn|quiz|learn|Diagnostic',
   'offline.journey.mjs|today|day 0|learn|Day 0',
   'teleprompter.journey.mjs|today|day 0|class|learn|Day 0',
+  'peer.journey.mjs|reviews?|peer review|learn|Peer review',
+  'peer.journey.mjs|lab|learn|Lab results',
   'trainer-notes.journey.mjs|profile|settings|my profile|learn|Settings',
   'trainer-notes.journey.mjs|roster|learners|teach|Roster',
   'trainer-pack.journey.mjs|library|package library|packages|teach|Packages',
