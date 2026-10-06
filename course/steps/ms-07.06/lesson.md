@@ -7,7 +7,7 @@ prereqs: [ms-02.01]
 objectives: 3
 new_terms: 6
 skills: [shift-engine, server-clock, ui-contracts]
-source_refs: [{ path: packages/web/src/features/shift/Shift.tsx, commit: 8de9f00c5c7345d50294a14e3c2d6228e02f7f47 }, { path: packages/server/src/routes/features/shift.ts, commit: 8de9f00c5c7345d50294a14e3c2d6228e02f7f47 }]
+source_refs: [{ path: packages/web/src/features/shift/Shift.tsx, commit: a733c14 }, { path: packages/server/src/routes/features/shift.ts, commit: a733c14 }]
 next: end
 ---
 
@@ -53,9 +53,11 @@ The ticket row fires an event. Look at when the typed answer is cleared:
 
 ```tsx packages/web/src/features/shift/Shift.tsx
   const fire = (kind: 'ack' | 'resolve') => run(async () => {
-    const r: any = await api('/api/shift/events', { method: 'POST', body: { kind, ticketId: tk.id, answer: kind === 'resolve' ? answer : undefined } });
+    const typed = inputRef.current?.value ?? answer;
+    if (kind === 'resolve' && !typed.trim()) { setNote(t('shift.shift.empty')); return; }
+    const r: any = await api('/api/shift/events', { method: 'POST', body: { kind, ticketId: tk.id, answer: kind === 'resolve' ? typed : undefined } });
     setNote(kind === 'resolve' && !r.accepted ? t('shift.shift.wrong') : null);
-    if (kind === 'resolve') setAnswer('');
+    if (kind === 'resolve' && r.accepted) setAnswer('');
     await reload();
   });
 ```
