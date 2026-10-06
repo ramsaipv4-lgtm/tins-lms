@@ -21,6 +21,6 @@ export const routes: FeatureRoute[] = [
   { path: '/learn/diagnostic', space: 'learn', label: 'files.nav.diagnostic', order: 3, roles: ['learner'], load: () => Promise.resolve({ default: Diagnostic }) },
   { path: '/learn/mastery', space: 'learn', label: 'files.nav.mastery', order: 8, roles: ['learner'], load: () => Promise.resolve({ default: Mastery }) },
   { path: '/learn/files', space: 'learn', label: 'files.nav.files', order: 40, roles: ['learner'], load: () => Promise.resolve({ default: Files }) },
-  { path: '/teach/files', space: 'teach', label: 'files.nav.files', order: 35, roles: ['trainer', 'substitute'], load: () => Promise.resolve({ default: Files }) },
+  { path: '/teach/files', space: 'teach', label: 'files.nav.files', order: 28, roles: ['trainer', 'substitute'], load: () => Promise.resolve({ default: Files }) },
   { path: '/teach/fire-drill', space: 'teach', label: 'files.nav.drill', order: 36, roles: ['trainer'], load: () => Promise.resolve({ default: FireDrill }) },
 ];
