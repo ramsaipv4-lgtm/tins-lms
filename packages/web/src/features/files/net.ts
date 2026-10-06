@@ -91,10 +91,11 @@ let lastActive = Date.now();
 const kioskListeners = new Set<() => void>();
 export function onKiosk(fn: () => void): () => void { kioskListeners.add(fn); return () => { kioskListeners.delete(fn); }; }
 
+const inCoach = () => /^\/(learn\/)?coach(\/|$)/.test(location.pathname);
 function applyKiosk() {
   const on = kioskOn();
   document.documentElement.toggleAttribute('data-kiosk', on);
-  if (on && location.pathname.startsWith('/coach')) { history.replaceState(null, '', '/learn'); dispatchEvent(new PopStateEvent('popstate')); }
+  if (on && inCoach()) { history.replaceState(null, '', '/learn'); dispatchEvent(new PopStateEvent('popstate')); }
   for (const l of kioskListeners) l();
 }
 export function setKiosk(on: boolean) { write(K.kiosk, on ? '1' : null); lastActive = Date.now(); applyKiosk(); }
@@ -109,11 +110,11 @@ async function idleSignOut() {
 function installKiosk() {
   const style = document.createElement('style');
   // The Coach space is personal; on a shared device it is not offered at all (display:none also removes it from the accessibility tree).
-  style.textContent = 'html[data-kiosk] a[href^="/coach"]{display:none!important}';
+  style.textContent = 'html[data-kiosk] a[href^="/coach"],html[data-kiosk] a[href^="/learn/coach"]{display:none!important}';
   document.head.appendChild(style);
   const touch = () => { lastActive = Date.now(); };
   for (const ev of ['pointerdown', 'keydown', 'touchstart', 'wheel']) addEventListener(ev, touch, { passive: true });
-  addEventListener('popstate', () => { if (kioskOn() && location.pathname.startsWith('/coach')) applyKiosk(); });
+  addEventListener('popstate', () => { if (kioskOn() && inCoach()) applyKiosk(); });
   setInterval(() => { if (kioskOn() && Date.now() - lastActive >= IDLE_MS) { lastActive = Date.now(); void idleSignOut(); } }, 1000);
   applyKiosk();
 }
