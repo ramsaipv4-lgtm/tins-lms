@@ -91,7 +91,9 @@ export default {
       await s.pause(1800);
       await s.type(page.getByLabel('Ask a question'), 'Can we build the site twice in a row?', { delay: 40 });
       await s.click(s.button('Ask'));
-      await s.pause(3500);
+      await s.pause(1200);
+      await s.scroll(300);
+      await s.pause(3000);
     });
   },
 };

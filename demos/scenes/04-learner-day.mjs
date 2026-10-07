@@ -15,6 +15,7 @@ export default {
     const page = s.page;
     await s.enablePasskeys();
     await s.open('/');
+    await s.focusHeading();
     await s.scene('Join with a code', 'A learner opens the app for the first time and joins with the code from the trainer', async () => {
       await s.pause(1500);
       await s.click(s.button(/join a class/i).or(s.link(/join a class/i)));
@@ -98,7 +99,9 @@ export default {
           if (n <= 3) await s.type(q.getByRole('textbox').first(), answer, { delay: 45 }); else await s.fill(q.getByRole('textbox').first(), answer);
         }
       }
+      await s.click(s.button(/^submit/i));
       await s.focusHeading();
+      await s.pause(3500);
     });
     await s.scene('Explain it back', 'Explain it back: say the idea in your own words and get feedback on what you covered', async () => {
       await s.go('Explain it back');

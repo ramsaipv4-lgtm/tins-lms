@@ -31,12 +31,12 @@ export async function titleFrame(browser, { title, subtitle, width, height, scal
 
 /** title.png (2.5 s) + recording.webm -> out/<name>.mp4 (H.264, yuv420p, 25 fps, faststart). Returns the mp4 duration.
  *  The result is decoded once to prove it is intact; if not (seen once under memory pressure), it is encoded again with one thread. */
-export function makeMp4({ webm, png, mp4, width, height }) {
+export function makeMp4({ webm, png, mp4, trim = 0, width, height }) {
   const vf = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=25,format=yuv420p`;
   const encode = (threads) => {
     const args = ['-y', '-hide_banner', '-loglevel', 'error',
       '-loop', '1', '-framerate', '25', '-t', String(TITLE_SECONDS), '-i', png,
-      '-i', webm,
+      '-ss', trim.toFixed(2), '-i', webm,
       '-filter_complex', `[0:v]${vf}[a];[1:v]${vf}[b];[a][b]concat=n=2:v=1:a=0[v]`,
       '-map', '[v]', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p', '-threads', String(threads), '-movflags', '+faststart', mp4];
     const r = spawnSync(FFMPEG, args, { encoding: 'utf8' });

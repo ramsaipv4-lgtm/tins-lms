@@ -66,10 +66,11 @@ for (const file of picked) {
     const png = join(OUT, '.raw', `${demo.name}-title.png`);
     await titleFrame(browser, { title: demo.title, subtitle: demo.subtitle || '', width: prof.viewport.width, height: prof.viewport.height, scale: prof.video.width / prof.viewport.width, file: png });
     const mp4 = join(OUT, `${demo.name}.mp4`);
-    const total = makeMp4({ webm, png, mp4, width: prof.video.width, height: prof.video.height });
+    const trim = stage.contentAt ?? 0;
+    const total = makeMp4({ webm, png, mp4, trim, width: prof.video.width, height: prof.video.height });
     writeFileSync(join(OUT, `${demo.name}.json`), JSON.stringify({
       name: demo.name, title: demo.title, persona: demo.persona || '', shows: demo.shows || '', profile: demo.profile || 'desktop', size: `${prof.video.width}x${prof.video.height}`, seconds: total,
-      scenes: stage.scenes.map((s) => ({ title: s.title, at: s.start + TITLE_SECONDS, failed: s.failed })), skipped: stage.skipped, failures: stage.failures,
+      scenes: stage.scenes.map((s) => ({ title: s.title, at: Math.max(0, s.start - trim) + TITLE_SECONDS, failed: s.failed })), skipped: stage.skipped, failures: stage.failures,
     }, null, 1));
     log(`   wrote ${mp4} (${total.toFixed(1)} s)`);
     if (stage.failures.length) { bad++; log(`   FAILURES: ${stage.failures.join(' | ')}`); }

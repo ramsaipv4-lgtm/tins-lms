@@ -14,6 +14,8 @@ export default {
   async run(s, hub) {
     const page = s.page;
     await s.open('/');
+    await s.tid('first-run').waitFor({ state: 'visible', timeout: 20_000 });
+    await s.focusHeading();
     await s.scene('First start: four choices', 'A fresh app offers four ways to start: join a class, connect to a hub, use the hosted service, or use this phone only', async () => {
       await s.tid('first-run').waitFor({ state: 'visible', timeout: 20_000 });
       await s.focusHeading();
@@ -21,6 +23,7 @@ export default {
     });
     await s.scene('Connect with a pairing code', 'Connecting to a classroom hub takes a one-time pairing code that the trainer shows on the hub. A wrong code is refused', async () => {
       await s.click(s.button('Connect to a hub'));
+      await s.focusHeading();
       await s.type(page.getByLabel('Pairing code'), '000000');
       await s.click(s.button('Connect'));
       await s.pause(2500);
@@ -36,9 +39,12 @@ export default {
     await s.scene('Hosted service and phone only', 'The other two choices: sign in to a hosted service, or keep everything on this phone', async () => {
       await s.context.clearCookies();
       await s.open('/');
+      await s.focusHeading();
       await s.click(s.button('Use the hosted service'));
+      await s.focusHeading();
       await s.pause(2500);
       await s.click(s.button('Back'));
+      await s.focusHeading();
       await s.click(s.button('Use on this phone only'));
       await s.page.getByTestId('app-ready').waitFor({ timeout: 30_000 });
       await s.settle();

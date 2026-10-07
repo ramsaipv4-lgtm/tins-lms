@@ -4,7 +4,7 @@ export default {
   name: '01-overview',
   persona: 'Anyone, first look',
   shows: 'Sign-in screen and a tour of the four spaces: Admin, Teach, Learn and Coach.',
-  title: 'Coach LMS in two minutes',
+  title: 'Coach LMS: a quick tour',
   subtitle: 'Sign in and the four spaces: Admin, Teach, Learn, Coach',
   profile: 'desktop',
   seeds: [...STANDARD, 'cards'],
@@ -47,8 +47,8 @@ export default {
     });
     await s.scene('Coach space', 'Coach: a private space behind a PIN for planning your study and meals', async () => {
       await s.click(s.link('Coach').first());
-      await s.page.getByText('Loading...').waitFor({ state: 'hidden', timeout: 20_000 }).catch(() => {});
-      await s.pause(2500);
+      await s.page.getByText(/Loading/).waitFor({ state: 'hidden', timeout: 20_000 }).catch(() => {});
+      await s.pause(4500);
     });
   },
 };

@@ -113,7 +113,9 @@ export default {
       await s.tid('submission-import').scrollIntoViewIfNeeded();
       await s.pause(600);
       await s.tid('submission-import').setInputFiles(s._sub);
-      await s.pause(3500);
+      await s.pause(1500);
+      await s.scroll(260);
+      await s.pause(3000);
     });
     await s.scene('Kiosk mode', 'Kiosk mode for shared devices: Coach is hidden and the device signs out after 30 idle minutes', async () => {
       await s.signInAs(P.l1, '/learn/settings');

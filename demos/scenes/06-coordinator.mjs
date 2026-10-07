@@ -20,6 +20,12 @@ export default {
       const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 30_000 }), s.click(target)]);
       await dl.path();
     };
+    await s.signInAs(P.s4, '/learn/feedback');
+    await s.scene('Anonymous weekly feedback', 'Every week each learner can send the course feedback. It is stored without their name', async () => {
+      await s.type(page.getByLabel('What went well this week, and what should change?'), 'More time on themes, please. The labs were clear.', { delay: 35 });
+      await s.click(s.button('Submit'));
+      await s.pause(2500);
+    });
     await s.signInAs(P.coord, '/teach');
     await s.scene('Batch view', 'The coordinator sees the whole batch, read-only: who attended how many of the four days', async () => {
       await s.tid('batch-view').waitFor({ state: 'visible', timeout: 20_000 });

@@ -20,7 +20,7 @@ export default {
     const page = s.page;
     await s.signInAs(P.trainer, '/teach/attendance');
 
-    await s.scene('Attendance with the rotating code', 'Trainer: it is day 2 of the class. Show the rotating code on the projector', async () => {
+    await s.scene('Attendance with the rotating code', 'Trainer: the second class day (day 1). Show the rotating code on the projector', async () => {
       await s.pause(2500);
       await s.say('Learners type the code on their own phones. It changes every minute, so it cannot be shared by chat.');
       await s.click(s.button('Show printed fallback code'));

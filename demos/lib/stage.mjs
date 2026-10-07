@@ -163,6 +163,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       await page.getByTestId('app-ready').waitFor({ state: 'visible', timeout: 30_000 });
       if (captionText) await page.evaluate((x) => window.__demo?.caption(x), captionText).catch(() => {});
       await stage.settle();
+      if (stage.contentAt === undefined) stage.contentAt = Math.max(0, stage.now() - 0.3); // the recording before this is a blank page: the video starts here
     },
     async settle(ms = 350) { await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {}); await sleep(ms); },
     /** Sign in through the test-mode shortcut (the app's own passkey sign-in cannot run unattended), then open a page. */

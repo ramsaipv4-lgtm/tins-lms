@@ -82,8 +82,12 @@ export default {
       await s.click(s.button('Send').first());
       await s.pause(2500);
     });
+    await s.scene('Learners see the cluster comment', 'Everyone in the cluster gets the comment on their own Lab results page', async () => {
+      await s.signInAs(P.l1, '/learn/lab-feedback');
+      await s.pause(3500);
+    });
     await s.scene('What changes in a new package', 'Before replacing the course package, check which days and questions would change', async () => {
-      await s.go('Packages');
+      await s.signInAs(P.trainer, '/teach/packages');
       await page.locator('#pkg-file').scrollIntoViewIfNeeded();
       await s.pause(800);
       await page.locator('#pkg-file').setInputFiles(changedPackageTar());
