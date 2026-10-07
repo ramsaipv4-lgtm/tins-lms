@@ -176,11 +176,12 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       await page.goto(hub.url + path, { waitUntil: 'domcontentloaded' });
       await page.getByTestId('app-ready').waitFor({ state: 'visible', timeout: 30_000 });
       if (captionText) await page.evaluate((x) => window.__demo?.caption(x), captionText).catch(() => {});
-      await stage.settle();
+      await stage.waitReady();
       if (stage.contentAt === undefined) stage.contentAt = Math.max(0, stage.now() - 0.3); // the recording before this is a blank page: the video starts here
-      if (flush) await stage.flush();
+      if (flush) await stage.flush(); // the caption appears as soon as the screen is up, not after the network has gone quiet
+      await stage.settle(250);
     },
-    async settle(ms = 350) { await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {}); await sleep(ms); },
+    async settle(ms = 350) { await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {}); await sleep(ms); },
     /** Sign in through the test-mode shortcut (the app's own passkey sign-in cannot run unattended), then open a page. */
     async signInAs([personId, roles], path = '/', opts) {
       const r = await context.request.post(`${hub.url}/__test/login`, { data: { personId, roles } });
@@ -275,6 +276,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       const position = { x: x - box.x, y: y - box.y };
       if (prof.isMobile) await loc.tap({ position }); else await loc.click({ position });
       await sleep(after * k);
+      if (!noFlush) await stage.waitReady(); // a screen a click opened is shown loaded before the next caption or pause
     },
     /** Click into a field and type with a per-character delay. */
     async type(target, text, { delay = 55, clear = true } = {}) {
