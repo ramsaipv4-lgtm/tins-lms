@@ -175,7 +175,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     /** Phone: scroll so the page's heading is at the top of the screen (the menu above it is long). */
     async focusHeading() {
       if (!prof.isMobile) return;
-      await page.evaluate(() => { const h = document.querySelector('main h1, h1'); if (h) window.scrollTo({ top: Math.max(0, h.getBoundingClientRect().top + window.scrollY - 10), behavior: 'smooth' }); });
+      await page.evaluate(() => { const hs = [...document.querySelectorAll('h1')]; const h = hs[hs.length - 1]; if (h) window.scrollTo({ top: Math.max(0, h.getBoundingClientRect().top + window.scrollY - 10), behavior: 'smooth' }); });
       await sleep(700);
     },
     /** Tap a navigation link by name, wait for the screen and (on a phone) bring its content into view. */
