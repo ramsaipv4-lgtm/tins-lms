@@ -3,6 +3,8 @@ import { populateDay0, populateRituals } from '../lib/populate.mjs';
 
 export default {
   name: '05-learner-practice',
+  persona: 'Learner (and admin)',
+  shows: 'Stand-up, estimation poker, retro to ticket, peer review, accommodation request and approval, the Shift with SLA clocks and score, practice forge.',
   title: 'Learner: practice',
   subtitle: 'Stand-up, peer review, accommodations, the Shift and the practice forge',
   profile: 'desktop',

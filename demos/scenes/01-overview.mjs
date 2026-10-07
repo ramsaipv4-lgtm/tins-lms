@@ -2,6 +2,8 @@ import { P, at, STANDARD } from '../lib/people.mjs';
 
 export default {
   name: '01-overview',
+  persona: 'Anyone, first look',
+  shows: 'Sign-in screen and a tour of the four spaces: Admin, Teach, Learn and Coach.',
   title: 'Coach LMS in two minutes',
   subtitle: 'Sign in and the four spaces: Admin, Teach, Learn, Coach',
   profile: 'desktop',

@@ -4,6 +4,8 @@ const KEY = ['kettle init', 'kettle.toml', 'public', 'kettle build', '--version'
 
 export default {
   name: '04-learner-day',
+  persona: 'Learner',
+  shows: 'Join with a code, terms, setup check, content released live, quick-learn audio, daily cards, error notebook, diagnostic, explain-it-back, exit ticket.',
   title: 'Learner: a day on the phone',
   subtitle: 'Join with a code, today\'s content, cards, diagnostic, explain it back, exit ticket',
   profile: 'phone',
@@ -46,6 +48,16 @@ export default {
       await s.scroll(420);
       await s.pause(1500);
     });
+    await s.scene('A section is released live', 'The trainer taps "Next" on the teleprompter: the next section appears on the phone by itself, with no reload', async () => {
+      const secs = (await hub.api(P.l1, '/api/classes/c1/days/0')).json.sections;
+      const locked = secs.find((x) => !x.key);
+      await s.toTop();
+      await hub.api(P.trainer, '/api/classes/c1/teleprompter', 'POST', { sectionId: locked.id });
+      await s.waitForText(/Break \(1:15/, 20_000).catch(() => {});
+      await s.focusHeading();
+      await s.scroll(520);
+      await s.pause(2500);
+    });
     await s.scene('Quick-learn audio', 'Quick-learn: a ten-minute summary you can read, or listen to at your own speed', async () => {
       await s.go('Quick-learn');
       await s.pause(1500);
@@ -66,6 +78,12 @@ export default {
       await s.click(s.tid('rate-again'));
       await s.say('"Again" brings a card back sooner');
     });
+    await s.scene('Error notebook', 'Wrong answers are collected in the error notebook, grouped by subtopic', async () => {
+      await s.go('Error notebook');
+      await s.pause(3000);
+      await s.scroll(380);
+      await s.pause(2000);
+    });
     await s.scene('The diagnostic', 'The day\'s diagnostic: eight questions to check what stuck', async () => {
       await s.go('Diagnostic');
       await s.click(s.button('Take the diagnostic'));
@@ -76,7 +94,8 @@ export default {
         if (await radios.count()) {
           await s.pause(300);
         } else {
-          await s.type(q.getByRole('textbox').first(), n === 6 ? 'src' : KEY[n - 1], { delay: 45 });
+          const answer = n === 6 ? 'src' : KEY[n - 1];
+          if (n <= 3) await s.type(q.getByRole('textbox').first(), answer, { delay: 45 }); else await s.fill(q.getByRole('textbox').first(), answer);
         }
       }
       await s.focusHeading();

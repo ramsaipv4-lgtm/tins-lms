@@ -3,6 +3,8 @@ import { fixturePath } from '../lib/files.mjs';
 
 export default {
   name: '07-coach-space',
+  persona: 'Learner',
+  shows: 'Coach space PIN, coaching conversation with accept-defaults to a versioned plan, day timeline, screenshot import, portfolio.',
   title: 'Coach: your private space',
   subtitle: 'PIN, a study plan in a few taps, screenshot import, portfolio',
   profile: 'phone',

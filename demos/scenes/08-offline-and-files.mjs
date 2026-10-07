@@ -4,6 +4,8 @@ const KEY = ['kettle init', 'kettle.toml', 'public', 'kettle build', '--version'
 
 export default {
   name: '08-offline-and-files',
+  persona: 'Learner and trainer',
+  shows: 'Offline use with the hub off, sync on reconnect, signed day package by file, submission export and import, kiosk mode.',
   title: 'No network? Still learning',
   subtitle: 'Offline use, sync on reconnect, file exchange and kiosk mode',
   profile: 'phone',
@@ -44,7 +46,7 @@ export default {
       await s.go('Diagnostic');
       await s.click(s.button(/^(start|take)( the)?( diagnostic)?$/i));
       await s.tid('diag-q-1').waitFor({ state: 'visible' });
-      for (let n = 1; n <= 8; n++) await s.type(s.tid(`diag-q-${n}`).getByRole('textbox').first(), KEY[n - 1], { delay: 30 });
+      for (let n = 1; n <= 8; n++) { const box = s.tid(`diag-q-${n}`).getByRole('textbox').first(); if (n <= 3) await s.type(box, KEY[n - 1], { delay: 30 }); else await s.fill(box, KEY[n - 1]); }
       await s.click(s.button(/^(submit|check|finish)/i));
       await s.pause(2500);
     });

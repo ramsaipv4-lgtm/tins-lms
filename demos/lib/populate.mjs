@@ -125,3 +125,34 @@ export async function populateShiftRun(hub, who = 'l3', day = 1) {
   await hub.clock(at(day, '10:40'));
   await hub.api(P[who], '/api/shift/finish', 'POST', {});
 }
+
+/** Twelve learners answer the day-0 diagnostic. Item 8 is answered right by everyone (a planted too-easy question) and
+ *  "kettle make" is the wrong answer many give on item 4, so item analysis and misconception suggestions have something to show. */
+export async function populateDiagnosticMatrix(hub) {
+  await hub.clock(at(0, '10:45'));
+  const wrong = {
+    l1: { 3: 'build', 7: 'kettle reset' }, l2: { 4: 'kettle make' }, l3: { 2: 'kettle.json', 4: 'kettle make', 6: 'src', 7: 'kettle reset' },
+    l4: { 3: 'dist', 4: 'kettle make', 5: '-v', 6: 'src', 7: 'kettle reset' }, s1: { 4: 'kettle make' }, s2: {}, s3: { 3: 'build', 4: 'kettle make', 6: 'src' },
+    s4: { 5: '-v' }, s5: { 4: 'kettle make', 7: 'kettle reset' }, s6: {}, s7: { 2: 'kettle.json', 5: '-v', 6: 'src' }, s8: { 4: 'kettle make', 7: 'kettle reset' },
+  };
+  for (const k of LEARNERS.filter((x) => x !== 'l4')) { // l4 joins later in the course
+    const answers = DAY0_ANSWERS.map((a, i) => ({ n: i + 1, answer: wrong[k]?.[i + 1] ?? a }));
+    await hub.api(P[k], '/api/learn/diagnostic', 'POST', { day: 0, answers });
+  }
+}
+
+/** Graded work with the trimmings the trainer's screens can show: l3 sat a quiz offline (no hub-signed times) with the AI
+ *  policy "explain-only" and two confirmed AI suggestions that were never read; the trainer signed off the score. */
+export async function populateGradedWork(hub) {
+  await hub.clock(at(1, '11:30'));
+  const t0 = at(1, '10:30');
+  const r = await hub.api(P.l3, '/api/classes/c1/attempts', 'POST', {
+    itemId: 'day1:quiz', mode: 'live', aiPolicy: 'explain-only',
+    answers: [{ itemId: 'day1:quiz:1', given: 'single.html', correct: true }, { itemId: 'day1:quiz:2', given: 'list.html', correct: false }],
+    timing: { hubStart: null, hubEnd: null, monotonicMs: 1_500_000, deviceStart: t0, deviceEnd: t0 + 1_500_000 },
+    aiUsage: [{ at: t0 + 300_000, toolKind: 'chat', confirmed: true, read: false }, { at: t0 + 900_000, toolKind: 'chat', confirmed: true, read: false }],
+  });
+  await hub.api(P.trainer, `/api/classes/c1/attempts/${r.json.id}/grade`, 'POST', { score: 4 });
+  await hub.api(P.l3, '/api/classroom/appeals', 'POST', { attemptId: `attempt:${r.json.id}`, reason: 'The AI suggestions were applied before I could read them' });
+  return r.json.id;
+}

@@ -3,6 +3,8 @@ import { populateDay0, populateRituals } from '../lib/populate.mjs';
 
 export default {
   name: '06-coordinator',
+  persona: 'Coordinator and admin',
+  shows: 'Read-only batch view, schedule and anonymous feedback, college reports (PDF and CSV), certificates, public verify page.',
   title: 'Coordinator and college reports',
   subtitle: 'Batch view, reports, certificates and the verify link',
   profile: 'desktop',

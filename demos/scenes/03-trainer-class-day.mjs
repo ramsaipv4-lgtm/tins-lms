@@ -5,6 +5,8 @@ import { fixturePath } from '../lib/files.mjs';
 
 export default {
   name: '03-trainer-class-day',
+  persona: 'Trainer',
+  shows: 'Rotating attendance code and printed fallback, the roll, absentee WhatsApp messages, teleprompter release, doubts, whiteboard with Mermaid and PDF export, wrap-up, delivery report.',
   title: 'Trainer: a class day',
   subtitle: 'Attendance, teleprompter, board, wrap-up and the delivery report',
   profile: 'desktop',

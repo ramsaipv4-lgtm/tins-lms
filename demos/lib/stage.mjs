@@ -97,7 +97,10 @@ function overlayScript({ captionPx, mobile }) {
   window.addEventListener('load', build);
 }
 
-export function pacing(pace) { return pace === 'slow' ? 2 : 1; }
+/** Multiplier on every pause and typing delay. `fast` is a developer mode for trying a scene out (no video is produced). */
+export function pacing(pace) { return pace === 'slow' ? 1.2 : pace === 'fast' ? 0.1 : 0.35; }
+/** Caption reading time scales less than the other pauses: a caption must stay readable at the normal pace. */
+const captionPace = (pace) => (pace === 'slow' ? 2 : pace === 'fast' ? 0.1 : 1);
 
 /**
  * createStage({ browser, name, profile, pace, outDir, hub, headed })
@@ -132,8 +135,8 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     async say(text, { hold } = {}) {
       captionText = text;
       await page.evaluate((x) => window.__demo?.caption(x), text).catch(() => {});
-      const ms = hold ?? Math.min(4200, Math.max(1500, 900 + text.length * 32));
-      if (ms) await stage.pause(ms);
+      const ms = hold ?? Math.min(2800, Math.max(1400, 800 + text.length * 21));
+      if (ms) await sleep(hold === undefined ? ms * captionPace(pace) : ms * k);
     },
     async clearCaption() { captionText = ''; await page.evaluate(() => window.__demo?.caption('')).catch(() => {}); },
 
@@ -161,7 +164,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       if (captionText) await page.evaluate((x) => window.__demo?.caption(x), captionText).catch(() => {});
       await stage.settle();
     },
-    async settle(ms = 500) { await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {}); await sleep(ms); },
+    async settle(ms = 350) { await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {}); await sleep(ms); },
     /** Sign in through the test-mode shortcut (the app's own passkey sign-in cannot run unattended), then open a page. */
     async signInAs([personId, roles], path = '/') {
       const r = await context.request.post(`${hub.url}/__test/login`, { data: { personId, roles } });
@@ -260,8 +263,15 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       const position = { x: x - box.x, y: y - box.y };
       if (prof.isMobile) await loc.tap({ position }); else await loc.click({ position });
       if (clear) await loc.fill('').catch(() => {});
-      await page.keyboard.type(text, { delay: delay * Math.min(k, 1.6) });
+      await page.keyboard.type(text, { delay: Math.round(delay * Math.max(0.55, Math.min(k, 1.6))) });
       await sleep(350 * k);
+    },
+    /** Fill a field without moving the cursor to it (for the 4th, 5th ... answer of a long form, so the video does not drag). */
+    async fill(target, text) {
+      const loc = target.first();
+      await loc.scrollIntoViewIfNeeded().catch(() => {});
+      await loc.fill(text);
+      await sleep(100 * k);
     },
     async check(target) {
       const loc = target.first();

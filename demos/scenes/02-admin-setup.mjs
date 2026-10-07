@@ -3,6 +3,8 @@ import { packageTar } from '../lib/files.mjs';
 
 export default {
   name: '02-admin-setup',
+  persona: 'Admin',
+  shows: 'Create a program, cohort and class, upload the course package, read the content gate, publish, feature switches.',
   title: 'Admin: set up a class',
   subtitle: 'Create a program, cohort and class, upload the package, publish',
   profile: 'desktop',

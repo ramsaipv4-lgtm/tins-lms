@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { startHub, REPO, DEMOS } from './lib/hub.mjs';
 import { createStage, PROFILES } from './lib/stage.mjs';
 import { STANDARD } from './lib/people.mjs';
-import { titleFrame, makeMp4, probeSeconds, writeIndex } from './lib/video.mjs';
+import { titleFrame, makeMp4, probeSeconds, writeIndex, TITLE_SECONDS } from './lib/video.mjs';
 
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
@@ -20,7 +20,7 @@ if (args.includes('--help') || args.includes('-h')) {
 const only = opt('--only');
 const headed = args.includes('--headed');
 const pace = opt('--pace') || 'normal';
-if (!['slow', 'normal'].includes(pace)) { console.error('--pace must be slow or normal'); process.exit(2); }
+if (!['slow', 'normal', 'fast'].includes(pace)) { console.error('--pace must be slow or normal (fast is for trying scenes out: it skips the video)'); process.exit(2); }
 for (const a of args) if (a.startsWith('--') && !['--only', '--headed', '--pace', '--help'].includes(a)) { console.error(`unknown option ${a}`); process.exit(2); }
 
 const OUT = join(DEMOS, 'out');
@@ -62,13 +62,14 @@ for (const file of picked) {
     try { await demo.run(stage, hub); } catch (e) { stage.failures.push(`demo aborted: ${e.message.split('\n')[0]}`); log(`demo aborted: ${e.stack}`); }
     await stage.clearCaption().catch(() => {});
     const { webm, seconds } = await stage.finish();
+    if (pace === 'fast') { log(`   fast mode: no mp4 (${seconds.toFixed(0)} s of screen time); ${stage.failures.length ? 'FAILURES: ' + stage.failures.join(' | ') : 'no failures'}`); if (stage.failures.length) bad++; continue; }
     const png = join(OUT, '.raw', `${demo.name}-title.png`);
     await titleFrame(browser, { title: demo.title, subtitle: demo.subtitle || '', width: prof.viewport.width, height: prof.viewport.height, scale: prof.video.width / prof.viewport.width, file: png });
     const mp4 = join(OUT, `${demo.name}.mp4`);
     const total = makeMp4({ webm, png, mp4, width: prof.video.width, height: prof.video.height });
     writeFileSync(join(OUT, `${demo.name}.json`), JSON.stringify({
-      name: demo.name, title: demo.title, profile: demo.profile || 'desktop', size: `${prof.video.width}x${prof.video.height}`, seconds: total,
-      scenes: stage.scenes.map((s) => ({ title: s.title, at: s.start + 2, failed: s.failed })), skipped: stage.skipped, failures: stage.failures,
+      name: demo.name, title: demo.title, persona: demo.persona || '', shows: demo.shows || '', profile: demo.profile || 'desktop', size: `${prof.video.width}x${prof.video.height}`, seconds: total,
+      scenes: stage.scenes.map((s) => ({ title: s.title, at: s.start + TITLE_SECONDS, failed: s.failed })), skipped: stage.skipped, failures: stage.failures,
     }, null, 1));
     log(`   wrote ${mp4} (${total.toFixed(1)} s)`);
     if (stage.failures.length) { bad++; log(`   FAILURES: ${stage.failures.join(' | ')}`); }

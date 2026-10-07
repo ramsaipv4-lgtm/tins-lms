@@ -3,6 +3,8 @@ import { populateDay0, populateRituals } from '../lib/populate.mjs';
 
 export default {
   name: '09-substitute',
+  persona: 'Trainer and substitute',
+  shows: 'Hand a day over, handover pack, mark as read, the substitute runs the day, report records who taught, self-learn mode.',
   title: 'A substitute takes the day',
   subtitle: 'Hand a day over, read the handover pack, run the class',
   profile: 'desktop',
@@ -68,6 +70,28 @@ export default {
     await s.scene('The report records who taught', 'The delivery report records who actually taught day 1', async () => {
       await s.signInAs(P.trainer, '/teach/delivery-reports');
       await s.pause(4000);
+    });
+    await s.scene('No substitute: self-learn mode', 'No substitute at all? The trainer picks self-learn mode: the day\'s script plays section by section', async () => {
+      await hub.clock(at(2, '09:30'));
+      await s.signInAs(P.trainer, '/teach/schedule');
+      await s.click(s.button(/can.?t take day 2/i));
+      await s.click(s.button('Self-learn mode'));
+      await s.click(s.button('Confirm'));
+      await s.pause(2000);
+      await s.say('The delivery report will mark this day as AI-delivered');
+      const open = page.getByRole('link', { name: /open day 2 player/i }).or(page.getByRole('button', { name: /open day 2 player/i }));
+      await s.click(open);
+      await s.tid('self-learn').waitFor({ state: 'visible', timeout: 20_000 });
+      await s.pause(2500);
+    });
+    await s.scene('Self-learn player', 'With AI off the script plays as text. A question is queued for the trainer, not answered', async () => {
+      await s.click(s.button('Next section'));
+      await s.pause(1800);
+      await s.click(s.button('Next section'));
+      await s.pause(1800);
+      await s.type(page.getByLabel('Ask a question'), 'Can we build the site twice in a row?', { delay: 40 });
+      await s.click(s.button('Ask'));
+      await s.pause(3500);
     });
   },
 };
