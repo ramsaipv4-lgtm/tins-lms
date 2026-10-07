@@ -56,7 +56,7 @@ export default {
       await s.pause(2500);
     });
     await s.scene('Corrected score, original kept', 'The learner sees the corrected score, and the original is kept in the history (nothing is overwritten)', async () => {
-      await s.signInAs(P.l1, '/learn/grades');
+      await s.signInAs(P.l1, '/learn/grades', { flush: false });
       await card('day0:quiz').scrollIntoViewIfNeeded();
       await s.pause(4000);
     });

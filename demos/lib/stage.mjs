@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 export const PROFILES = {
   desktop: { viewport: { width: 1280, height: 720 }, video: { width: 1280, height: 720 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false, caption: 22 },
-  phone: { viewport: { width: 360, height: 740 }, video: { width: 720, height: 1480 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, caption: 17 },
+  phone: { viewport: { width: 360, height: 740 }, video: { width: 720, height: 1480 }, rec: { width: 360, height: 740 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, caption: 17 },
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -114,7 +114,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
   const context = await browser.newContext({
     viewport: prof.viewport, deviceScaleFactor: prof.deviceScaleFactor, isMobile: prof.isMobile, hasTouch: prof.hasTouch,
     locale: 'en-IN', timezoneId: 'Asia/Kolkata', acceptDownloads: true,
-    recordVideo: { dir: rawDir, size: prof.video },
+    recordVideo: { dir: rawDir, size: prof.rec ?? prof.video } // Playwright records in CSS pixels: record at the viewport size and upscale when converting,
   });
   await context.addInitScript(overlayScript, { captionPx: prof.caption, mobile: prof.isMobile });
   const page = await context.newPage();
@@ -124,19 +124,33 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
   const scenes = []; const skipped = []; const failures = [];
   let current = null;
   let captionText = '';
+  let pendingCap = null; let noFlush = false;
 
   const stage = {
     page, context, hub, profile, prof, k, scenes, skipped, failures,
     now: () => (Date.now() - t0) / 1000,
     sleep,
     /** Pause so a viewer can read; doubled with --pace slow. */
-    async pause(ms = 1200) { await sleep(ms * k); },
+    async pause(ms = 1200) { await stage.flush(); await sleep(ms * k); },
     /** Set the caption bar; holds long enough to read it (unless hold === 0). */
     async say(text, { hold } = {}) {
+      pendingCap = null; // an explicit caption replaces the scene's waiting one
       captionText = text;
       await page.evaluate((x) => window.__demo?.caption(x), text).catch(() => {});
       const ms = hold ?? Math.min(2800, Math.max(1400, 800 + text.length * 21));
       if (ms) await sleep(hold === undefined ? ms * captionPace(pace) : ms * k);
+    },
+    /** True when the screen has finished loading: no "Loading" placeholder is left. */
+    async waitReady() {
+      await page.waitForFunction(() => ![...document.querySelectorAll('p,div,span,section,li')].some((e) => e.children.length === 0 && /^\s*Loading([….]+)?\s*$/.test(e.textContent || '') && e.getBoundingClientRect().height > 0), null, { timeout: 6000 }).catch(() => {});
+    },
+    /** Shows the scene's caption (once) now that its screen is on display, and starts the reading hold. */
+    async flush() {
+      if (!pendingCap) return;
+      const text = pendingCap; pendingCap = null;
+      await stage.waitReady();
+      if (current) current.start = stage.now();
+      await stage.say(text);
     },
     async clearCaption() { captionText = ''; await page.evaluate(() => window.__demo?.caption('')).catch(() => {}); },
 
@@ -145,8 +159,8 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
       current = { title, caption, start: stage.now() };
       scenes.push(current);
       log(`  scene: ${title}`);
-      if (caption) await stage.say(caption);
-      try { await fn(); } catch (e) {
+      pendingCap = caption || null; // shown by the first step that has its screen ready (see flush)
+      try { await fn(); await stage.flush(); } catch (e) {
         current.failed = String(e.message).split('\n')[0].slice(0, 300);
         failures.push(`${title}: ${current.failed}`);
         log(`  scene FAILED: ${title}: ${current.failed}`);
@@ -158,19 +172,20 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     skip(title, reason) { skipped.push({ title, reason }); log(`  scene skipped: ${title} (${reason})`); },
 
     // ----- navigation and people -----
-    async open(path = '/') {
+    async open(path = '/', { flush = true } = {}) {
       await page.goto(hub.url + path, { waitUntil: 'domcontentloaded' });
       await page.getByTestId('app-ready').waitFor({ state: 'visible', timeout: 30_000 });
       if (captionText) await page.evaluate((x) => window.__demo?.caption(x), captionText).catch(() => {});
       await stage.settle();
       if (stage.contentAt === undefined) stage.contentAt = Math.max(0, stage.now() - 0.3); // the recording before this is a blank page: the video starts here
+      if (flush) await stage.flush();
     },
     async settle(ms = 350) { await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {}); await sleep(ms); },
     /** Sign in through the test-mode shortcut (the app's own passkey sign-in cannot run unattended), then open a page. */
-    async signInAs([personId, roles], path = '/') {
+    async signInAs([personId, roles], path = '/', opts) {
       const r = await context.request.post(`${hub.url}/__test/login`, { data: { personId, roles } });
       if (!r.ok()) throw new Error(`test login ${personId}: ${r.status()}`);
-      await stage.open(path);
+      await stage.open(path, opts);
     },
     /** Phone: scroll so the page's heading is at the top of the screen (the menu above it is long). */
     async focusHeading() {
@@ -181,9 +196,11 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     /** Tap a navigation link by name, wait for the screen and (on a phone) bring its content into view. */
     async go(name) {
       await page.evaluate(() => window.scrollTo(0, 0)); await sleep(250);
-      await stage.click(stage.link(name));
+      noFlush = true;
+      try { await stage.click(stage.link(name)); } finally { noFlush = false; }
       await stage.settle(600);
       await stage.focusHeading();
+      await stage.flush();
     },
     /** A CDP virtual authenticator, so passkey sign-up works unattended (the app itself is unchanged). */
     async enablePasskeys() {
@@ -243,6 +260,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     async moveTo(target) {
       const loc = target.first();
       await loc.waitFor({ state: 'visible' });
+      if (!noFlush) await stage.flush();
       await loc.scrollIntoViewIfNeeded().catch(() => {});
       let box = await stage._clearOfCaption(loc);
       if (!box) box = await loc.boundingBox();
@@ -290,6 +308,7 @@ export async function createStage({ browser, name, profile = 'desktop', pace = '
     button(name) { return page.getByRole('button', { name, exact: typeof name === 'string' }); },
     tid(id) { return page.getByTestId(id); },
     async scroll(px, ms = 700) {
+      await stage.flush();
       await page.evaluate(([y, d]) => new Promise((res) => { const s = window.scrollY; const t0 = performance.now(); const f = (t) => { const p = Math.min(1, (t - t0) / d); window.scrollTo(0, s + y * p); p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); }), [px, ms]);
       await sleep(250 * k);
     },
