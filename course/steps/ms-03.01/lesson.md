@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 6
 skills: [hotp-codes, immutable-state, keyed-ids]
-source_refs: [{ path: packages/core/src/attendance.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }, { path: packages/core/src/pairing.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }, { path: packages/core/src/certificate.ts, commit: 31ac940a3b80ae74f9b54663ff5bba3f816fcc26 }]
+source_refs: [{ path: packages/core/src/attendance.ts, commit: 034df0169289b58ff62c17820e852657b7005c23 }, { path: packages/core/src/pairing.ts, commit: 034df0169289b58ff62c17820e852657b7005c23 }, { path: packages/core/src/certificate.ts, commit: 034df0169289b58ff62c17820e852657b7005c23 }]
 next: ms-03.02
 ---
 

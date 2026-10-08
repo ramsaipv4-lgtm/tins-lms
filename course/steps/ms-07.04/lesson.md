@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 6
 skills: [polling, sealed-sections, pacing]
-source_refs: [{ path: packages/web/src/features/tele/Today.tsx, commit: 940e3ba61a07d3cda1f43a9691593b623e066dbb }, { path: packages/web/src/features/tele/Prompter.tsx, commit: 940e3ba61a07d3cda1f43a9691593b623e066dbb }]
+source_refs: [{ path: packages/web/src/features/tele/Today.tsx, commit: 8d9e317f23e192b2f01bf711a517805f3f30010d }, { path: packages/web/src/features/tele/Prompter.tsx, commit: 8d9e317f23e192b2f01bf711a517805f3f30010d }]
 next: ms-07.05
 ---
 

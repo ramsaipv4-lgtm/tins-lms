@@ -7,7 +7,7 @@ prereqs: [ms-06.01]
 objectives: 3
 new_terms: 5
 skills: [content-gate, sealed-sections, debugging-by-observation]
-source_refs: [{ path: packages/server/src/routes/content.ts, commit: 9983740 }]
+source_refs: [{ path: packages/server/src/routes/content.ts, commit: a18ee86 }]
 next: ms-06.04
 ---
 

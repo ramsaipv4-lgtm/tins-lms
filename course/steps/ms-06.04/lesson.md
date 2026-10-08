@@ -7,7 +7,7 @@ prereqs: [ms-06.01]
 objectives: 3
 new_terms: 6
 skills: [replication-guards, conflict-merge-pass, encrypted-document-rules]
-source_refs: [{ path: packages/server/src/routes/sync.ts, commit: 99983ce }]
+source_refs: [{ path: packages/server/src/routes/sync.ts, commit: 194bf54 }]
 next: ms-06.05
 ---
 

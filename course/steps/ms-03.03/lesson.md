@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 6
 skills: [hash-chain, append-only-ledger]
-source_refs: [{ path: packages/core/src/ledger.ts, commit: 94555fc188f43f2fb8f05f642211c26c213ed142 }]
+source_refs: [{ path: packages/core/src/ledger.ts, commit: f9c2d3522ba280621b766aba366a1420f9388e6b }]
 next: ms-03.04
 ---
 

@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 4
 skills: [health-monitoring, offline-first, async-iteration]
-source_refs: [{ path: packages/adapters/src/health.ts, commit: c6653dd7722af186c248f1a0287b482b06e3bd4a }]
+source_refs: [{ path: packages/adapters/src/health.ts, commit: 289bacb8cbe05cf98d5c13ae63ed30b17cd43928 }]
 next: ms-11.01
 ---
 

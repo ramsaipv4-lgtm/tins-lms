@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 5
 skills: [seeded-rng, deterministic-shuffling]
-source_refs: [{ path: packages/core/src/rng.ts, commit: ac0b476 }]
+source_refs: [{ path: packages/core/src/rng.ts, commit: c6dcc75 }]
 next: ms-02.02
 ---
 
@@ -249,7 +249,7 @@ In Walkthrough section, showing excerpt with incomplete comments:
 **What went wrong:**
 - Excerpts tagged with file path are checked against the actual commit.
 - Omitting comments or changing formatting causes mismatch.
-- Gate output: `FAIL check 13: ms-02.01: excerpt from packages/core/src/rng.ts does not match ac0b476`.
+- Gate output: `FAIL check 13: ms-02.01: excerpt from packages/core/src/rng.ts does not match c6dcc75`.
 
 **How you spot it:**
 Gate checker validates line-for-line against the commit. Comments matter.
@@ -258,7 +258,7 @@ Gate checker validates line-for-line against the commit. Comments matter.
 Include all comments and match formatting exactly from the source file (e.g., empty lines between sections).
 
 **Proof:**
-After including full comments from `git show ac0b476:packages/core/src/rng.ts`, final gate PASS.
+After including full comments from `git show c6dcc75:packages/core/src/rng.ts`, final gate PASS.
 
 ## Technical glossary
 

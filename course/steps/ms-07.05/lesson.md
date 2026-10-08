@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 5
 skills: [feature-group, core-reuse, test-contract]
-source_refs: [{ path: packages/server/src/routes/features/learn.ts, commit: b498335 }, { path: packages/web/src/features/learn/index.tsx, commit: b498335 }]
+source_refs: [{ path: packages/server/src/routes/features/learn.ts, commit: a142ead }, { path: packages/web/src/features/learn/index.tsx, commit: a142ead }]
 next: ms-07.06
 ---
 

@@ -93,6 +93,7 @@ tins-kit gate rejects any dependency not named here. Versions were read from npm
 | D-38 | Content release follows the teleprompter: sections unlock when the trainer reaches them, or at their scheduled time as a fallback; graded material never unlocks by time alone | locked | §20.4 |
 | D-39 | The rebuild course (§11) is generated after v1 from the code, commits and build journal | locked | DEC-71 |
 | D-40 | The acceptance suite lives in the public repo `tins-lms-tests`. Builders work from this SPEC, the visible smoke subset (`acceptance/smoke/`) and the data fixtures (`acceptance/fixtures/`) only; reading the rest of the suite during the build experiment voids that run's score | locked | Owner, iteration 16 |
+| D-41 | Course `source_refs` and code-fence citations name commits reachable from `main`, that is the commit as it exists after `kit close` (close rewrites commits to add `Session:` trailers, so a sha taken before close is lost). The course check (`check.mjs course`) must pass on a fresh clone | locked | tins-kit RF-33 |
 
 ---
 

@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 6
 skills: [one-time-codes, device-revocation, rotating-code-verification]
-source_refs: [{ path: packages/server/src/routes/pairing.ts, commit: 8970f8bb537d9814580216136512c2c5c0fdf66a }, { path: packages/server/src/routes/attendance.ts, commit: 8970f8bb537d9814580216136512c2c5c0fdf66a }]
+source_refs: [{ path: packages/server/src/routes/pairing.ts, commit: 312779eda358ffd7f4f94db3523222c20fdce77d }, { path: packages/server/src/routes/attendance.ts, commit: 312779eda358ffd7f4f94db3523222c20fdce77d }]
 next: ms-06.03
 ---
 
