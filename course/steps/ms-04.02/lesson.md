@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 5
 skills: [pure-state-machines, seeded-choice, sla-status]
-source_refs: [{ path: packages/core/src/shift.ts, commit: 8047257f1ef2de25ad02bfb3dd2f08cf2c0b1daa }]
+source_refs: [{ path: packages/core/src/shift.ts, commit: 41f4d5e870098f5be899de629e095362e9c38246 }]
 next: ms-04.03
 ---
 

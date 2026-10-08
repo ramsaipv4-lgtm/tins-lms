@@ -7,7 +7,7 @@ prereqs: [ms-11.01]
 objectives: 4
 new_terms: 6
 skills: [state-ownership, race-conditions, performance-profiling, dropped-input]
-source_refs: [{ path: packages/server/src/routes/features/shift.ts, commit: 53ae25f0b92304507461ab3b34805baed308d562 }, { path: packages/web/src/features/shift/Shift.tsx, commit: 53ae25f0b92304507461ab3b34805baed308d562 }, { path: packages/web/src/features/coach/lib.ts, commit: 53ae25f0b92304507461ab3b34805baed308d562 }, { path: packages/web/src/features/coach/Shot.tsx, commit: 53ae25f0b92304507461ab3b34805baed308d562 }, { path: packages/web/src/features/coach/Gate.tsx, commit: 53ae25f0b92304507461ab3b34805baed308d562 }]
+source_refs: [{ path: packages/server/src/routes/features/shift.ts, commit: 61ddca6a0886101f7094bb3df8a5b4fea31fe1b8 }, { path: packages/web/src/features/shift/Shift.tsx, commit: 61ddca6a0886101f7094bb3df8a5b4fea31fe1b8 }, { path: packages/web/src/features/coach/lib.ts, commit: 61ddca6a0886101f7094bb3df8a5b4fea31fe1b8 }, { path: packages/web/src/features/coach/Shot.tsx, commit: 61ddca6a0886101f7094bb3df8a5b4fea31fe1b8 }, { path: packages/web/src/features/coach/Gate.tsx, commit: 61ddca6a0886101f7094bb3df8a5b4fea31fe1b8 }]
 next: end
 ---
 

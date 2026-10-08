@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 4
 skills: [key-derivation, content-release]
-source_refs: [{ path: packages/core/src/release.ts, commit: fadc0ff }]
+source_refs: [{ path: packages/core/src/release.ts, commit: 9d6ff57 }]
 next: ms-03.03
 ---
 

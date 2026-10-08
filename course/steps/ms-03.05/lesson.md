@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 5
 skills: [recovery-key, crypto-shredding]
-source_refs: [{ path: packages/core/src/keys.ts, commit: 3c4f923f66810152e55cb83088241066a64e62a0 }]
+source_refs: [{ path: packages/core/src/keys.ts, commit: 66fa9953a3ab20219834972b8c6377af5a2fc4c7 }]
 next: ms-04.01
 ---
 

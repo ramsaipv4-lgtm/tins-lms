@@ -7,7 +7,7 @@ prereqs: [ms-06.01]
 objectives: 4
 new_terms: 6
 skills: [export-manifest, signed-package, device-key, secret-scrubbing]
-source_refs: [{ path: packages/server/src/routes/export.ts, commit: adbf74e }]
+source_refs: [{ path: packages/server/src/routes/export.ts, commit: 201e07e }]
 next: ms-06.08
 ---
 

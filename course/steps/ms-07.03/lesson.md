@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 5
 skills: [feature-group, private-data, core-reuse]
-source_refs: [{ path: packages/server/src/routes/features/attend.ts, commit: 345b595 }, { path: packages/web/src/features/attend/wa.ts, commit: 345b595 }]
+source_refs: [{ path: packages/server/src/routes/features/attend.ts, commit: d7f5f15 }, { path: packages/web/src/features/attend/wa.ts, commit: d7f5f15 }]
 next: ms-07.04
 ---
 

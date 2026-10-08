@@ -7,7 +7,7 @@ prereqs: [ms-02.01]
 objectives: 3
 new_terms: 6
 skills: [shift-engine, server-clock, ui-contracts]
-source_refs: [{ path: packages/web/src/features/shift/Shift.tsx, commit: a733c14 }, { path: packages/server/src/routes/features/shift.ts, commit: a733c14 }]
+source_refs: [{ path: packages/web/src/features/shift/Shift.tsx, commit: 3bec664 }, { path: packages/server/src/routes/features/shift.ts, commit: 3bec664 }]
 next: ms-07.07
 ---
 

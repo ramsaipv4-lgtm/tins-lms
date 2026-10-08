@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 6
 skills: [fetch-adapters, fake-servers, secret-scan]
-source_refs: [{ path: packages/adapters/src/github.ts, commit: 3befeb0ceddb2ff1c6c67be57b7bbade18b61375 }, { path: packages/adapters/src/forgejo.ts, commit: 3befeb0ceddb2ff1c6c67be57b7bbade18b61375 }]
+source_refs: [{ path: packages/adapters/src/github.ts, commit: 08b1415f0ae6cca6fe9992219c7d72a449ceca5d }, { path: packages/adapters/src/forgejo.ts, commit: 08b1415f0ae6cca6fe9992219c7d72a449ceca5d }]
 next: ms-10.02
 ---
 

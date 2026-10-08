@@ -44,7 +44,12 @@ You build **one task** of Coach LMS v1. `SPEC.md` is the contract; `TASKS.md` li
      file path (` ```ts packages/core/src/rng.ts `) and has a `{ path: …, commit: <sha> }` entry in
      `source_refs`. To get the sha: `git add <your code files> && git commit -m "<task-id>: code"`,
      then `git rev-parse HEAD`. Excerpts must match that commit exactly (check 13). Removing code or
-     citations to get past the check is not allowed;
+     citations to get past the check is not allowed. `kit close` rewrites your commits (it adds
+     `Session:` trailers), so that sha is only good while you work. Citations must name commits
+     reachable from `main` (SPEC D-41): after the orchestrator closes your task, it re-points each
+     cited pre-close sha to the post-close commit with the identical tree (`git log --format='%H %T'`
+     on the task branch) in a short session on the task branch, and runs the course check in a fresh
+     clone (`git clone --no-local`) before merging;
    - recall.md: at least 3 `**Q:**`/`**A:**` cards.
    Check it with `node skill-template/checks/check.mjs course --repo . --steps-only`.
 7. `kit gate` must pass. Then `kit close --why "implements <rows> as specified in SPEC"`.

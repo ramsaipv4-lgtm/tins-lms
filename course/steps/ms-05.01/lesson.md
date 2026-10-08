@@ -7,7 +7,7 @@ prereqs: [ms-02.04]
 objectives: 3
 new_terms: 6
 skills: [content-validation, layout-tolerant-parsing, expiring-waivers]
-source_refs: [{ path: packages/core/src/gate.ts, commit: 0d69d2fe3e0bb1525f66b2624049bedb6679e7a6 }]
+source_refs: [{ path: packages/core/src/gate.ts, commit: eda118158b99415260721684767a8cbde068b8e4 }]
 next: ms-06.01
 ---
 

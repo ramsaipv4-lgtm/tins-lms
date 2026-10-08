@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 6
 skills: [http-server-foundation, role-guard, test-mode-gating]
-source_refs: [{ path: packages/server/src/core/guard.ts, commit: 8364ba6 }, { path: packages/server/src/core/store.ts, commit: 8364ba6 }, { path: packages/server/src/core/http.ts, commit: 8364ba6 }]
+source_refs: [{ path: packages/server/src/core/guard.ts, commit: ed94c17 }, { path: packages/server/src/core/store.ts, commit: ed94c17 }, { path: packages/server/src/core/http.ts, commit: ed94c17 }]
 next: ms-06.02
 ---
 
