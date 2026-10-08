@@ -61,3 +61,23 @@ the orchestrator merges with `kit merge <id>` and pushes. Every task also owns
 
 Later batches (server B6, web B7, board B8, perf B9, adapters B10, hardening B11) are added
 here when the core batches are merged, following SPEC §9.1.
+
+## Games (v2-G, SPEC §13)
+
+Built as a vertical slice (SPEC §13.10). No course step for games tasks (the Step column is `-`). Scope
+paths below are the starting scope; widening one needs the owner's approval. A game task merges only after
+its playtest row is signed (D-63). Builders use `scripts/rowcheck.mjs` (from g-0) for per-row feedback.
+
+| Task | Step | Model | Title | Rows | Code paths | Status |
+|---|---|---|---|---|---|---|
+| g-0 | - | sonnet | Per-row feedback tool and the nine games switch keys | (keeps AC-49 green) | scripts/rowcheck.mjs, packages/core/src/switches.ts, packages/core/test/switches.test.mjs | todo |
+| g-1 | - | sonnet | Snek interpreter, counting, sandbox | AC-208 to AC-213 | packages/games/package.json, packages/games/src/lang, packages/games/test/snek.test.mjs | todo |
+| g-2 | - | sonnet | Engine, arcade, story system, player, results, pack schemas and check, G9-games, games CLI, tuning | AC-216 | packages/games/src/engine, packages/games/src/story, packages/games/src/check, packages/games/src/tuning.ts, packages/games/schema, packages/games/test/engine.test.mjs, packages/games/test/check.test.mjs, packages/games/test/tuning.test.mjs, packages/web/src/features/games, packages/web/src/strings/en.json, packages/web/vite.config.ts, packages/server/src/routes/features/games.ts, packages/server/src/routes/content.ts, packages/server/src/routes/testmode.ts, packages/cli/src/games.ts, packages/cli/src/main.ts | todo |
+| g-3 | - | sonnet | Syntax Drop complete and the prologue (vertical slice; owner playtest); also the shared and Syntax Drop parts of AC-200, 203, 207, 214, 234, 235; may fix engine defects inside packages/games (logged as integration fixes) | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | packages/games, packages/web/src/strings/en.json | todo |
+| g-6 | - | sonnet | Snippet Sniper | AC-227, AC-240, AC-244 | packages/games/src/games/sniper, packages/games/packs/sniper, packages/games/story/sniper.json, packages/games/test/sniper.test.mjs, packages/web/src/strings/en.json | todo |
+| g-4 | - | sonnet | Whack-a-Bug | AC-228, AC-241, AC-245 | packages/games/src/games/whack-a-bug, packages/games/packs/whack-a-bug, packages/games/story/whack-a-bug.json, packages/games/test/whack-a-bug.test.mjs, packages/web/src/strings/en.json | todo |
+| g-5 | - | sonnet | Aftershock | AC-229, AC-242, AC-246 | packages/games/src/games/aftershock, packages/games/packs/aftershock, packages/games/story/aftershock.json, packages/games/test/aftershock.test.mjs, packages/web/src/strings/en.json | todo |
+| g-12 | - | sonnet | Shop and gear (after the playtests) | AC-237, AC-238 | packages/games/shop.json, packages/games/src/shop, packages/games/test/shop.test.mjs, packages/web/src/features/games | todo |
+
+The last of g-4, g-5 and g-6 to merge also claims AC-200, AC-201, AC-203, AC-207, AC-214, AC-234 and AC-235 (each game task makes its own part pass first). g-7 to
+g-11 (3D games and the raid) are added after the 3D/raid contract (SPEC §13.8).

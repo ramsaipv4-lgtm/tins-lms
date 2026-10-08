@@ -604,7 +604,7 @@ Precedence: class over program over org over default. Unknown names throw. Defau
 
 | ID | Behaviour | Check |
 |---|---|---|
-| AC-49 | `switchDefaults` returns exactly the table above; precedence is class > program > org > default; an unknown name throws | `acceptance/core/switches.test.mjs` |
+| AC-49 | `switchDefaults` returns exactly the table above plus the nine games keys of D-49 (`games`, `game.syntaxDrop`, `game.mazeCoder`, `game.breakout`, `game.raid`, `game.sniper`, `game.whackABug`, `game.aftershock`, `game.garage`, all on); precedence is class > program > org > default; an unknown name throws | `acceptance/core/switches.test.mjs` |
 
 ### 4.28 Version compatibility (F-21)
 
@@ -652,7 +652,7 @@ expiry more than 7 days after `now` is treated as `now` + 7 days. `G7-graded` ca
 |---|---|---|
 | AC-51 | The fixture package (v1.2 layout) passes all checks; the same package rearranged into the v1.1 layout also imports with the same days | `acceptance/core/gate.test.mjs` |
 | AC-52 | Each planted defect fails exactly its check: missing file (G1), README listing a removed file (G2), 7 diagnostic questions (G3), script total 50% of the slot (G4), broken link (G5), unlabelled code block (G6), Shift pack without checks (G7), card without back (G8) | `acceptance/core/gate.test.mjs` |
-| AC-53 | A waiver turns a failed G1–G6/G8 check into `waived` until it expires; a waiver for G7 is ignored; an expired waiver is ignored | `acceptance/core/gate.test.mjs` |
+| AC-53 | A waiver turns a failed G1–G6/G8 check into `waived` until it expires; a waiver for G7 is ignored (and on the hub, a waiver for `G9-games`, §13, D-55); an expired waiver is ignored | `acceptance/core/gate.test.mjs` |
 | AC-54 | `parsePackage` extracts day sections from the instructor script (via §4.8), the 8 diagnostic questions with answers, and cards from memory-recall files | `acceptance/core/gate.test.mjs` |
 
 ### 4.30 Dropping a learner (F-03, DEC-38)
@@ -981,6 +981,995 @@ technical claims. So the course is **generated from a manifest** and checked by 
 | F-01 to F-46 (FAILURE-QUESTIONS.md) | §4.3, §4.5, §4.6, §4.9 to §4.13, §4.25, §4.26, §4.31, §5, §8 |
 | FEATURE-IDEAS picks (DEC-68) | §4.14 to §4.23, §4.32, §4.33, §6 |
 | Phase 2 items | §0 "Not in v1" |
+
+D-41 onward come from build findings (tins-kit RF-n) and the games design (SPEC §13), not from the plan.
+
+---
+
+## 13. Games (v2-G)
+
+The games add-on. Same rules as the rest of this file: `D-n` rows are decisions, `AC-n` rows are
+acceptance checks naming a test in the acceptance suite (`acceptance/games/…`), and where this section and
+the rest of SPEC disagree on a game, this section wins. Everything in §8 (cross-cutting rules) still holds:
+offline-first, no individual leaderboards (AC-168), test clock, `en.json` strings, accessible names.
+
+Eight games share one engine, one code interpreter and one content-pack format. **A new subject or new
+levels are a new pack (data), not new code.** A new kind of preview or machine is a small plug-in (one file
+implementing one interface).
+
+Each game has two layers (D-60). The **play layer** (story, mechanics, rewards) is the same for every subject
+and is meant to be fun on its own; the **learning layer** (the pack) is written by the trainer. They meet
+only at **Knowledge sockets**: questions the pack answers.
+
+| Id | Game | Teaches | Kind |
+|---|---|---|---|
+| `syntax-drop` | Syntax Drop | what each piece of syntax does (HTML/CSS, charts, Python output, regex, patterns) | 2D rhythm game, keyboard or tap |
+| `maze-coder` | Maze Coder | loops, conditionals, functions, pattern programming, search | 3D diorama, write code |
+| `breakout` | Breakout | data structures and algorithms, story + timed escapes | 3D third person, write code |
+| `raid` | Seal the Beast | any topic, as a whole class in teams | 2D projector + phones, multiplayer |
+| `sniper` | Snippet Sniper | predicting output | 2.5D sniping |
+| `whack-a-bug` | Whack-a-Bug | finding the line that causes a wrong result | 2D arcade defense |
+| `aftershock` | Aftershock | ordering and indenting lines (Parsons problems) | 2D action platformer |
+| `garage` | Complexity Garage | time and space complexity | 3D race, choose parts or write code |
+
+**First wave and later.** This section fully specifies the shared engine, Snek, packs, the play layer and the
+four 2D games `syntax-drop`, `sniper`, `whack-a-bug` and `aftershock`. `maze-coder`, `breakout`, `garage`
+and `raid` keep their design text (§13.8), but their acceptance rows are reserved until their contract is
+written (before task g-7); the play layer applies to them too.
+
+### 13.1 Decisions
+
+D-42 to D-49 were D-G1 to D-G8 of the games design (SPEC-games.md, folded here); D-50 to D-65 come from the
+first-wave test contract.
+
+| ID | Decision | Status | Source |
+|---|---|---|---|
+| D-42 | (was D-G1) **Light by default.** 2D games draw on one `<canvas>` with Canvas 2D. 3D games use `three` 0.186.1 (core only, named imports so unused parts are tree-shaken). No physics engine (movement is grid or axis-aligned-box collision), no game framework | locked | games design |
+| D-43 | (was D-G2) **No downloaded art or sound.** Models are built in code from boxes (block style) and merged per object; textures are drawn on small canvases (≤ 256 px, one atlas per game); sounds and music are synthesized with WebAudio. The only files a game loads are its code chunk, its pack JSON and its story data | locked | games design |
+| D-44 | (was D-G3) **One code language first: "Snek", a Python subset** interpreted by our own small interpreter in `packages/games/src/lang` (pure TypeScript, no dependencies, runs in the browser and in Node). Chosen over Pyodide (about 10 MB, slow start on weak CPUs) and Skulpt (unmaintained since 2022) because the games need stepping, deterministic operation and memory counts, hard limits and friendly errors. A Java-subset front end on the same evaluator is a later decision | locked | games design |
+| D-45 | (was D-G4) **Fair on any CPU.** Nothing a learner is scored on depends on the wall-clock speed of their device: complexity is measured in Snek operations and memory cells; timers use the game clock (it pauses when the tab is hidden; the test clock in test mode) | locked | games design |
+| D-46 | (was D-G5) **Packs are JSON** files inside the course package (layout in D-55), validated against `packages/games/schema/<gameId>.schema.json`. The package content gate runs the pack check on import (D-55). Packs are released with the day they belong to (`day` field), like other content | locked | games design |
+| D-47 | (was D-G6) **Results stay in the LMS.** Each finished round writes one `gameResult` document; each Knowledge mistake becomes a card tagged with its concept and feeds the mastery map. Scores are shown to the learner; anything other people see is team-level only (AC-168) | locked | games design |
+| D-48 | (was D-G7) **Multiplayer only through the hub.** `raid` (and optional garage challenges) use the existing sync (`/db`) for votes and the hub as the authority that resolves turns. No new server, no WebSocket requirement | locked | games design |
+| D-49 | (was D-G8) Each game has a feature switch (§4.27), default **on**: `game.syntaxDrop`, `game.mazeCoder`, `game.breakout`, `game.raid`, `game.sniper`, `game.whackABug`, `game.aftershock`, `game.garage`, plus `games` (the whole arcade). A game is available only when both `games` and its own switch are on | locked | games design |
+| D-50 | (was D-G9) **One test contract for all games, not one design per game.** Every game supports the deep link `/learn/games/<gameId>/<packId>/<levelId>`; the common actions `start`, `pause`, `resume`, `quit`, `assist`, `continue` and the story actions `next`, `skip`, `replay`; a short per-game action list with keys (§13.7); the common `__game.state()` fields plus one per-game `extra` object; and the common test ids (§13.11) | locked | games contract |
+| D-51 | (was D-G10) **Deterministic play in test mode.** In test mode only, the deep link and `/learn/games` accept `?seed=<int>`, `?clock=manual` and `?story=off`. With `clock=manual` the game clock and the scene clock move only through `__game.advance(ms)`. With `story=off` no scene plays and no `seen` flag changes; every row other than AC-231 to AC-233 runs with it. Without a seed, the seed is `seedFor(class.seedSalt, 'game:<gameId>:<packId>:<levelId>')` (§4.1) | locked | games contract |
+| D-52 | (was D-G11) **The Snek API is pinned** (§13.4): entry file `packages/games/src/lang/index.ts`; results are discriminated unions on `ok`; values convert between JS and Snek by one table; host functions are plain JS functions passed in `globals` | locked | games contract |
+| D-53 | (was D-G12) **The Snek language is everyday Python** (§13.4). The oracle is **CPython 3.14**, and the fixtures record the exact version used. Out of scope: generators and `yield`, decorators, `with`, `async`, `global` and `nonlocal`, imports other than `math`, `collections` and `heapq`, `%`-formatting and `str.format` (f-strings only) | locked | games contract, owner |
+| D-54 | (was D-G13) **Error messages are matched loosely.** A test checks an error's `kind`, its `line` and one required keyword (§13.11), never the exact wording. Every message is a single plain sentence | locked | games contract, owner |
+| D-55 | (was D-G14) **Packs follow the v1 package layout.** A pack lives at `<track>/games/<gameId>/<packId>.json`. Its `day` is the 0-based class-day index, matching the `day<N>/` folders, and it is released at the start of `class.schedule[day]` in the program's time zone. On import the hub adds the gate check `G9-games`, which runs the pack check on every pack, passes when there are no packs and can never be waived (AC-53). Core's `runGate` stays G1 to G8 | locked | games contract, owner |
+| D-56 | (was D-G15) **Results live with the learner.** `gameResult`, `player`, game `card`s and game `errorNote`s go in the learner's personal database (`person-<key>`). Anything other people see comes from the hub-computed `teamScore` (§13.11). The trainer's concept-miss map gets its own hub-computed class document when its row is written | locked | games contract, owner |
+| D-57 | (was D-G16) **Bundle chunks are named.** The web build writes Vite's manifest (`packages/web/dist/.vite/manifest.json`). The game chunks are the entries whose `name` is `games-engine`, `games-story`, `snek`, `three` or `game-<gameId>`; tests find them by these names | locked | games contract |
+| D-58 | (was D-G17) **The suite owns the test drivers.** Drivers play only through `__game.act`, `__game.state` and `__game.advance`, plus the keys and `act-<action>` buttons; games ship no driver. Every mechanic (timing windows, sway, debris, charge times) depends only on the game clock and the seed, so a driver using `clock=manual` gets the same outcome on every run and every CPU | locked | games contract |
+| D-59 | (was D-G18) **Sample packs reach a class through a test seed.** The `/__test/seed` file format (Appendix C) gains `samplePacks: [{ classId, day }]`, which imports every pack under `packages/games/packs/<gameId>/<packId>.json` into that class as if it came from its package, with each pack's `day` replaced by `day` | locked | games contract |
+| D-60 | (was D-G19) **Two layers, two scores.** The play layer asks the learning layer only at named Knowledge sockets (§13.7). Every round reports **Skill** (timing, aim, reflexes, survival) and **Knowledge** (answers at sockets). Only Knowledge mistakes go into `mistakes[]`, and only `mistakes[]` creates cards, error notes and mastery checks; an action miss never does. Assist lowers Action only, never Challenge (the pack level, set by the trainer) | locked | owner (play-layer design) |
+| D-61 | (was D-G20) **The story is data.** Cutscenes are in-engine beat scripts, not video: `packages/games/story/universe.json` and `packages/games/story/<gameId>.json`, with their text keys in `packages/web/src/strings/en.json` under `story.`. `games check` validates them. Every scene can be skipped and replayed | locked | owner (play-layer design) |
+| D-62 | (was D-G21) **Meta progression without dark patterns.** XP and coins are computed from `gameResult`s and purchases, so they persist and merge safely. The shop catalog `packages/games/shop.json` has fixed prices and no random rewards. Gear changes play (Action) only: it never changes a socket, a correct answer, or how Knowledge is judged. No streak-shaming and no "come back or lose it" | locked | owner (play-layer design) |
+| D-63 | (was D-G22) **Fun is signed off by a person.** Each first-wave game has a manual playtest row (AC-243 to AC-246): the owner plays it for 10 minutes from the task's worktree build and commits `acceptance/games/signoff/<gameId>.json` to the tests repo; the orchestrator then adds the row to that task's `build/progress` in a short session, closes and merges. Each row checks only its own game's file, so an unsigned game blocks only its own task | locked | owner |
+| D-64 | (was D-G23) **One tuning source.** Every number that sets game feel or scoring is in the Tuning table (§13.9); `packages/games/src/tuning.ts` exports `TUNING` with exactly the table's names and values, and a unit test in `packages/games/test` checks that they are equal. The acceptance tests parse the table from this file at run time, so a retune is an edit of this table plus `tuning.ts`, and no test file changes | locked | owner |
+| D-65 | (was D-G24) **Phasing.** The first build covers the engine, Snek, packs, the story, the two scores, the `player` document with XP and coins, and the four first-wave games, built as a vertical slice (§13.10). The shop and gear (AC-237, AC-238) are their own task after the owner's playtests; until then `player.cosmetics`, `player.gear` and `player.purchases` exist and stay empty | locked | owner |
+
+### 13.2 Performance budgets
+
+| ID | Budget | Check |
+|---|---|---|
+| AC-200 | **Bundle:** gzip sizes of the manifest-named chunks (D-57) in `packages/web/dist`: `games-engine` ≤ 60 KB; `games-story` ≤ 30 KB; `snek` ≤ 40 KB; each 2D `game-<gameId>` ≤ 80 KB; `three` ≤ 180 KB and each 3D game chunk ≤ 90 KB (excluding three) once those chunks exist. No game chunk (and not three) is requested before the learner opens the arcade (a service worker may precache in the background) | `acceptance/games/budgets.test.mjs` |
+| AC-201 | **2D frame rate:** on the low-end phone profile (4× CPU slowdown) each first-wave 2D game, played by the suite's driver for 20 s of real time with `story=off` at the last level of its pack in §13.11, reports p50 frame time ≤ 20 ms and p95 ≤ 34 ms from `__game.stats()`. `raid` joins this row with its contract. Claimed by the last first-wave game to merge; earlier games run their own part | `acceptance/games/perf2d.journey.mjs` |
+| AC-203 | **Start and memory:** from following the deep link (with `story=off`) to `state().status` `'title'` with `stats().frames` ≥ 1 takes ≤ 3 s on the phone profile for 2D games (≤ 5 s on desktop for 3D games, with their contract); JS heap (CDP `Runtime.getHeapUsage().usedSize`) after 60 s of play ≤ 150 MB; leaving a game makes `window.__game` undefined and calls `requestAnimationFrame` 0 times over the next 2 s (3D games also leave their WebGL context lost) | `acceptance/games/lifecycle.journey.mjs` |
+
+AC-202 (3D scene cost: draw calls, triangles, textures and quality tiers at each checkpoint) is reserved for
+the 3D contract, which defines "checkpoint"; nobody claims it until then.
+
+Engine rules that make these hold (builders' guidance, not separately tested): fixed-step update (60 Hz)
+with interpolated rendering; render only when something moved; pause on `visibilitychange`; pooled objects
+(no allocation in the frame loop); instanced or merged meshes; one directional and one hemisphere light; fog
+instead of far geometry; shadows only on `high`.
+
+### 13.3 The engine, arcade and test hooks (`packages/games/src/engine`)
+
+```ts
+interface GameModule {
+  id: string;                                   // e.g. 'syntax-drop'
+  mount(el: HTMLElement, ctx: GameContext): GameInstance;
+}
+interface GameContext {
+  pack: Pack; level: string; seed: number;      // seeded randomness (§4.1)
+  clock: GameClock;                             // game time; test clock in test mode
+  input: Input;                                 // keyboard, pointer/touch, gamepad, and DOM action buttons
+  audio: Sfx; quality: Quality; strings: (key: string) => string;
+  story: Story; player: Player; tuning: Tuning; // scenes (§13.6), the player document, §13.9 values
+  finish(result: RoundResult): void;            // writes gameResult + cards (D-47, D-60)
+}
+interface GameInstance { pause(): void; resume(): void; destroy(): void; act(action: string, arg?: unknown): boolean; state(): unknown; }
+```
+
+**Routes.**
+- `/learn/games` is the arcade (nav name "Games"): one tile per available game with the packs released to the
+  learner, last score and stars (own only), `player-xp`, `player-coins` and "Story so far" (`story-replay`).
+- `/learn/games/<gameId>` is the pack and level picker.
+- `/learn/games/<gameId>/<packId>/<levelId>` opens the game on that level.
+- `/learn/games/shop` is the shop (built with AC-237).
+- Trainers see `/teach/games` with the class's concept-miss map and the raid controls (rows later).
+
+When `games` is off, every one of these routes shows `game-unavailable` (text "not available") and the nav
+entry is gone. When only `game.<x>` is off, or the pack is not released yet, or the level is locked, that
+game's tile (or pack, or level) is missing or locked and its deep links show `game-unavailable`.
+
+**Shared screens** every game uses: title and how to play; pause menu (resume, restart, quit, lesson cards,
+Story so far, sound, quality, timing calibration where the game has it); lesson card overlay between stages
+(each card ≤ 280 characters plus an optional code sample); results (score, Skill, Knowledge stars, each
+Knowledge mistake with a one-line "what it does" and "added to your cards").
+
+**Statuses.** `state().status` is one of:
+- `'story'`: a scene or dialogue is playing; the play clock (`clockMs`) is stopped and the scene clock runs;
+- `'title'`: the title screen, before the first `start`;
+- `'playing'`;
+- `'paused'`: the pause menu or the lesson card is open; both clocks are stopped;
+- `'won'` or `'lost'`: the round is finished, `game-results` is shown and the `gameResult` is written.
+
+**Order of a launch.**
+1. On a game's first launch for this learner (`player.seen.intro[gameId]` not set) the scene
+   `<gameId>.intro` plays (`'story'`).
+2. Then the title screen (`'title'`).
+3. After the last level of a pack is won, the result is written, then the scene `<gameId>.chapter-end`
+   plays, then the status is `'won'` with the results.
+
+**Prologue.** On the first visit to `/learn/games` for a learner (`player.seen.prologue` not set) the prologue
+is mounted like a game: `window.__game.id` is `'prologue'` and the status is `'story'`. It contains one
+`avatar` beat. When it ends or is skipped, `seen.prologue` is set, `__game` is removed and the arcade shows.
+
+**Scene state and timing.** `extra.scene` is `{ id, beat, line }` or `null` in every game and in the
+prologue (`beat` is the 0-based index of the running beat; `line` is the `en.json` key of the current `say`
+text, or `null`).
+- A `say` beat waits for `next`; it never advances by itself. The optional setting
+  `player.settings.autoAdvance` (default `false`) advances it after `story.sayNominalMs` of scene time.
+- Other beats take their `ms`; `skip` ends the scene at once; in `'story'`, `advance(ms)` moves the scene
+  clock; a scene's `seen` flag is set when the scene ends or is skipped.
+
+**Test hooks.** When the server runs with `LMS_TEST_MODE=1` it injects `<meta name="lms-test-mode"
+content="1">`; only then, and only while a game or the prologue is mounted, `window.__game` exists:
+
+```ts
+interface TestGame {
+  id: string;                                         // gameId, or 'prologue'
+  state(): GameState;
+  act(action: string, arg?: unknown): boolean;        // true = it did something; false = not valid now; throws on an unknown action
+  advance(ms: number): GameState;                     // runs the fixed-step update for ms of driver time, synchronously
+  stats(): GameStats;
+}
+interface GameState {
+  status: 'story' | 'title' | 'playing' | 'paused' | 'won' | 'lost';
+  score: number; lives: number | null; stage: number;  // stage counts from 1; lives is null in every first-wave game
+  levelId: string; clockMs: number; assist: boolean;   // clockMs = game time since start
+  skill: number; knowledgeMistakes: number; actionMisses: number;
+  extra: object;                                       // per game (§13.7); always includes scene
+}
+interface GameStats {
+  frames: number;                                      // frames rendered since mount
+  fps50: number | null; frameP50: number | null; frameP95: number | null; // over the last 20 s of rendered frames; null under 30 frames
+  drawCalls: number | null; triangles: number | null; textures: number | null; // null for 2D
+  heapMB: number | null; tier: 'low' | 'medium' | 'high'; pixelRatio: number; shadows: boolean;
+}
+```
+
+**Game clock.** It advances at 1× while playing and at `common.assistFactor` with assist on; it does not
+advance while paused, in `'story'`, or while the tab is hidden. `advance(ms)` moves it by `ms` × that factor.
+Every timing window is measured in game time, so assist widens it in real time (Action only).
+
+**Common actions and keys.** Within a status no two actions share a key.
+
+| Action | Key | Valid when |
+|---|---|---|
+| `start` | Enter | title |
+| `pause` | P or Escape | playing, story |
+| `resume` | P or Escape | paused (pause menu) |
+| `continue` | Enter | paused (lesson card) |
+| `quit` | Q | paused, won, lost; destroys the game and returns to `/learn/games` |
+| `assist` (arg: boolean; no arg toggles) | H | title, paused |
+| `next` | N or Enter | story: advance the current `say` line |
+| `skip` | F or Backspace | story: end the scene |
+| `replay` (arg: sceneId; no arg = the most recent seen scene) | L | paused, title, and the arcade's "Story so far" |
+| `avatar` (arg: `{ look, color, nameTag }`) | ←/→ to choose, Enter to confirm | prologue, `avatar` beat |
+
+**Every action has a keyboard key and an on-screen button.** Every action valid in the current status has a
+visible `act-<action>` button, or `act-<action>-<arg>` for an action with an argument; buttons reached with
+Tab and pressed with Enter count as keyboard use. Held actions (`breathe`, `run`, `charge`) act for as long
+as the pointer is down on the button. Structured arguments use fixed button names: `act-nudge-left`,
+`act-nudge-right`, `act-nudge-up`, `act-nudge-down`; `act-run-left`, `act-run-right` (0 on pointer up);
+`act-charge-<line>` (pointer up is `release`); `act-indent-<n>`; `act-strike-<key>`; `act-whack-<line>`;
+`act-offset-minus`, `act-offset-plus`; `act-replay-<sceneId>`. The games are fully playable without a
+pointer and without fine motor control: the "assist" option slows the game clock and is recorded on the
+result, never punished.
+
+**Stars, scores and mistakes.**
+- `knowledgeStars` (0 to 3) counts Knowledge only: 3 = every socket of the level answered with no Knowledge
+  mistake; 2 = every socket answered with at most `common.starsTwoMaxMistakes` Knowledge mistakes; 1 = at
+  least one socket answered correctly; 0 = none. "Answered" means answered without assistance: a socket closed
+  by an assisted hit (§13.7, Whack-a-Bug) counts as neither correct nor a mistake, so a level with an assisted
+  socket gets at most 1 star, and the socket stays closed once fixed.
+- `stars` equals `knowledgeStars`. `skill` is the sum of Skill points (§13.7).
+- `score` = `skill` + `common.knowledgePoints` × sockets answered correctly.
+- Action misses lower `skill` and may end the round (shield or health at 0, ammo out); they never lower
+  `knowledgeStars` directly.
+
+**Finishing a round.** The game writes one `gameResult` (§13.11) carrying the XP and coins it earned
+(§13.6). For each entry in `mistakes[]` (Knowledge only) it upserts one `card` (id
+`card:game-<gameId>-<packId>-<itemId>`, so repeating a mistake does not duplicate it) and one `errorNote`,
+and it adds one mastery check per concept played to the §4.4 map (`score` = 1 − mistakes on that concept ÷
+sockets of that concept answered, `at` = `gameResult.at`). Action misses create nothing in cards, error notes
+or mastery.
+
+**Arcade tile.** `game-tile-<gameId>` shows the learner's own last score and stars in `data-last-score` and
+`data-stars`; when the learner has not played, these attributes are absent.
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-204 | The arcade lists only available games that have a released pack; switching `games` off removes the nav entry and every games route shows `game-unavailable`; switching one `game.<x>` off removes that tile and its deep links show `game-unavailable`; each tile opens its game and `quit` returns to the arcade | `acceptance/games/arcade.journey.mjs` |
+| AC-205 | Finishing a round writes one `gameResult` with `personId`, `classId`, `gameId`, `packId`, `levelId`, `score`, `stars`, `skill`, `knowledgeStars`, `xp`, `coins`, `outcome`, `mistakes` (each `{ itemId, concept }`), `assist`, `durationMs`, `at`, with `stars` equal to `knowledgeStars`; each Knowledge mistake upserts a `card` with that `concept` and an `errorNote` with `subtopic` equal to the concept, and the error notebook lists it; the mastery map gains or updates `mastery-skill-<concept>` for the concepts played | `acceptance/games/results.journey.mjs` |
+| AC-206 | Nothing in the arcade or any game shows another learner's individual score or XP; the celebration wall shows `wall-team-<teamId>` with the team's average XP per current member (`teamScore.xp`) only | `acceptance/games/privacy.journey.mjs` |
+| AC-207 | Every game can be finished with keyboard only and with on-screen buttons only; pause and story scenes stop the game clock; assist halves speed (Action only: sockets and Knowledge judging are unchanged) and sets `assist: true` | `acceptance/games/controls.journey.mjs` |
+
+### 13.4 Snek, the Python-subset interpreter (`packages/games/src/lang`)
+
+The entry is `packages/games/src/lang/index.ts`. The module has no imports outside `packages/games/src/lang`
+and uses no DOM or Node API.
+
+```ts
+type SnekErrorKind =
+  | 'SyntaxError' | 'IndentationError' | 'NameError' | 'TypeError' | 'ValueError' | 'IndexError'
+  | 'KeyError' | 'ZeroDivisionError' | 'AttributeError' | 'OverflowError' | 'EOFError' | 'RuntimeError'
+  | 'AssertionError' | 'Exception'
+  | 'TooManySteps' | 'TooDeep' | 'TooBig' | 'NotAllowed';
+interface SnekError { kind: SnekErrorKind; line: number; col: number; message: string } // line and col count from 1
+type Compiled = { ok: true; program: Program } | { ok: false; error: SnekError };
+interface RunOpts {
+  input?: string[];
+  globals?: Record<string, unknown | ((...args: unknown[]) => unknown)>; // JS functions are host functions
+  maxOps?: number; maxDepth?: number; maxCells?: number;   // defaults 1 000 000, 200, 100 000
+}
+type RunResult =
+  | { ok: true;  value: unknown; stdout: string; ops: number; peakCells: number }
+  | { ok: false; error: SnekError; stdout: string; ops: number; peakCells: number };
+type StepEvent =
+  | { kind: 'line'; line: number; vars: Record<string, unknown> }        // before the statement on `line` runs
+  | { kind: 'call'; line: number; name: string; args: unknown[] };      // a host function is about to run
+
+compile(source: string): Compiled
+run(p: Program, opts?: RunOpts): RunResult
+step(p: Program, opts?: RunOpts): Generator<StepEvent, RunResult>
+callFunction(p: Program, name: string, args: unknown[], opts?: RunOpts): RunResult
+```
+
+- **`value`:** for `run`, the value of the last top-level statement when it is an expression, else `null`;
+  for `callFunction`, the function's return value (the module body runs first; its stdout and ops are
+  included).
+- **`input`:** `input(prompt)` writes `prompt` to stdout and returns the next line of `opts.input`; once
+  exhausted it raises `EOFError`.
+- **Host functions** cost 1 op; arguments and return values convert with the table below; under `step` the
+  `call` event is yielded first and the host function runs on the next `next()`; if it throws, the run ends
+  with `RuntimeError`.
+- **`line` events:** one before each simple statement; each evaluation of an `if`, `elif` or `while`
+  condition; each iteration of a `for` header, plus once when the loop ends; each `def` or `class` statement
+  as it executes; each `return`. For programs whose statements each fit on one line this equals CPython
+  3.14's `sys.settrace` line events.
+- **Limits:** `TooManySteps`, `TooDeep` and `TooBig` fire when `maxOps`, `maxDepth` or `maxCells` is
+  exceeded, and each stops the run cleanly; `NotAllowed` covers the sandbox list (AC-213).
+
+**Value conversion** (for `globals`, `args`, `value` and `vars`):
+
+| JS | Snek | Back to JS |
+|---|---|---|
+| safe integer `number` | `int` | `number` |
+| other finite `number`, or `{ $float: n }` | `float` | `number` |
+| `boolean` | `bool` | `boolean` |
+| `null`, `undefined` | `None` | `null` |
+| `string` | `str` | `string` |
+| `Array` | `list` | `Array` |
+| `{ $tuple: [...] }` | `tuple` | `{ $tuple: [...] }` |
+| `{ $set: [...] }` | `set` | `{ $set: [...] }` in iteration order |
+| plain object | `dict` with str keys | plain object if every key is a str, else `{ $dict: [[k, v], ...] }` |
+| (none) | class instance | `{ $object: '<ClassName>', attrs: { ... } }` |
+| (none) | function | `{ $function: '<name>' }` |
+
+`vars` holds the current scope's variables (locals inside a function, globals at top level), leaving out
+functions, classes, modules and host functions.
+
+**Language:** `int` (53-bit safe range; `OverflowError` beyond), `float`, `bool`, `None`, `str` (indexing,
+slicing, `+`, `*`, f-strings, `len`, `upper`, `lower`, `split`, `join`, `strip`, `replace`, `find`,
+`startswith`, `endswith`, `isdigit`, `isalpha`), `list`, `tuple`, `dict`, `set`, slicing, `in`, comparisons
+and chained comparisons, `and`/`or`/`not`, `if`/`elif`/`else`, the conditional expression `x if c else y`,
+`while`, `for … in`, `range`, `break`, `continue`, `pass`, `def` with defaults, `return`, recursion,
+`lambda`, list/dict/set comprehensions, `class` with `__init__`, attributes and methods (no inheritance),
+`try`/`except` (one level), `print` (with `sep`, `end`), `input()`, builtins `len abs min max sum sorted
+reversed enumerate zip map filter any all int float str bool list dict set tuple ord chr round isinstance`,
+and modules `math` (floor, ceil, sqrt, inf), `collections.deque`, `heapq` (heappush, heappop, heapify). Also:
+- operators `+ - * / // % **` (`%` as the numeric operator only), unary `-`, `is` and `is not`, `in` and
+  `not in`; augmented assignment and chained assignment (`a = b = 0`); tuple unpacking in assignments and
+  `for` targets, including swaps; negative indexing; `del` on names, list items and dict keys;
+- keyword arguments at call sites, including `sorted(key=, reverse=)`, `print(sep=, end=)` and the learner's
+  own `def`s;
+- list methods `append pop insert remove index count extend sort reverse`; dict methods `get items keys
+  values setdefault pop`; set methods `add discard remove`;
+- `except X as e`, bare `except` and `except Exception`; `raise X(message)` and `raise X` for the
+  Python-named kinds and `Exception`; `assert cond` and `assert cond, message` (raise `AssertionError`);
+- f-string specs `:.2f`, `:>5`, `:<5` and `:d`.
+
+Out of scope: see D-53, plus user-defined exception classes.
+
+**Output matches CPython 3.14:** `str` and `repr` of int, float (shortest round trip; exponent form when the
+exponent is < −4 or ≥ 16), str, list, tuple, dict, bool and `None`; `/` always gives a float; `//` and `%`
+follow floor semantics; `round` is round-half-even. **Differs from CPython:** a set iterates in insertion
+order (the corpus never prints a set or depends on set order); exception messages are Snek's own (D-54).
+
+**Counting (D-45):** every evaluated expression node and statement costs 1 op; built-in calls cost their
+documented complexity (`sorted` n·log2 n, `in` on a list n, on a set or dict 1, slicing k, …); `peakCells`
+is the largest number of live list/dict/set/str elements at any point. The same program and options always
+give the same `ops` and `peakCells`. No random-number hook exists yet; `garage` adds one with its contract.
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-208 | The 120 programs in the fixture corpus give exactly their expected stdout, as printed by CPython 3.14 (version recorded in the fixture) (lists, dicts, classes, recursion, comprehensions, deque, heapq, f-strings, slicing) | `acceptance/games/snek.test.mjs` |
+| AC-209 | Errors are friendly and located: a syntax error, a `NameError`, an `IndexError`, wrong indentation and a type mismatch each report the error `kind`, the line, and a one-sentence message containing the required keyword (§13.11) | `acceptance/games/snek-errors.test.mjs` |
+| AC-210 | Limits: an infinite loop stops at `maxOps` with kind `TooManySteps` and a message containing N (suggested text: "your code ran too long (more than N steps)"); deep recursion stops at `maxDepth` with `TooDeep`; building a huge list stops at `maxCells` with `TooBig`; none hang or crash the page | `acceptance/games/snek-limits.test.mjs` |
+| AC-211 | Counting is deterministic: the same program and input give the same `ops` and `peakCells` on every run; for the fixture sorts, `ops` for n = 1000 vs n = 100 grows by ≥ 80× for bubble sort and ≤ 15× for merge sort | `acceptance/games/snek-count.test.mjs` |
+| AC-212 | `step` yields the `line` events above in order, equal to CPython 3.14's for the single-line fixtures, with `vars` snapshots; a host function (e.g. `move()`) yields a `call` event and runs only on the next `next()`, so the game can animate it first | `acceptance/games/snek-step.test.mjs` |
+| AC-213 | The interpreter has no access to the page or Node: `open`, `import os`, `__import__`, `eval`, `exec`, attribute access to `__class__` and `__globals__` are refused with a plain message | `acceptance/games/snek-sandbox.test.mjs` |
+
+### 13.5 Packs and story data
+
+Common fields for every pack:
+
+```json
+{ "game": "syntax-drop", "id": "html-headings", "title": "Headings and text sizes",
+  "day": 2, "concepts": ["html.headings", "css.font-size"], "language": "en",
+  "levels": [ { "id": "1", "title": "…", "lesson": [ { "concept": "html.headings", "text": "…" } ], "…": "game-specific" } ] }
+```
+
+- **Schema:** `packages/games/schema/<gameId>.schema.json`, JSON Schema 2020-12. Common required fields:
+  `game`, `id` (matches `^[a-z0-9][a-z0-9-]*$`), `title`, `day`, `concepts`, `language` and `levels[]`; each
+  level requires `id`, `title` and `lesson[]`. A concept matches `^[a-z][a-z0-9-]*(\.[a-z0-9][a-z0-9-]*)+$`,
+  and every item `concept` must be listed in the pack's `concepts`. A `"$comment"` string is allowed in any
+  object and ignored.
+- `concepts` are the tags used for cards and the mastery map. `lesson` cards are shown between stages; each
+  is ≤ 280 characters plus an optional code sample.
+- **Tests in packs:** each entry in `tests` is `{ args: [...], expect: <value> }` (calls the level's
+  function, named by `signature` or `entry`) or `{ input?: [...], stdout: "<text>" }` (runs the whole
+  program). Values are compared after conversion, floats within 1e-9; stdout exactly, after trailing
+  whitespace is removed.
+- Every code sample, answer and test in a pack is checked by the pack check (it runs Snek where a pack says
+  `"lang": "snek"`).
+- **Sample packs** live in `packages/games/packs/<gameId>/<packId>.json` (also used by the tests through
+  D-59); the packs per game are listed in §13.7.
+
+**Story data (D-61).** `packages/games/story/universe.json` is `{ cast: [{ id, nameKey }], scenes: {
+prologue: Scene } }`; `packages/games/story/<gameId>.json` is `{ gameId, front: { nameKey }, cast: [...],
+scenes: { intro: Scene, 'chapter-end': Scene, …optional scenes } }`. Scene ids are `prologue`,
+`<gameId>.intro`, `<gameId>.chapter-end` and `<gameId>.<name>`. A `Scene` is `{ beats: Beat[] }`:
+
+```ts
+type Beat =
+  | { t: 'say'; who: string; key: string; holdMs?: number }
+  | { t: 'move'; target: string; to: number[]; ms: number }
+  | { t: 'camera'; to: number[]; ms: number }
+  | { t: 'wait'; ms: number }
+  | { t: 'sfx'; name: string }
+  | { t: 'music'; name: string }
+  | { t: 'shake'; ms: number; power: number }
+  | { t: 'spawn'; what: string; at: number[] }
+  | { t: 'fade'; to: 'in' | 'out'; ms: number }
+  | { t: 'avatar' };                                   // prologue only
+```
+
+A scene's length (for the length check only) is the sum of its beats' `ms`, plus each `say`'s `holdMs`
+(default `story.sayNominalMs`).
+
+**CLI.**
+- `node packages/cli/src/main.ts games check <dir-or-file>` checks packs and story files (a file with
+  `scenes` at the top level is a story file). It prints one line per problem in the form
+  `<file>: <pack, level <id> or scene <id>>: <message>` and exits 1; with no problems it prints only
+  `ok: <n> file(s)` and exits 0; it exits 2 on a usage error.
+- `games new <gameId> <packId> [--dir <dir>]` writes `<dir or cwd>/games/<gameId>/<packId>.json`, a commented
+  starter pack, prints its path, and refuses to overwrite (exit 1).
+
+**Pack-check rules (first wave).**
+- All games: the common schema; level ids unique within a pack; lesson text ≤ 280 characters.
+- `syntax-drop`: every slot's `accepts` names at least one existing non-decoy piece; the template contains
+  `{{<slotId>}}` for every slot; strike keys are the digits 1 to 9, unique within a level; `renderer` is a
+  known renderer; for `console` and `pattern` levels, the template filled with each slot's first accepted
+  piece compiles and runs.
+- `whack-a-bug`: the program has at most `whack.maxProgramLines` lines; each bug's `line` is inside the
+  program; the fixed and buggy programs both run and their outputs differ.
+- `aftershock`: `lines` in order, with their indents, pass `tests`, and so does every entry in `altOrders`.
+- `sniper`: every snippet runs; every bounty's output is printed by exactly one snippet among that level's
+  monsters; the boss's `plates` and `callouts` name existing snippets.
+
+**Story-check rules.** Every beat type is known; every `say.key` exists in `en.json`; every `say.who` is in
+the universe cast or the game's cast; `universe.json` has `prologue`, and every game story file present has
+`intro` and `chapter-end` (each game's task adds its file); `avatar` appears only in the prologue, exactly once; scene lengths are within the
+`story.*` Tuning values (prologue, intro, chapter-end).
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-214 | `games check` passes every sample pack and fails each broken fixture pack with a problem line containing the case's keyword (§13.11): missing field, unknown concept format, a snek answer that does not pass its tests, a syntax-drop slot with no correct piece, a level id repeated. (The maze case joins with the maze contract.) | `acceptance/games/packcheck.test.mjs` |
+| AC-215 | Importing a course package with a broken game pack fails the content gate check `G9-games` with the pack check's message; a valid pack is released on its `day` and appears in the arcade only from then | `acceptance/games/pack-release.journey.mjs` |
+| AC-216 | `games new <gameId> x` writes `games/<gameId>/x.json`, which passes `games check`, for every first-wave game id | `acceptance/games/packnew.test.mjs` |
+| AC-234 | **Story check:** `games check packages/games/story` passes; each broken story fixture fails with its keyword (unknown beat type, missing `en.json` key, unknown speaker, missing required scene, intro length out of range) | `acceptance/games/storycheck.test.mjs` |
+
+### 13.6 The play layer: story, scores and the player
+
+**One universe, the Codeverse.** A world that runs on code; **the Glitch**, a corruption, scrambles syntax,
+plants bugs, collapses structures and hides inside creatures. Each game is a **front** of the same war.
+Recurring cast: **Ada** the mentor (briefs missions and delivers lesson cards in character), the player's
+block-built **avatar**, **Null** (the Glitch's voice and the chapter bosses), and one local character per
+front. The **prologue** (first visit to the arcade, 60 to 90 s, in-engine): the Codeverse working; the Glitch
+spreading; Ada finds the player; avatar creation (look, color, name tag); the map of fronts opens, which is
+the arcade. Each game's first launch plays a 30 to 45 s front intro; each chapter (pack) ends with a 15 to 30 s
+cutscene and its last level is a boss. Scene text is in `en.json` (translatable).
+
+**Feel ("juice"), required in every game** (covered by the manual playtest rows): hit-stop on success
+(40 to 80 ms), screen shake on impacts, particles, synthesized sounds, procedural music that intensifies with
+combo and stage, readable feedback within 100 ms of any input, a visible combo or streak, and a "one more try"
+loop from failure back to play in ≤ 2 s.
+
+**Earnings.** Every `gameResult` carries `xp` = round(`skill` ÷ `common.xpSkillDivisor`) +
+`common.xpPerStar` × `knowledgeStars`, and `coins` = `common.coinsPerStar` × `knowledgeStars` +
+floor(`skill` ÷ `common.coinsSkillDivisor`) + golden-critter coins.
+
+**The `player` document** (person database, §13.11). `xp` and `coins` are caches, always equal to the sum
+of `gameResult.xp`, and the sum of `gameResult.coins` minus the sum of `purchases[].price`; they are
+recomputed on every write, so they persist across sessions and devices and merge safely (`purchases` and
+results are unioned, as in §4.13).
+
+**Shop and gear (built after the playtests, D-65).** `packages/games/shop.json` is `{ items: [{ id, kind:
+'cosmetic' or 'gear', gameId?, price, effect }] }`. Buying appends `{ itemId, price, at }` to `purchases` and
+the id to `cosmetics` or `gear`; buying an item already owned, or one the learner cannot afford, is refused
+and changes nothing; nothing is random. Owned gear applies to its game and may change only the Action
+parameters named in §13.7: it never changes a socket, a pack's answers or how a Knowledge mistake is judged,
+never adds or changes `glow`, and never adds a field or on-screen mark that tells which target, slot, row or
+slab is correct. When a learner owns several items for one gear slot, one is equipped per slot, chosen in the
+pause menu (default; the gear task may refine it).
+
+**Team total.** `teamScore.xp` is the average `player.xp` over the team's current members (a member with no
+`player` counts as 0), rounded to an integer.
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-231 | **Prologue:** the first visit to `/learn/games` plays the prologue (`__game.id` is `'prologue'`, status `'story'`); its `avatar` beat saves `player.avatar`; skipping it opens the arcade and sets `player.seen.prologue`; a second visit (also after reload) does not play it; "Story so far" replays it | `acceptance/games/story.journey.mjs` |
+| AC-232 | **Front intro and chapter end:** a game's first launch plays `<gameId>.intro` before the title screen and the second launch does not; winning a pack's last level writes the result, then plays `<gameId>.chapter-end`; during any scene `clockMs` does not move | `acceptance/games/story.journey.mjs` |
+| AC-233 | **Story controls:** `next` advances `extra.scene.line` and `skip` ends the scene, both by keyboard only (N, F) and by buttons only (`act-next`, `act-skip`); Escape pauses a scene; `replay` plays a seen scene again; with `?story=off` no scene plays and no `seen` flag changes | `acceptance/games/story.journey.mjs` |
+| AC-235 | **Two scores:** in each first-wave game, a fixture round with only action misses (late timing, a missed shot, a ducked critter, a debris hit) gives `mistakes: []` and `knowledgeStars` 3 and creates no card, no error note and no mastery change; the same round with exactly one Knowledge mistake creates exactly one of each; `stars` equals `knowledgeStars`. Claimed by the last first-wave game to merge; earlier games run their own part | `acceptance/games/scoring.journey.mjs` |
+| AC-236 | **Progression persists:** XP and coins earned in a round equal the formulas above, appear in `player-xp` and `player-coins`, and are unchanged after a reload, after signing out and in, and in a second browser context; `player.xp` and `player.coins` equal the totals over `gameResult`s and `purchases` | `acceptance/games/player.journey.mjs` |
+| AC-237 | **Deterministic shop** (its own task, after the playtests): buying an item from `packages/games/shop.json` deducts exactly its price and adds it to `cosmetics` or `gear`; buying it again or without enough coins is refused and changes nothing; the same purchases from the same start give the same `player` document | `acceptance/games/shop.journey.mjs` |
+| AC-238 | **Gear changes play only** (its own task, after the playtests): for each first-wave gear item, the same scripted round with and without it gives the same `mistakes`, `knowledgeStars` and socket outcomes; the gear's Action parameter changes as §13.7 says; no gear adds a field or on-screen mark that reveals a correct answer | `acceptance/games/gear.journey.mjs` |
+
+### 13.7 The first-wave games
+
+For each game a **Knowledge socket** is a question the pack answers; a wrong answer is a Knowledge mistake
+(`mistakes[]` gets `{ itemId, concept }`). A **Skill event** is timing, aim or movement; a failure is an
+action miss (`actionMisses` + 1, Skill points lost, nothing in `mistakes[]`). Keys are unique within each game
+and none clashes with the common keys. Every number below is the default of a Tuning name (§13.9); the table
+wins.
+
+#### 13.7.1 Syntax Drop (`syntax-drop`): front "Skyline", a rhythm game
+
+**Story.** The City of Markup's skyline is drawn from blueprints the Glitch has shredded. The player is
+apprenticed to the Typesetters' Guild; every completed template **rebuilds a building**, which rises in the
+background and stays. Chapter boss: Null's Glitch Tower, where pieces fall to Null's music and decoys mimic
+real syntax.
+
+**Screen.** Left half is the game, right half the live preview (`game-preview`). The left half shows the
+level's code template in large type with empty **slots** (`{{1}}`, `{{2}}` …). **Pieces** fall from the top
+on the beat; each is a piece of syntax drawn at a size that matches its meaning where that helps (`<h1>`
+large, `<small>` tiny).
+
+**Modes.** **Fill:** move the falling piece to a slot and drop it as it crosses the line; the right piece in
+the right slot locks in; a wrong piece is shown in the preview for `syntaxDrop.wrongPreviewMs` and then breaks
+off. **Strike:** each piece kind has a digit key (shown on the piece and on a key strip); press it as the piece
+crosses the line; decoys (`<h7>`, `colour:`) must be let through.
+
+**Preview renderers** (each one file `packages/games/src/renderers/<name>.ts` exporting `render(code: string,
+el: HTMLElement): void`; adding one does not change the game): `html` (`<iframe sandbox="" srcdoc>`, no
+scripts); `chart` (a built-in SVG renderer for a matplotlib/seaborn subset: `plt.bar/plot/scatter/hist/pie`,
+`title/xlabel/ylabel/legend`, `sns.barplot/histplot/scatterplot/lineplot`; drawn from the parsed calls, not
+by running Python; `chart.ts` also exports the pure `chartSvg(code: string): string`, which runs in Node; marks
+carry `data-mark`: bars and histogram bars `<rect data-mark="bar">`, scatter points `<circle
+data-mark="point">`, lines `<path data-mark="line">`, pie wedges `<path data-mark="wedge">`, and `<text>` with
+`data-mark` `title`, `xlabel`, `ylabel` or `legend`; `hist` uses `bins=` or 10); `console` (runs the code with
+Snek and shows stdout); `pattern` (Snek stdout as a grid); `regex` (the pattern applied to sample text with
+matches highlighted).
+
+| Action | Key | Effect |
+|---|---|---|
+| `left`, `right` | ← or A, → or D | fill: move the falling piece to the previous or next open slot |
+| `drop` (arg: slotId, optional) | ↓, S or Space | fill: drop the piece into the current slot (or `slotId`), judged at the press |
+| `strike` (arg: key) | the digit 1 to 9 | strike: hit the lowest piece with that key that is inside its window |
+| `power` (arg: powerId, optional) | E | use the oldest held power-up (or `powerId`) |
+| `calibrate` | C | title or paused: start the tap-to-the-beat test |
+| `tap` | T or Space | during calibration: tap on the beat |
+| `offset` (arg: ms) | − or = (±10 ms) | title or paused: set `timingOffsetMs` directly |
+
+- **Rhythm:** pieces spawn on beats; each has `hitAtMs`, the game time at which it crosses the line; `bpm` in
+  stage n is base × `speed`^(n−1) (level field `speed`, default `syntaxDrop.speedPerStage`), and beats are at
+  least `syntaxDrop.minBeatMs` apart; the fall speed is tied to `bpm`. Timing grade = |press −
+  `timingOffsetMs` − `hitAtMs`|: Perfect ≤ `syntaxDrop.windowPerfectMs`, Good ≤ `syntaxDrop.windowGoodMs`,
+  Late ≤ `syntaxDrop.windowLateMs`; beyond is a miss. A strike stage has `piecesPerStage` pieces (level field,
+  default `syntaxDrop.piecesPerStage`); a fill stage ends when every slot is filled.
+- **Calibration:** `calibrate` sets `extra.calibration` = `{ beatsAtMs, taps, done }` and plays
+  `syntaxDrop.calibrationBeats` beats at (i + 1) × `syntaxDrop.calibrationIntervalMs` of the calibration
+  clock (moved by `advance`). After that many taps, or one interval after the last beat, the offset is the
+  median of (tap − beat) over the taps made, rounded and clamped to ±`syntaxDrop.calibrationMaxOffsetMs`; it is
+  saved to `player.timingOffsetMs` and `done` becomes true. `extra.timingOffsetMs` shows the offset in use. A
+  positive offset means the learner hears the beat late. The offset applies only to graded presses (letting a
+  decoy pass is not timed).
+- **Knowledge sockets:** which slot a piece belongs in (fill); which key a piece has (strike); letting decoys
+  pass (strike).
+- **Knowledge mistakes** (each cracks the shield by `syntaxDrop.shieldCrack`): fill, a drop into a slot that
+  does not accept the piece (`itemId` = pieceId, `concept` = that piece's concept; shown in the preview, then it
+  breaks off); strike, striking a decoy inside its window (`itemId` = the decoy's pieceId); strike, a digit
+  pressed while a non-decoy piece is inside its window and no piece with that key is (`itemId` = the in-window
+  piece's id).
+- **Action misses** (each chips the shield by `syntaxDrop.shieldChip`): a non-decoy piece passes its window
+  without a press (in fill mode it comes back later, so its socket stays open); a press with no piece inside
+  any window; in fill mode, a correct slot with a miss grade.
+- **Shield** (replaces lives): `syntaxDrop.shieldStart` at the start; 0 means `'lost'`.
+- **Skill points:** Perfect, Good and Late give `syntaxDrop.pointsPerfect`, `pointsGood`, `pointsLate`.
+- **Combo:** a correct Perfect or Good hit adds to the combo; anything else resets it. ×2 at `common.comboX2`,
+  ×3 at `common.comboX3`. At `syntaxDrop.feverCombo`, **Fever** starts for `syntaxDrop.feverMs` of game time
+  (points × `syntaxDrop.feverFactor` on top; the music layers in and the skyline lights up).
+- **Power-ups:** one per `syntaxDrop.powerEveryCombo` combo, cycling `slowmo` (fall speed ×
+  `syntaxDrop.slowmoFactor` for `syntaxDrop.slowmoMs`), `repair` (shield + `syntaxDrop.shieldRepair`), `echo`
+  (the preview replays the last placed piece). They never answer a socket.
+- **Progression:** after each stage a lesson card for the concepts just played (Ada, in character), then a
+  **bonus round** where those pieces score double.
+- **`extra`:** `{ scene, mode, bpm, shield, combo, timingOffsetMs, calibration, fever, powers, piece, pieces,
+  slots, previewPiece, lastGrade, skyline }` where `fever` is `{ untilMs }` or null; `piece` is `{ uid, pieceId,
+  over, hitAtMs }` or null; `pieces` is `[{ uid, pieceId, key, decoy, hitAtMs }]`; `slots` is `[{ id, filled
+  }]`; `lastGrade` is `'perfect'`, `'good'`, `'late'`, `'miss'` or null; `skyline` counts buildings rebuilt in
+  this pack.
+- **Level fields:** `mode` (`fill` or `strike`), `renderer`, `template`, `slots: [{ id, accepts:[pieceId]
+  }]`, `pieces: [{ id, text, size?, key?, concept, decoy? }]`, `stages`, `speed`, `piecesPerStage`.
+- **Sample packs:** `html-headings` (strike), `css-flexbox` (fill; its level 1 boxes carry `class="box"`),
+  `matplotlib-basics` (fill, chart), `python-print` (fill, console), `star-patterns` (fill, pattern),
+  `regex-starter` (strike, regex).
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-217 | Fill mode: placing the right pieces completes the template and the preview shows the expected result (fixture `css-flexbox` level 1: its preview iframe has three `.box` elements with equal top, ±1 px, and increasing left); a wrong piece shows its effect in the preview, then breaks off, cracks the shield and is a Knowledge mistake | `acceptance/games/syntax-drop.journey.mjs` |
+| AC-218 | Strike mode: the right key inside the piece's window destroys it and scores; letting a decoy through is correct and striking it cracks the shield and is a Knowledge mistake; `bpm` in stage 3 is ≥ 1.3× stage 1; the lesson card and bonus round appear between stages | `acceptance/games/syntax-drop-strike.journey.mjs` |
+| AC-219 | The `chart` renderer's `chartSvg` draws the fixture calls (bar with 4 bars and a title, scatter with 10 points, a histogram) as SVG with those `data-mark` counts | `acceptance/games/renderers.test.mjs` |
+| AC-239 | **Syntax Drop rhythm:** presses at 0, 100 and 180 ms and at half of `syntaxDrop.minBeatMs` off `hitAtMs` grade Perfect, Good, Late and miss (with the Tuning windows); with `timingOffsetMs` +80 a press 80 ms after `hitAtMs` grades Perfect; a calibration whose taps are all 60 ms late stores +60 in `player.timingOffsetMs`, and taps 400 ms late store the clamp, +150; an action miss chips the shield and a Knowledge mistake cracks it; shield 0 ends in `'lost'`; combo 10 starts Fever; each power-up step grants `slowmo`, then `repair`, then `echo` | `acceptance/games/syntax-drop-rhythm.journey.mjs` |
+| AC-243 | **Manual playtest, Syntax Drop:** the owner plays 10 minutes from the task's worktree build and commits `acceptance/games/signoff/syntax-drop.json` saying "I wanted to keep playing" (D-63); until the file exists and is valid this row fails and blocks only its task | `acceptance/games/playtest.test.mjs` |
+
+#### 13.7.2 Snippet Sniper (`sniper`): front "Ridgewatch", sniping
+
+**Story.** A new ranger on the Ridge above Valley Town. Glitch beasts hide among the valley's creatures,
+each carrying a scroll of corrupted code; the town's **bounty board** posts what each beast's scroll prints
+("Bounty: the snippet that prints `[1, 4, 9]`"). Ranger Captain Rook trains the player; Null sends the
+**Glitch Colossus** (boss), whose armor plates are scrolls, while the player calls shots for a squad pushing
+up the valley.
+
+| Action | Key | Effect |
+|---|---|---|
+| `target-prev`, `target-next` | Z, C | snap the crosshair to the previous or next target, in x order |
+| `aim` (arg: targetId) | (pointer) | snap the crosshair to a target |
+| `nudge` (arg: `{ dx, dy }`) | arrows or W A S D | move the crosshair one `sniper.nudgeStep` per press (does not move the clock) |
+| `breathe` (arg: boolean) | Shift (hold) | hold breath: sway × `sniper.breathSwayFactor` while the breath meter lasts |
+| `binoculars` | B | toggle binoculars: scrolls become readable, firing is blocked |
+| `fire` | Space | shoot; uses 1 ammo |
+
+- **Aim model** (deterministic in game time and seed; units are scene tiles): impact = crosshair + sway(t)
+  + wind drift(distance) + drop(distance). `extra.aimError` is the vector from the impact to the aimed
+  target's centre; a shot hits when its length ≤ the target's `radius` (every radius ≥
+  `sniper.minTargetRadius`, at least 2 × `nudgeStep`); a shot at a target behind `cover` misses. Breath lasts
+  `sniper.breathMs` and recovers at `sniper.breathRecoverPerSec`.
+- **Knowledge socket:** which target to shoot (the snippet whose output matches the bounty or the callout).
+  Outputs are computed by Snek at pack-check time (the pack stores snippets; the expected output is derived,
+  so a pack cannot carry a wrong answer).
+- **Knowledge mistake:** a hit on a target whose snippet does not match (`itemId` = that snippetId, `concept`
+  = that snippet's concept); the miss lists the snippet's real output.
+- **Action misses:** a shot that hits nothing, including a miss on the right target (ammo − 1, no mistake);
+  the herd then scatters: every target hides behind cover for `sniper.scatterMs`.
+- **Skill points:** a hit `sniper.pointsHit`; a clean hit (|aimError| ≤ radius ÷ `sniper.cleanHitDivisor`)
+  adds `sniper.pointsClean`.
+- **Ammo** per mission = bounties + `slack`; when a level has no `slack` it is `sniper.slackLevel1` to
+  `slackLevel4` by level position (4th and later use `slackLevel4`). Running out of ammo with work left means
+  `'lost'`.
+- **Rank** = the sum of `gameResult.claimed` over the learner's results for the pack: Recruit 0, Marksman
+  `sniper.rankMarksman`, Sharpshooter `sniper.rankSharpshooter`, Ghost `sniper.rankGhost`. Each rank-up plays
+  a short scene.
+- **Boss:** the level that has `plates` is locked (`data-locked`, deep link `game-unavailable`) below
+  Sharpshooter. Callouts ("open the plate that prints 6") are answered in order; each right plate opens and
+  the squad advances (`squadStep`). Plate targets have ids `plate-<n>`.
+- **Gear** (Action only, built after the playtests): `scope-zoom` (zoom level), `stabilizer` (sway ×
+  `sniper.stabilizerSwayFactor`), `suppressor` (scatter lasts `sniper.suppressorScatterMs`), `rangefinder`
+  (shows each target's distance).
+- **`extra`:** `{ scene, ammo, rank, claimed, binoculars, breath, breathing, wind, crosshair: { x, y }, aimed,
+  aimError, scatterUntilMs, zoom, targets: [{ id, snippetId, x, y, distance, radius, cover }], bounties: [{
+  snippetId, output, claimed }], lastShot: { targetId, hit, clean, output } or null, boss: { plates: [{ id,
+  snippetId, open }], callout: { output } or null, squadStep } or null }`.
+- **Level fields:** `bounties: [{ output?, snippetId }]`, `snippets: [{ id, code, concept }]`, `monsters`,
+  `speed`, `slack`; boss: `plates: [{ snippetId }]`, `callouts`.
+- **Sample packs:** `print-basics`, `lists-and-loops`, `strings`, `boss-recursion`.
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-227 | Hitting the target whose snippet prints the bounty output claims it; hitting a wrong target wastes one ammo, is a Knowledge mistake, and the miss lists the snippet's real output; missing every target uses one ammo with no mistake; ammo equals bounties + slack for the level; claimed bounties raise the rank (thresholds from §13.9) and Sharpshooter unlocks the boss; in the boss battle the right plate opens and the squad advances | `acceptance/games/sniper.journey.mjs` |
+| AC-240 | **Sniper mechanics:** holding breath shrinks the sway in `aimError` for at most `sniper.breathMs`; wind and drop shift the impact with distance; a missed shot scatters the targets for `sniper.scatterMs`; firing is blocked while binoculars are up; a miss on the right target uses ammo with no mistake | `acceptance/games/sniper-mechanics.journey.mjs` |
+| AC-244 | **Manual playtest, Snippet Sniper:** as AC-243, with `acceptance/games/signoff/sniper.json` | `acceptance/games/playtest.test.mjs` |
+
+#### 13.7.3 Whack-a-Bug (`whack-a-bug`): front "Bugfield", arcade defense
+
+**Story.** Farmer Mo grows programs as crops: each line is a crop row and the harvest is the program's
+output. Glitch bugs burrow in and rot rows; the player defends the field with a mallet. At night the **Bug
+Queen** (boss) sends armored bugs. The top shows **expected** and **actual** output side by side (the
+**harvest sign**, which wilts while bugs live).
+
+| Action | Key | Effect |
+|---|---|---|
+| `charge` (arg: line, 1-based) | hold the line's digit | start a swing at the critter on that line |
+| `release` | let go of the digit | a tap if the hold was ≤ `whack.tapMaxMs`; a smash if it was within `whack.smashMinMs` to `whack.smashMaxMs`; otherwise a fizzle |
+| `whack` (arg: line) | (pointer) | `charge` and `release` at 0 ms (a tap) |
+| `undo` | U | restore the last flattened line (one token per round) |
+| `xray` | V | use an X-ray goggles charge: glow on bug rows for `whack.xrayMs` |
+
+- **Critters:** `{ id, hole, line or null, upAt, downAt, armored, golden }`; `downAt − upAt` equals the
+  level's `upTimeMs`; fake-outs move a critter to another hole (`hole` changes, `line` stays); armored
+  critters need a smash; `armored` is assigned by seed, independent of whether the row is buggy. Golden
+  critters hold no line, are hit as line 0 (key 0, `act('whack', 0)`, `act-whack-0`), give `whack.goldenCoins`
+  coins and are pure Skill.
+- **Knowledge socket:** which row holds the bug.
+- **Knowledge mistake:** a successful tap or smash on a critter holding a healthy row: the row is flattened
+  (the line is deleted and the actual output changes); `itemId` = `bug:<index of the first unfixed bug>`,
+  `concept` = that bug's concept.
+- **Fixing a bug:** a successful hit on a critter holding a buggy row replaces the line with its fix.
+- **Action misses:** the critter ducks before the hit; a hit on an empty hole; a tap on an armored critter
+  (a "clank"); a fizzled release.
+- **Hint:** on levels with `hint: 'color'` (Challenge, set by the trainer) bug-row critters always have
+  `glow: true` and hits are judged normally; on `hint: 'none'` levels they glow only while X-ray goggles are
+  active. A goggles charge is earned every `whack.xrayEveryCombo` combo; it is a power-up, not gear.
+- **Assisted hits:** a hit on any critter while X-ray is active is *assisted*: on a buggy row it fixes the
+  row and pays Skill but gives no Knowledge credit; on a healthy row it flattens the row but is not a
+  mistake. Each assisted hit adds 1 to `extra.assisted` and `gameResult.assisted` and creates no card, error
+  note or mastery check.
+- **Skill points:** tap `whack.pointsTap`, smash `whack.pointsSmash`, golden `whack.pointsGolden`; combos as
+  in Syntax Drop.
+- `actual` is the current program's stdout; when the run fails it is stdout followed by one line
+  `Error: <kind>`.
+- **The round** is won when actual equals expected; it cannot be lost. Rot grows while bugs live and lowers
+  Skill only. Waves (day and night) speed up the pop-up rate by stage; difficulty shortens `upTimeMs`, puts
+  more critters up at once and two bugs in a program.
+- **Gear** (Action only, built after the playtests): mallets `wide` (a tap also hits the neighbouring hole),
+  `heavy` (smash window `whack.heavySmashMinMs` to `heavySmashMaxMs`), `quick` (tap up to
+  `whack.quickTapMaxMs`); `scarecrow` (pop-up rate × `whack.scarecrowRateFactor`).
+- **`extra`:** `{ scene, lines, expected, actual, critters: [{ id, hole, line, upAt, downAt, armored, golden,
+  glow }], charging: { line, sinceMs } or null, undoLeft, xray: { charges, untilMs }, assisted, bugsLeft, rot,
+  combo }` where `lines` holds `null` for flattened lines.
+- **Level fields:** `program`, `bugs: [{ line, fix, concept, why }]`, `upTimeMs`, `hint` (`color` or
+  `none`), `molesAtOnce`. Expected and actual outputs are computed with Snek from the fixed and buggy program.
+- **Sample packs:** `off-by-one`, `loop-bugs`, `string-bugs`, `dsa-bugs`.
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-228 | Hitting the buggy line's critter replaces it with the fix and the actual output becomes the expected; hitting a healthy line's critter deletes it and the actual output changes; the undo token restores it once; on `hint: 'color'` levels bug-row critters have `glow: true`, and on `hint: 'none'` levels only while X-ray goggles are active; `downAt − upAt` equals `upTimeMs` | `acceptance/games/whack-a-bug.journey.mjs` |
+| AC-241 | **Whack-a-Bug mechanics:** a tap hits a normal critter; an armored critter needs a smash and a tap clanks (action miss); a golden critter gives coins; a critter that ducks before the hit is an action miss; X-ray charges are earned every `whack.xrayEveryCombo` combo and show `glow` for `whack.xrayMs` on `hint: 'none'` levels; a hit while X-ray is active is assisted: it fixes the row, counts in `assisted`, and is neither correct nor a mistake | `acceptance/games/whack-a-bug-mechanics.journey.mjs` |
+| AC-245 | **Manual playtest, Whack-a-Bug:** as AC-243, with `acceptance/games/signoff/whack-a-bug.json` | `acceptance/games/playtest.test.mjs` |
+
+#### 13.7.4 Aftershock (`aftershock`): front "Faultline", an action platformer
+
+**Story.** A quake has split Faultline City. The player is on the rescue team with pilot Kit, leading
+trapped survivors to the helicopter on the roof. Slabs fall from collapsing buildings; each slab is one line
+of code (plus decoy slabs). The right slabs in the right order and indent become a ramp; survivors follow
+once a section is built. Null's aftershocks keep coming; the chapter boss is the **Collapse**, a tower falling
+floor by floor while the player builds.
+
+| Action | Key | Effect |
+|---|---|---|
+| `run` (arg: −1, 0 or 1) | ← or A, → or D (held) | run left, stop, or run right |
+| `jump` | ↑, W or Space | jump (with the double-jump gear, again in mid-air) |
+| `dash` | Shift | dash `aftershock.dashTiles` tiles (with the dash gear) |
+| `grab` | E | pick up the slab within reach |
+| `place` | ↓ or S | in the build zone: append the held slab to the bottom of the stack |
+| `indent` (arg: 0 to 3) | 0, 1, 2, 3 | set the held slab's indent |
+| `kick` | K | kick the held slab, or the slab within reach, away |
+
+- **World:** positions are in tiles; `extra.player` = `{ x, y, vx, vy, onGround, health, carrying }`; x grows
+  to the right and y is the height above the ground (a falling slab or debris has decreasing y). `grab` works
+  on a slab with |slab.x − player.x| ≤ `aftershock.reachTiles` and slab.y ≤ `aftershock.jumpTiles`; `place`
+  works while `buildZone.x0` ≤ player.x ≤ `buildZone.x1`. Run speed `aftershock.runTilesPerSec`, ×
+  `aftershock.carryFactor` while carrying; jump height `aftershock.jumpTiles`. Debris falls on seeded paths;
+  a hit costs `aftershock.debrisDamage` health (of `aftershock.health`); health 0 means `'lost'`. An aftershock
+  (every `shockSec` of game time) stuns a player on the ground for `aftershock.stunMs`.
+- **Correct place:** a stacked slab is in the right place when the stack up to and including it is a prefix
+  of `lines`, or of any order in `altOrders`, with matching indents. Each aftershock knocks the topmost wrongly
+  placed slab back into play.
+- **Completion:** when the stack is as long as `lines`, the program runs with Snek against `tests` (so any
+  correct order counts). A pass plays the scene `aftershock.escape` (skipped under `story=off`), then
+  `'won'`; a fail sets `lastTest` and shows the failing test.
+- **Knowledge sockets:** slab order, slab indent and rejecting decoys.
+- **Knowledge mistakes:** a decoy placed on the stack (`itemId` = `decoy:<i>`); a slab knocked loose for a
+  wrong place or indent (`itemId` = `line:<i>`, once per line per round); a finished stack that fails its
+  tests (`itemId` = `test:<i>` of the first failing test). The concept is the decoy's or level's `concept`,
+  falling back to the pack's first concept.
+- **Action misses:** a debris hit, and a missed slab (it returns to play).
+- **Skill points:** a placed slab `aftershock.pointsSlab`; a dodge streak `aftershock.dodgePoints` per
+  `aftershock.dodgeEveryMs`; a rescue time bonus.
+- **Gear** (Action only, built after the playtests): `double-jump`, `dash`, `boots` (×
+  `aftershock.bootsCarryFactor` instead of `carryFactor` while carrying).
+- **`extra`:** `{ scene, player, slabs: [{ uid, text, decoy, x, y, state }], debris: [{ id, x, y, vy }],
+  stack: [{ uid, text, indent }], heldIndent, buildZone: { x0, x1 }, nextShockMs, lastTest: { passed, failing:
+  { test, got } or null } or null, escaped, rescued }`, where a slab's `state` is `'falling'`, `'held'`,
+  `'stacked'`, `'kicked'` or `'landed'`.
+- **Level fields:** `lines: [{ text, indent }]`, `decoys: [{ text, why, concept? }]`, `tests`, `shockSec`,
+  `fallSpeed`, `altOrders?` (arrays of indexes into `lines`), `entry?`, `concept?`.
+- **Sample packs:** `loops-order`, `functions-order`, `dsa-order` (binary search, BFS).
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-229 | Grabbing and placing the fixture lines in a correct order with correct indents passes the tests and plays the escape; an alternative correct order (fixture) also passes; a wrong indent (not a prefix of `lines` or of any `altOrders`) is knocked off by the next aftershock (test clock) and is a Knowledge mistake; kicking a decoy away is scored; placing a decoy fails the tests and shows the failing test | `acceptance/games/aftershock.journey.mjs` |
+| AC-242 | **Aftershock mechanics:** running, jumping and (with gear) double-jump and dash move the player as above; carrying slows running to `aftershock.carryFactor`; a debris hit costs health with no mistake, and health 0 ends in `'lost'`; a passing stack plays the escape scene | `acceptance/games/aftershock-mechanics.journey.mjs` |
+| AC-246 | **Manual playtest, Aftershock:** as AC-243, with `acceptance/games/signoff/aftershock.json` | `acceptance/games/playtest.test.mjs` |
+
+### 13.8 Later games (design kept; contract and rows before task g-7)
+
+The play layer (§13.6) applies to these games too. Their acceptance ids are reserved: AC-202 (3D scene
+cost), AC-220 and AC-221 (Maze Coder), AC-222 to AC-224 (Breakout), AC-225 and AC-226 (Seal the Beast),
+AC-230 (Complexity Garage). The 3D/raid contract turns the behaviours below into rows, defines AC-202's
+"checkpoint", adds `garage`'s seeded-RNG host hook, and moves AC-214's "maze with no path to the exit" case
+into AC-214.
+
+**Maze Coder (`maze-coder`).** A block-built maze diorama sits on a table (camera orbits with drag or Q/E;
+zoom with wheel or +/−). A blocky character stands on the start tile. The learner writes Snek in the editor
+on the right (beginners can use the block palette, which writes the same Snek) and presses **Run**. Host
+functions: `move()`, `turn_left()`, `turn_right()`, `jump()`, `paint(color)`, `is_wall_ahead()`,
+`is_on(color)`, `at_exit()`, `pick()`, `drop()`, `look()`; each call animates (via `step`) and the current
+line is highlighted. **Pattern levels:** the floor shows a target pattern; painting it needs the same nested
+loop that prints it, and a side panel shows the equivalent `print` output growing. **Stars:** 1 = reached the
+exit or completed the pattern; 2 = within the step budget; 3 = within the line budget. Level fields: `map`
+(ASCII rows: `#` wall, `.` floor, `S` start with `>`/`<`/`^`/`v` facing, `E` exit, `0`–`9` heights, `r g b`
+colored tiles, `*` item, `~` water), `target`, `allowed`, `budget: { steps, lines }`, `starter`, `fog`.
+Sample packs: `first-steps`, `star-patterns-3d`, `conditions`, `functions`, `search`. Reserved behaviours:
+AC-220 (the fixture solution reaches the exit with 3 stars; extra steps give 2; walking into a wall stops on
+that line with a message; an infinite loop is stopped without freezing the page) and AC-221 (a pattern level
+completes only when the painted tiles equal the target; the side panel shows the matching output; the block
+palette produces Snek that runs the same).
+
+**Breakout (`breakout`).** A block-built prison walked in third person (WASD or arrows, mouse or drag to
+look; a touch joystick). Cell blocks are chapters; each room's door is a **machine** that shows one data
+structure working, and each escape is a function to write. Room flow: story; machine (the data structure as
+a 3D mechanism: stack lock, queue guard line, binary-search dial, hash-map lockers, linked-list vent tunnel,
+tree elevator shaft, graph corridor map, heap meal line, two-pointer laser grid, sliding-window patrol gap,
+DP power grid); tutorial (operate the machine by hand); practice (unlimited time, hints); escape (write the
+function under a countdown; each test is a lock; hints cost seconds; **full manual** mode gives no signature).
+Rooms unlock on their pack `day`. Menu: codex, story or practice mode, settings. Machine types are plug-ins
+`{ build(scene), apply(op), check(state) }`. Level fields: `concept`, `machine`, `story`, `tutorial: { start,
+goal, ops }`, `practice: { prompt, signature, tests, hints }`, `escape: { prompt, signature, tests, timeSec,
+hints: [{ text, costSec }] }`. Sample packs: `cell-block-a` (stack, queue, two pointers), `cell-block-b`
+(binary search, hash map, sliding window), `cell-block-c` (linked list, tree, graph BFS, heap, DP). Reserved
+behaviours: AC-222 (stack room end to end), AC-223 (escape locks, hint costs, countdown reset, full manual),
+AC-224 (codex replays; future rooms locked with their unlock date).
+
+**Seal the Beast (`raid`).** The trainer starts a raid for the class with a pack and a difficulty; the class's
+teams (`class.teams`) play together against one beast. The projector screen (`/teach/raid/<raidId>/screen`)
+shows the beast, the seal meter, the class's chances and each team's banner; phones (`/learn/raid`) show the
+team's turn. Each round the beast casts a curse (a problem from the pack); every team votes on its phones on
+3 or 4 candidate pieces of code, or writes in code that the hub runs with Snek against the curse's tests. The
+team's choice is the most-voted option (ties → earliest vote). Each correct team adds a seal; the beast's
+damage = base × (1 − seals ÷ sealsNeeded) is taken from the class's shared chances (easy 5, normal 3, hard 2).
+Seal meter full → sealed; chances at 0 → escaped (retry). Only team results are public, never individual
+votes. The hub is the authority: phones write `raidVote` docs; the hub's raid module resolves the round and
+writes the `raid` doc. Level fields: `curses: [{ prompt, code?, options, tests?, concept }]`, `sealsNeeded`,
+`turnSec`, `baseDamage`. Sample packs: `loops-beast` (options), `dsa-beast` (write-in). Reserved behaviours:
+AC-225 (three teams of two, majority and tie rules, same result on projector and phones) and AC-226
+(difficulty chances, sealed and escaped endings, write-in judged on the hub, no individual votes shown).
+
+**Complexity Garage (`garage`).** Build a car from parts, each a programming choice: **engine** = the
+algorithm (from the pack, or "Build your own" in Snek); **tyres** = the data structure (list, set, dict,
+deque); **fuel tank** = the memory allowance in cells. **Race:** checkpoints at growing input sizes; each
+car's time to a checkpoint is its Snek operation count for that n (D-45); a car whose `peakCells` exceeds its
+tank runs out of fuel; past `opsCap` the count is projected (log-log fit) and shown as "projected".
+Opponents: computer cars and classmate challenges (ghost race; the result is visible only to the two of
+them). Results: the race chart (ops vs n, log scale), each car's complexity class, a lesson card. Level
+fields: `task`, `engines: [{ id, name, code, concept }]`, `tyres?`, `sizes`, `inputGen`, `tank`, `opsCap`,
+`opponents`. Sample packs: `sorting-grand-prix`, `search-sprint`, `lookup-rally`. Reserved behaviour: AC-230
+(merge sort beats bubble sort with ops equal to Snek's counts; a failing learner engine may not race; out of
+fuel; projected sizes; a challenge result is not visible to a third learner).
+
+### 13.9 Tuning (`packages/games/src/tuning.ts`)
+
+Every value below is exported by `packages/games/src/tuning.ts` as `TUNING['<name>']` (D-64). The acceptance
+suite reads this table at run time. Names are fixed; values may be retuned by editing this table and
+`tuning.ts` together.
+
+| Name | Value | Meaning |
+|---|---|---|
+| `common.assistFactor` | 0.5 | game-clock speed with assist on |
+| `common.knowledgePoints` | 100 | score per socket answered correctly |
+| `common.starsTwoMaxMistakes` | 2 | most Knowledge mistakes for 2 stars |
+| `common.comboX2` | 5 | combo for ×2 points |
+| `common.comboX3` | 10 | combo for ×3 points |
+| `common.xpSkillDivisor` | 10 | xp = round(skill / this) + … |
+| `common.xpPerStar` | 20 | … + this × knowledgeStars |
+| `common.coinsPerStar` | 5 | coins = this × knowledgeStars + … |
+| `common.coinsSkillDivisor` | 100 | … + floor(skill / this) + golden coins |
+| `story.sayNominalMs` | 4000 | nominal `say` length (length check; autoAdvance delay) |
+| `story.prologueMinMs` | 60000 | prologue length, minimum |
+| `story.prologueMaxMs` | 90000 | prologue length, maximum |
+| `story.introMinMs` | 30000 | front intro length, minimum |
+| `story.introMaxMs` | 45000 | front intro length, maximum |
+| `story.chapterEndMinMs` | 15000 | chapter-end length, minimum |
+| `story.chapterEndMaxMs` | 30000 | chapter-end length, maximum |
+| `syntaxDrop.windowPerfectMs` | 50 | Perfect window (±) |
+| `syntaxDrop.windowGoodMs` | 120 | Good window (±) |
+| `syntaxDrop.windowLateMs` | 200 | Late window (±) |
+| `syntaxDrop.pointsPerfect` | 30 | Skill points |
+| `syntaxDrop.pointsGood` | 20 | Skill points |
+| `syntaxDrop.pointsLate` | 10 | Skill points |
+| `syntaxDrop.shieldStart` | 100 | shield at start |
+| `syntaxDrop.shieldChip` | 10 | shield lost per action miss |
+| `syntaxDrop.shieldCrack` | 25 | shield lost per Knowledge mistake |
+| `syntaxDrop.shieldRepair` | 30 | shield restored by `repair` |
+| `syntaxDrop.feverCombo` | 10 | combo that starts Fever |
+| `syntaxDrop.feverMs` | 8000 | Fever length |
+| `syntaxDrop.feverFactor` | 2 | Fever points factor |
+| `syntaxDrop.powerEveryCombo` | 15 | a power-up per this many combo |
+| `syntaxDrop.slowmoFactor` | 0.5 | fall-speed factor during slowmo |
+| `syntaxDrop.slowmoMs` | 3000 | slowmo length |
+| `syntaxDrop.speedPerStage` | 1.15 | default level `speed` |
+| `syntaxDrop.minBeatMs` | 500 | shortest time between two beats (keeps a press at half of it outside both neighbours' windows) |
+| `syntaxDrop.piecesPerStage` | 8 | default strike pieces per stage |
+| `syntaxDrop.wrongPreviewMs` | 1500 | how long a wrong piece shows in the preview |
+| `syntaxDrop.calibrationBeats` | 8 | beats in the calibration test |
+| `syntaxDrop.calibrationIntervalMs` | 500 | time between calibration beats |
+| `syntaxDrop.calibrationMaxOffsetMs` | 150 | offset clamp (±) |
+| `sniper.breathMs` | 4000 | breath meter, full |
+| `sniper.breathRecoverPerSec` | 0.5 | breath regained per second (s/s) |
+| `sniper.breathSwayFactor` | 0.2 | sway factor while breathing |
+| `sniper.stabilizerSwayFactor` | 0.6 | sway factor with the stabilizer |
+| `sniper.scatterMs` | 3000 | targets hide after a miss |
+| `sniper.suppressorScatterMs` | 1500 | the same with the suppressor |
+| `sniper.cleanHitDivisor` | 3 | clean hit when error ≤ radius / this |
+| `sniper.nudgeStep` | 1 | crosshair step per nudge (tiles) |
+| `sniper.minTargetRadius` | 2 | smallest target radius (tiles) |
+| `sniper.pointsHit` | 20 | Skill points |
+| `sniper.pointsClean` | 10 | extra Skill points for a clean hit |
+| `sniper.rankMarksman` | 3 | claimed bounties for Marksman |
+| `sniper.rankSharpshooter` | 6 | claimed bounties for Sharpshooter (unlocks the boss) |
+| `sniper.rankGhost` | 10 | claimed bounties for Ghost |
+| `sniper.slackLevel1` | 3 | default slack, level position 1 |
+| `sniper.slackLevel2` | 2 | default slack, level position 2 |
+| `sniper.slackLevel3` | 1 | default slack, level position 3 |
+| `sniper.slackLevel4` | 0 | default slack, level position 4 and later |
+| `whack.tapMaxMs` | 200 | longest hold that is a tap |
+| `whack.smashMinMs` | 600 | smash window, start |
+| `whack.smashMaxMs` | 900 | smash window, end |
+| `whack.heavySmashMinMs` | 500 | heavy mallet smash window, start |
+| `whack.heavySmashMaxMs` | 1000 | heavy mallet smash window, end |
+| `whack.quickTapMaxMs` | 300 | quick mallet tap limit |
+| `whack.goldenCoins` | 10 | coins per golden critter |
+| `whack.xrayEveryCombo` | 8 | an X-ray charge per this many combo |
+| `whack.xrayMs` | 5000 | X-ray length |
+| `whack.scarecrowRateFactor` | 0.8 | pop-up rate factor with the scarecrow |
+| `whack.pointsTap` | 10 | Skill points |
+| `whack.pointsSmash` | 25 | Skill points |
+| `whack.pointsGolden` | 15 | Skill points |
+| `whack.maxProgramLines` | 9 | longest program (pack check) |
+| `aftershock.health` | 3 | health at start |
+| `aftershock.debrisDamage` | 1 | health lost per debris hit |
+| `aftershock.runTilesPerSec` | 6 | run speed |
+| `aftershock.carryFactor` | 0.7 | run-speed factor while carrying |
+| `aftershock.bootsCarryFactor` | 0.85 | the same with boots |
+| `aftershock.jumpTiles` | 2 | jump height |
+| `aftershock.dashTiles` | 3 | dash length |
+| `aftershock.stunMs` | 500 | stun from an aftershock |
+| `aftershock.pointsSlab` | 10 | Skill points per placed slab |
+| `aftershock.dodgePoints` | 5 | Skill points per dodge streak |
+| `aftershock.dodgeEveryMs` | 5000 | dodge streak length |
+| `aftershock.reachTiles` | 1 | grab reach (horizontal) |
+
+### 13.10 Build plan
+
+Tasks (each a tins-kit task with its own worktree and scope). A row is claimed by the task that makes its
+last part green. The cross-game rows (AC-200, AC-201, AC-203, AC-207, AC-214, AC-234, AC-235) are split in
+the suite into a shared part plus one part per game; each game task makes its own part (and g-3 the shared
+part) pass, checked with `scripts/rowcheck.mjs`, and the last first-wave game to merge claims the whole row.
+
+| Task | Builds | Rows it claims | Depends on |
+|---|---|---|---|
+| g-0 | `scripts/rowcheck.mjs` (a builder runs one row's acceptance file without reading it) and the nine D-49 switch keys in core (AC-49) | (keeps AC-49 green) | (none) |
+| g-1 | Snek interpreter, counting, sandbox | AC-208 to AC-213 | g-0 |
+| g-2 | Engine, arcade shell, shared screens, test hooks, story system (scene player, `games check` for story files), `player` document with XP and coins, results, cards and mastery hooks, switches, pack schemas and pack check for the four first-wave games, content gate `G9-games`, `games new`, `tuning.ts` with its unit test, budgets tooling | AC-216 | g-0; uses g-1's API by interface; merges after g-1 |
+| g-3 | **Vertical slice:** Syntax Drop complete (rhythm, calibration, renderers, its story) and the prologue; then the owner's playtest. Also makes the shared and Syntax Drop parts of AC-200, AC-203, AC-207, AC-214, AC-234 and AC-235 pass (checked per part with `scripts/rowcheck.mjs`). May fix engine defects it finds inside `packages/games`, logged as integration fixes in its journal | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | g-1, g-2 |
+| g-6 | Snippet Sniper | AC-227, AC-240, AC-244 | g-3 and the owner's playtest |
+| g-4 | Whack-a-Bug | AC-228, AC-241, AC-245 | g-3 and the owner's playtest |
+| g-5 | Aftershock | AC-229, AC-242, AC-246 | g-3 and the owner's playtest |
+| (last of g-4, g-5, g-6 to merge) | also the cross-game rows as a whole (each earlier game task makes its own part pass) | AC-200, AC-201, AC-203, AC-207, AC-214, AC-234, AC-235 | the other two |
+| g-12 | Shop and gear | AC-237, AC-238 | g-4, g-5, g-6 |
+| g-7 … g-11 | Voxel kit and Maze Coder (g-7), Complexity Garage (g-8), Breakout slice and rest (g-9, g-10), Seal the Beast (g-11) | after the 3D/raid contract (§13.8) | g-2 |
+
+Order: g-0; g-1 and g-2 in parallel (gates and merges one at a time); g-3; the owner's playtest of Syntax
+Drop; then g-6, g-4 and g-5 (sniper, whack-a-bug, aftershock); g-12 after their playtests. Each game's task
+merges only after its playtest row is signed (D-63).
+
+### 13.11 Test ids, sample packs for the performance rows, document shapes, seeds and error keywords
+
+These entries are part of the contract, like Appendices C and E.
+
+**Test ids (games).**
+
+| Test id | Element | Used by |
+|---|---|---|
+| `game-tile-<gameId>` | Arcade tile; `data-last-score`, `data-stars` (own results only) | AC-204, AC-206 |
+| `game-pack-<packId>`, `game-level-<levelId>` | Picker entries; a level has `data-locked="true"` when locked | AC-204, AC-215, AC-227 |
+| `game-unavailable` | "not available" screen | AC-204, AC-215, AC-227 |
+| `game-canvas` | The game's single `<canvas>` | AC-201, AC-203 |
+| `game-preview` | Syntax Drop live preview (html: `<iframe sandbox="">`) | AC-217 |
+| `lesson-card` | Lesson card overlay between stages | AC-218 |
+| `pause-menu` | Pause menu | AC-207, AC-233 |
+| `game-results`, `result-score`, `result-stars` (`data-stars`), `result-skill`, `result-knowledge`, `result-assisted` | Results screen (`result-assisted`: Whack-a-Bug) | AC-205, AC-235, AC-241 |
+| `result-mistake-<n>` | One Knowledge mistake on the results screen | AC-205, AC-235 |
+| `act-<action>`, `act-<action>-<arg>` | On-screen button for every action | AC-207, AC-233 |
+| `mastery-skill-<skill>` | One row of `mastery-map`, `data-state` `mastered` or `not-yet` | AC-205, AC-235 |
+| `wall-team-<teamId>` | One team on `celebration-wall`; its text includes the team's XP | AC-206 |
+| `story-scene` | Container of the running scene; `data-scene-id` | AC-231 to AC-233 |
+| `story-line` | The current `say` text | AC-233 |
+| `story-replay`, `story-replay-<sceneId>` | "Story so far" list (arcade and pause menu) and its entries | AC-231, AC-233 |
+| `avatar-choice` | Avatar creation panel in the prologue | AC-231 |
+| `player-xp`, `player-coins` | XP and coin counters (arcade and shop) | AC-236, AC-237 |
+| `calibration` | Syntax Drop calibration panel (`data-offset-ms` once done) | AC-239 |
+| `shop-item-<id>`, `shop-buy-<id>` | Shop entry and its Buy button (`data-owned="true"` once owned) | AC-237, AC-238 |
+| `code-editor` | Code editor (reserved for the later games) | (none yet) |
+
+**Sample packs for the performance rows.** AC-201 and AC-203 use the last level of these sample packs, with
+`story=off`: `syntax-drop/html-headings`, `whack-a-bug/dsa-bugs`, `aftershock/dsa-order` and
+`sniper/boss-recursion` (unlocked by seeding sniper results).
+
+**Document shapes (adds to Appendix E).**
+
+| Database | Type | Fields |
+|---|---|---|
+| `person` | `gameResult` | `personId`, `classId`, `gameId`, `packId`, `levelId`: string; `score`: number; `stars`: 0 to 3 (equals `knowledgeStars`); `skill`: number; `knowledgeStars`: 0 to 3; `outcome`: `'won'` or `'lost'`; `xp`, `coins`: number; `claimed`: number (sniper); `assisted`: number (whack-a-bug); `mistakes[]`: `{ itemId, concept }` (Knowledge only); `assist`: boolean; `durationMs` (game time): number; `at`: number; `seed`: number |
+| `person` | `player` (id `player:<personKey>`) | `xp`, `coins`: number (caches, §13.6); `cosmetics[]`, `gear[]`: string; `purchases[]`: `{ itemId, price, at }`; `seen`: `{ prologue: boolean, intro: { <gameId>: true }, scenes: { <sceneId>: true } }`; `avatar`: `{ look, color, nameTag }`; `timingOffsetMs`: number (default 0, within ±150); `settings`: `{ autoAdvance: boolean }` (default false) |
+| `person` | `card` (game) | as v1, plus `concept`: string; `deck`: `"games"`; `sourceRef`: `"gameResult:<key>#<itemId>"` |
+| `person` | `errorNote` (game) | `dayIndex` = pack `day`; `subtopic` = concept; `question` = the item's text; `given`; `correct` |
+| `class` | `teamScore` | `teamId`: string; `xp`: number (the average `player.xp` over the team's current members, rounded). The hub recomputes it within 5 s of any `gameResult` or `player` write, including writes from `/__test/seed` |
+| `class` | `class.switches` | may hold the D-49 keys |
+
+**Seeds.** Game seeds live in `acceptance/fixtures/games/seeds/` and are posted as `/__test/seed { fixture:
+'games/seeds/<name>.json' }`; the games fixture package is `acceptance/fixtures/games/package/` (the v1
+package plus `track1/games/…`), so no v1 fixture changes. Seed files may carry `samplePacks` (D-59).
+
+**Required error keywords (D-54).** A message is one sentence: no line break, at most 160 characters, ends
+with `.`, `!` or `?`, and contains none of `undefined`, `null`, `NaN`, `[object` or a stack frame.
+
+| Case | Kind | Keyword the message must contain |
+|---|---|---|
+| `if x > 1` without a colon | `SyntaxError` | `:` |
+| `print(totl)` | `NameError` | `totl` |
+| `[1, 2, 3][3]` | `IndexError` | `index` |
+| a body line indented differently from its block | `IndentationError` | `indent` |
+| `"age: " + 7` | `TypeError` | `+` |
+| `while True: pass` with `maxOps` N | `TooManySteps` | N |
+| unbounded recursion with `maxDepth` N | `TooDeep` | N |
+| a list growing past `maxCells` N | `TooBig` | N |
+| `open`, `import os`, `__import__`, `eval`, `exec`, `.__class__`, `.__globals__` | `NotAllowed` (or `SyntaxError` for `import os`) | the refused name |
+| `assert 1 == 2, "nope"` | `AssertionError` | `nope` |
+| pack missing `title` | check line | `title` |
+| concept `HTML Headings` | check line | `HTML Headings` |
+| aftershock lines fail their tests | check line | `test` |
+| syntax-drop slot `s2` with no correct piece | check line | `s2` |
+| level id `2` repeated | check line | `2` |
+| beat `{ t: 'dance' }` | check line | `dance` |
+| `say.key` `story.x.missing` not in `en.json` | check line | `story.x.missing` |
+| `say.who` `ghost` not in any cast | check line | `ghost` |
+| `sniper.json` without `chapter-end` | check line | `chapter-end` |
+| an intro lasting 12 s | check line | `intro` |
+
+### 13.12 Later (not in this build)
+
+- Java subset front end for Snek (D-44); SQL renderer for Syntax Drop; game ideas 6 to 9 from the design
+  discussion (conveyor factory, pointer train yard, type tower defense, git platformer), pending the
+  trainer's notes.
+- The trainer's per-class daily play cap and the concept-miss map (D-56), each with its own row.
 
 ---
 
