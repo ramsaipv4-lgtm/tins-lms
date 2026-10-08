@@ -5,3 +5,4 @@ node_modules
 packages/web/dist
 .tins/state*
 packages/web/.test-dist
+.lms-data/
