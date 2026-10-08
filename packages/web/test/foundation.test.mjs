@@ -34,11 +34,26 @@ async function startServer(webDist) {
 }
 
 async function browser() {
-  const { chromium } = await import(join(process.env.LMS_NODE_MODULES ?? join(ROOT, 'node_modules'), '@playwright/test/index.mjs'));
   const dir = process.env.PLAYWRIGHT_BROWSERS_PATH ?? '/opt/pw-browsers';
-  const rev = readdirSync(dir).find((d) => /^chromium-\d+$/.test(d));
+  const have = existsSync(dir);
+  // Playwright reads PLAYWRIGHT_BROWSERS_PATH once, when it is imported: drop a missing folder first so its own default Chromium is used.
+  if (!have) delete process.env.PLAYWRIGHT_BROWSERS_PATH;
+  const { chromium } = await import(join(process.env.LMS_NODE_MODULES ?? join(ROOT, 'node_modules'), '@playwright/test/index.mjs'));
+  const rev = (have ? readdirSync(dir) : []).find((d) => /^chromium-\d+$/.test(d));
   return chromium.launch(rev ? { executablePath: join(dir, rev, 'chrome-linux', 'chrome') } : {});
 }
+
+test('browser lookup falls back to the default Chromium when the browsers folder is missing', { timeout: 60_000 }, async () => {
+  const saved = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  process.env.PLAYWRIGHT_BROWSERS_PATH = '/nonexistent/path';
+  try {
+    const b = await browser();
+    assert.match(b.version(), /^\d+\./);
+    await b.close();
+  } finally {
+    if (saved === undefined) delete process.env.PLAYWRIGHT_BROWSERS_PATH; else process.env.PLAYWRIGHT_BROWSERS_PATH = saved;
+  }
+});
 
 test('registry: one folder per group with routes and strings; shell strings exist', () => {
   for (const g of GROUPS) {

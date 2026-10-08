@@ -68,9 +68,12 @@ async function login(personId, roles) {
   return r.headers.get('set-cookie').split(';')[0];
 }
 async function browser() {
-  const { chromium } = await import(join(process.env.LMS_NODE_MODULES ?? join(ROOT, 'node_modules'), '@playwright/test/index.mjs'));
   const d = process.env.PLAYWRIGHT_BROWSERS_PATH ?? '/opt/pw-browsers';
-  const rev = readdirSync(d).find((x) => /^chromium-\d+$/.test(x));
+  const have = existsSync(d);
+  // Playwright reads PLAYWRIGHT_BROWSERS_PATH once, when it is imported: drop a missing folder first so its own default Chromium is used.
+  if (!have) delete process.env.PLAYWRIGHT_BROWSERS_PATH;
+  const { chromium } = await import(join(process.env.LMS_NODE_MODULES ?? join(ROOT, 'node_modules'), '@playwright/test/index.mjs'));
+  const rev = (have ? readdirSync(d) : []).find((x) => /^chromium-\d+$/.test(x));
   return chromium.launch(rev ? { executablePath: join(d, rev, 'chrome-linux', 'chrome') } : {});
 }
 
