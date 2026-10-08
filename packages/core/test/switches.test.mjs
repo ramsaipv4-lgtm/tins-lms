@@ -23,6 +23,15 @@ test('switchDefaults returns correct table', () => {
     jira: false,
     voiceFollow: false,
     gradedShifts: true,
+    games: true,
+    'game.syntaxDrop': true,
+    'game.mazeCoder': true,
+    'game.breakout': true,
+    'game.raid': true,
+    'game.sniper': true,
+    'game.whackABug': true,
+    'game.aftershock': true,
+    'game.garage': true,
   };
   assert.deepEqual(defaults, expected);
 });
@@ -105,4 +114,18 @@ test('AC-49: all switches have correct defaults', () => {
   assert.equal(defaults.planVsActual, false);
   assert.equal(defaults.headingStrike, true);
   assert.equal(defaults.gradedShifts, true);
+});
+
+test('AC-49: the nine games keys of D-49 exist, default on, and follow the same precedence', () => {
+  const keys = ['games', 'game.syntaxDrop', 'game.mazeCoder', 'game.breakout', 'game.raid', 'game.sniper', 'game.whackABug', 'game.aftershock', 'game.garage'];
+  const defaults = switchDefaults();
+  assert.equal(Object.keys(defaults).length, 18 + keys.length);
+  for (const k of keys) {
+    assert.equal(defaults[k], true, k);
+    assert.equal(isOn(k, {}), true, k);
+    assert.equal(isOn(k, { org: { [k]: false } }), false, k);
+    assert.equal(isOn(k, { org: { [k]: false }, program: { [k]: true } }), true, k);
+    assert.equal(isOn(k, { org: { [k]: true }, program: { [k]: true }, class: { [k]: false } }), false, k);
+  }
+  assert.throws(() => isOn('game.nosuch', {}), /Unknown switch/);
 });

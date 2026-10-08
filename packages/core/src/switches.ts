@@ -20,6 +20,16 @@ export function switchDefaults(): Record<string, boolean> {
     jira: false,
     voiceFollow: false,
     gradedShifts: true,
+    // the arcade and its games (SPEC D-49): a game is available only when `games` and its own switch are on
+    games: true,
+    'game.syntaxDrop': true,
+    'game.mazeCoder': true,
+    'game.breakout': true,
+    'game.raid': true,
+    'game.sniper': true,
+    'game.whackABug': true,
+    'game.aftershock': true,
+    'game.garage': true,
   };
 }
 
