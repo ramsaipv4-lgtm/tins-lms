@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 6
 skills: [offline-first, replication, signed-files]
-source_refs: [{ path: packages/web/src/features/files/phone.ts, commit: c4117568b905055221763675551bc228d8055749 }, { path: packages/web/src/features/files/net.ts, commit: c4117568b905055221763675551bc228d8055749 }]
+source_refs: [{ path: packages/web/src/features/files/phone.ts, commit: a905a3402f24a191fc7984ab74d248a5ac00d346 }, { path: packages/web/src/features/files/net.ts, commit: a905a3402f24a191fc7984ab74d248a5ac00d346 }]
 next: ms-08.01
 ---
 

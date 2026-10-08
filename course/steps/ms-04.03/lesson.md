@@ -7,7 +7,7 @@ prereqs: [ms-03.01]
 objectives: 3
 new_terms: 5
 skills: [state-machines, immutable-state, policy-enforcement]
-source_refs: [{ path: packages/core/src/appeal.ts, commit: 1f3fb653f01ebac843dc08e5ac4996d544077905 }, { path: packages/core/src/aipolicy.ts, commit: 1f3fb653f01ebac843dc08e5ac4996d544077905 }]
+source_refs: [{ path: packages/core/src/appeal.ts, commit: c891ff54f9c7a3d1e9b4bb5ca76b6ddb313184b4 }, { path: packages/core/src/aipolicy.ts, commit: c891ff54f9c7a3d1e9b4bb5ca76b6ddb313184b4 }]
 next: ms-04.04
 ---
 

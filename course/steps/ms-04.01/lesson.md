@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 4
 skills: [teleprompter-pacing, script-parsing]
-source_refs: [{ path: packages/core/src/pace.ts, commit: e345507 }]
+source_refs: [{ path: packages/core/src/pace.ts, commit: 9bfd6d2 }]
 next: ms-04.02
 ---
 

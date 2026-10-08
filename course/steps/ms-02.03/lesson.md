@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 4
 skills: [catch-up-gate, mastery-tracking, study-group-formation]
-source_refs: [{ path: packages/core/src/catchup.ts, commit: c0f99ad }, { path: packages/core/src/mastery.ts, commit: c0f99ad }]
+source_refs: [{ path: packages/core/src/catchup.ts, commit: 7133e33 }, { path: packages/core/src/mastery.ts, commit: 7133e33 }]
 next: ms-02.04
 ---
 

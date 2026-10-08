@@ -7,7 +7,7 @@ prereqs: [ms-09.01]
 objectives: 4
 new_terms: 6
 skills: []
-source_refs: [{ path: packages/adapters/src/backup.ts, commit: 2dec128 }, { path: packages/adapters/src/google.ts, commit: 2dec128 }]
+source_refs: [{ path: packages/adapters/src/backup.ts, commit: f30e926 }, { path: packages/adapters/src/google.ts, commit: f30e926 }]
 next: ms-10.03
 ---
 

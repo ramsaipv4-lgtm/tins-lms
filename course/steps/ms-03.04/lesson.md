@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 6
 skills: [manifest, tar-ustar, ecdsa-signing]
-source_refs: [{ path: packages/core/src/export.ts, commit: 415c2ebf29dc4d715fc607edc2b51a92c86f389f }]
+source_refs: [{ path: packages/core/src/export.ts, commit: 58260e330f0754b8e6d3f6104d42df3295822dff }]
 next: ms-03.05
 ---
 

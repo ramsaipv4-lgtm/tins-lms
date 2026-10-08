@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 6
 skills: [web-shell, feature-registry, pseudo-locale]
-source_refs: [{ path: packages/web/src/features/registry.ts, commit: 9c21b82 }, { path: packages/web/src/strings/index.ts, commit: 9c21b82 }]
+source_refs: [{ path: packages/web/src/features/registry.ts, commit: c812c46 }, { path: packages/web/src/strings/index.ts, commit: c812c46 }]
 next: ms-07.02
 ---
 

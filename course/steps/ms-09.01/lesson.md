@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 3
 new_terms: 6
 skills: [load-testing, percentiles, test-mode-hubs]
-source_refs: [{ path: packages/cli/src/loadtest.ts, commit: 5099bad50419a4f7e9d6ab828e8257c18b8852fa }, { path: packages/cli/src/stats.ts, commit: 5099bad50419a4f7e9d6ab828e8257c18b8852fa }]
+source_refs: [{ path: packages/cli/src/loadtest.ts, commit: c267a25faf00fbe81211f568e7811790d0bee7a0 }, { path: packages/cli/src/stats.ts, commit: c267a25faf00fbe81211f568e7811790d0bee7a0 }]
 next: ms-10.01
 ---
 

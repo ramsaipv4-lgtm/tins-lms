@@ -7,7 +7,7 @@ prereqs: [ms-04.05]
 objectives: 4
 new_terms: 8
 skills: [ocr-parsing, text-similarity, statistical-analysis, clustering, scheduling]
-source_refs: [{ path: packages/core/src/screenshot.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/faq.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/atrisk.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/items.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/cluster.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }, { path: packages/core/src/reflow.ts, commit: cc0cbd7de02076991c810ef6aceacb31e5f4426d }]
+source_refs: [{ path: packages/core/src/screenshot.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }, { path: packages/core/src/faq.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }, { path: packages/core/src/atrisk.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }, { path: packages/core/src/items.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }, { path: packages/core/src/cluster.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }, { path: packages/core/src/reflow.ts, commit: 60f4f7affe6351b64d2db6f7236e793c97f285d1 }]
 next: ms-04.07
 ---
 

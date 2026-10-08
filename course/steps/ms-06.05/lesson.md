@@ -7,7 +7,7 @@ prereqs: [ms-06.01]
 objectives: 3
 new_terms: 5
 skills: [append-only-ledger, appeal-window, evidence-pack]
-source_refs: [{ path: packages/server/src/routes/grading.ts, commit: 05dcdea }]
+source_refs: [{ path: packages/server/src/routes/grading.ts, commit: b3d6bff }]
 next: ms-06.06
 ---
 

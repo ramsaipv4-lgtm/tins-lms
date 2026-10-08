@@ -7,7 +7,7 @@ prereqs: [ms-07.01]
 objectives: 3
 new_terms: 5
 skills: [admin-screens, rule-based-draft, feature-switches]
-source_refs: [{ path: packages/server/src/routes/features/admin.ts, commit: 58abe2b }]
+source_refs: [{ path: packages/server/src/routes/features/admin.ts, commit: d737943 }]
 next: ms-07.03
 ---
 

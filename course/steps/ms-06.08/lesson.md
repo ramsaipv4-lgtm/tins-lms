@@ -7,7 +7,7 @@ prereqs: [ms-06.01]
 objectives: 4
 new_terms: 6
 skills: [webauthn, challenge-response, ecdsa-verify, session-cookie]
-source_refs: [{ path: packages/server/src/routes/accounts.ts, commit: c791c7e }]
+source_refs: [{ path: packages/server/src/routes/accounts.ts, commit: 2dde7df }]
 next: ms-07.01
 ---
 

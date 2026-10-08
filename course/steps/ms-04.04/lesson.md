@@ -7,7 +7,7 @@ prereqs: []
 objectives: 3
 new_terms: 6
 skills: [conflict-merge, property-testing]
-source_refs: [{ path: packages/core/src/merge.ts, commit: 9047a570ed0755336df32b22e3e4a8a6b1c57c40 }]
+source_refs: [{ path: packages/core/src/merge.ts, commit: bfa5f40143ecb95b216ca6e4713b2184b46ab0d7 }]
 next: ms-04.05
 ---
 

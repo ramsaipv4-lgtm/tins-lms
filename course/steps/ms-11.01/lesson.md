@@ -7,7 +7,7 @@ prereqs: [ms-01.01]
 objectives: 4
 new_terms: 6
 skills: [integration-testing, regex, http-caching, json-rpc, least-privilege]
-source_refs: [{ path: packages/server/src/core/guard.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/content.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/attendance.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/grading.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/routes/mcp.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }, { path: packages/server/src/core/static.ts, commit: e47e1f069f4befedd67447740e6bf2f34660ac40 }]
+source_refs: [{ path: packages/server/src/core/guard.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }, { path: packages/server/src/routes/content.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }, { path: packages/server/src/routes/attendance.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }, { path: packages/server/src/routes/grading.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }, { path: packages/server/src/routes/mcp.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }, { path: packages/server/src/core/static.ts, commit: 2bfb8c35321f61536ae16b0013c3c9e737d5da08 }]
 next: ms-11.02
 ---
 
