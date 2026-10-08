@@ -1020,7 +1020,7 @@ written (before task g-7); the play layer applies to them too.
 ### 13.1 Decisions
 
 D-42 to D-49 were D-G1 to D-G8 of the games design (SPEC-games.md, folded here); D-50 to D-65 come from the
-first-wave test contract.
+first-wave test contract; D-66 is the builders' per-row feedback tool.
 
 | ID | Decision | Status | Source |
 |---|---|---|---|
@@ -1048,6 +1048,7 @@ first-wave test contract.
 | D-63 | (was D-G22) **Fun is signed off by a person.** Each first-wave game has a manual playtest row (AC-243 to AC-246): the owner plays it for 10 minutes from the task's worktree build and commits `acceptance/games/signoff/<gameId>.json` to the tests repo; the orchestrator then adds the row to that task's `build/progress` in a short session, closes and merges. Each row checks only its own game's file, so an unsigned game blocks only its own task | locked | owner |
 | D-64 | (was D-G23) **One tuning source.** Every number that sets game feel or scoring is in the Tuning table (§13.9); `packages/games/src/tuning.ts` exports `TUNING` with exactly the table's names and values, and a unit test in `packages/games/test` checks that they are equal. The acceptance tests parse the table from this file at run time, so a retune is an edit of this table plus `tuning.ts`, and no test file changes | locked | owner |
 | D-65 | (was D-G24) **Phasing.** The first build covers the engine, Snek, packs, the story, the two scores, the `player` document with XP and coins, and the four first-wave games, built as a vertical slice (§13.10). The shop and gear (AC-237, AC-238) are their own task after the owner's playtests; until then `player.cosmetics`, `player.gear` and `player.purchases` exist and stay empty | locked | owner |
+| D-66 | **`scripts/rowcheck.mjs` is the builders' per-row feedback tool.** Usage: `node scripts/rowcheck.mjs AC-217 [AC-218 ...] [--part <gameId or shared>] [--no-build]`, run under the shared lock (`flock ~/tins-orch/gate.lock node scripts/rowcheck.mjs ...`). For each id it finds the row's check files in SPEC.md exactly as `scripts/gate.mjs` does, claimed or not. An unknown id, a `manual` row or a check file outside `acceptance/` is a usage error (exit 2). It runs `node --test --test-concurrency=1 --test-reporter=tap` on just those files with `--test-name-pattern` selecting the test names that start with the id (suite names start with the AC id; per-game parts are `<AC-id> <gameId>: ...`, shared parts `<AC-id> shared: ...`; journeys append ` [desktop]` or ` [phone]`); with `--part X` only names starting `<AC-id> X:`. If a selected file is a `*.journey.mjs` it first builds the web app once (`npm run build -w packages/web`) unless `--no-build`. It prints each selected test as ok or not ok and, for a failure, the first lines of its error block as `scripts/gate.mjs` prints them (message, expected, actual, artifacts folder) with every stack line that points into `acceptance/` removed, then a passed/failed count per id and part. **Zero matches is a failure:** an id or id plus part that matches no test (skipped tests do not count) prints `no tests matched <AC-id>[ <part>]` and exits 1. The full TAP goes to `.tins/state-rowcheck-last.tap`. Exit 0 only when every selected test passed and every requested id and part matched at least one test. It is feedback only: the gate (`kit gate`) stays the proof | locked | owner |
 
 ### 13.2 Performance budgets
 
@@ -1871,7 +1872,7 @@ suite reads this table at run time. Names are fixed; values may be retuned by ed
 Tasks (each a tins-kit task with its own worktree and scope). A row is claimed by the task that makes its
 last part green. The cross-game rows (AC-200, AC-201, AC-203, AC-207, AC-214, AC-234, AC-235) are split in
 the suite into a shared part plus one part per game; each game task makes its own part (and g-3 the shared
-part) pass, checked with `scripts/rowcheck.mjs`, and the last first-wave game to merge claims the whole row.
+part) pass, checked with `scripts/rowcheck.mjs` (D-66), and the last first-wave game to merge claims the whole row.
 
 | Task | Builds | Rows it claims | Depends on |
 |---|---|---|---|

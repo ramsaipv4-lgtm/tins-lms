@@ -75,6 +75,20 @@ node --test packages/*/test/*.test.mjs        # builder unit tests (~330)
 node scripts/navcheck.mjs                     # nav-name collision check (journeys find screens by name)
 ```
 
+To see how one acceptance row is doing without running the whole gate, use `scripts/rowcheck.mjs` (SPEC D-66). It
+finds the row's check file in SPEC.md, runs only the tests whose names start with that AC id (with
+`--part <gameId or shared>`, only that part of a cross-game row), prints each as ok or not ok with the gate's
+failure detail (no stack lines into `acceptance/`), and counts passed and failed per id. A filter that matches no test
+is a failure (`no tests matched AC-207 nosuchgame`, exit 1); an unknown id, a manual row or a check file outside
+`acceptance/` is exit 2. Run it under the shared lock, because it is as heavy as the tests it runs (a journey row
+builds the web app first unless you pass `--no-build`). The full TAP is left in `.tins/state-rowcheck-last.tap`.
+It is feedback only: `kit gate` is still the proof.
+
+```bash
+flock ~/tins-orch/gate.lock node scripts/rowcheck.mjs AC-217 AC-218          # whole rows
+flock ~/tins-orch/gate.lock node scripts/rowcheck.mjs AC-207 --part syntax-drop   # one game's part of a cross-game row
+```
+
 ### Acceptance suite (the contract)
 
 ```bash
