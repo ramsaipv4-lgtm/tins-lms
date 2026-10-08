@@ -1,0 +1,264 @@
+{
+ "_format": "Demo-only seed (additive): eight plainly fictional extra learners 'X Sample' (s1-s8) enrolled in class c1, and the class teams re-listed to include them. Synthetic data only.",
+ "_about": "Extra synthetic learners for the product demos.",
+ "databases": {
+  "org": [
+   {
+    "type": "person",
+    "id": "person:s1",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Aarav Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001001",
+    "dob": "2001-02-11"
+   },
+   {
+    "type": "person",
+    "id": "person:s2",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Diya Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001002",
+    "dob": "2002-03-12"
+   },
+   {
+    "type": "person",
+    "id": "person:s3",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Kabir Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001003",
+    "dob": "2000-04-13"
+   },
+   {
+    "type": "person",
+    "id": "person:s4",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Meera Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001004",
+    "dob": "2001-05-14"
+   },
+   {
+    "type": "person",
+    "id": "person:s5",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Rohan Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001005",
+    "dob": "2002-06-15"
+   },
+   {
+    "type": "person",
+    "id": "person:s6",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Sana Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001006",
+    "dob": "2000-07-16"
+   },
+   {
+    "type": "person",
+    "id": "person:s7",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Tejas Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001007",
+    "dob": "2001-08-17"
+   },
+   {
+    "type": "person",
+    "id": "person:s8",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "name": "Zoya Sample",
+    "roles": [
+     "learner"
+    ],
+    "minor": false,
+    "phone": "9800001008",
+    "dob": "2002-09-18"
+   }
+  ],
+  "class-c1": [
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s1",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s1",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s2",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s2",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s3",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s3",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s4",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s4",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s5",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s5",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s6",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s6",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s7",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s7",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "enrolment",
+    "id": "enrolment:c1-s8",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s8",
+    "joinedAt": 1792989000000,
+    "status": "active",
+    "profile": "hub"
+   },
+   {
+    "type": "class",
+    "id": "class:c1",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "cohortId": "cohort:k1",
+    "name": "Class C1",
+    "trainerIds": [
+     "person:tr1"
+    ],
+    "schedule": [
+     {
+      "date": "2026-11-02",
+      "start": "09:00",
+      "end": "13:00"
+     },
+     {
+      "date": "2026-11-03",
+      "start": "09:00",
+      "end": "13:00"
+     },
+     {
+      "date": "2026-11-04",
+      "start": "09:00",
+      "end": "13:00"
+     },
+     {
+      "date": "2026-11-05",
+      "start": "09:00",
+      "end": "13:00"
+     }
+    ],
+    "seedSalt": "salt-c1-synthetic",
+    "switches": {},
+    "passMark": 6,
+    "teams": {
+     "team-a": [
+      "person:l1",
+      "person:l2",
+      "person:s1",
+      "person:s2",
+      "person:s3",
+      "person:s4"
+     ],
+     "team-b": [
+      "person:l3",
+      "person:s5",
+      "person:s6",
+      "person:s7",
+      "person:s8"
+     ]
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,116 @@
+{
+ "_format": "Demo-only seed (additive): attendance documents, personId in the person:<key> form that the batch view counts.",
+ "_about": "Day 0 attendance: nine learners present (l4, s7, s8 absent).",
+ "databases": {
+  "class-c1": [
+   {
+    "type": "attendance",
+    "id": "attendance:c1-l1-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:l1",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590320000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-l2-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:l2",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590380000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-l3-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:l3",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590440000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s1-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s1",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590500000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s2-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s2",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590560000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s3-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s3",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590620000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s4-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s4",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590680000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s5-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s5",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590740000
+   },
+   {
+    "type": "attendance",
+    "id": "attendance:c1-s6-d0",
+    "schema": 1,
+    "updatedAt": 1792989000000,
+    "updatedBy": "hub:seed",
+    "personId": "person:s6",
+    "dayIndex": 0,
+    "method": "rotating",
+    "verified": true,
+    "at": 1793590800000
+   }
+  ]
+ }
+}

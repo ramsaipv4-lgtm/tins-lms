@@ -9,6 +9,7 @@ phones alone after the first load.
 - **What it must do:** [`SPEC.md`](SPEC.md) (the contract) · build status: [`CONTINUE.md`](CONTINUE.md)
 - **How it was built, mistakes included:** [`course/`](course/README.md) (a 42-step rebuild course),
   [`docs/build-journal/`](docs/build-journal/) (journals, [`integration.md`](docs/build-journal/integration.md), [`AUDIT.md`](docs/build-journal/AUDIT.md))
+- **Product demo videos:** [`demos/README.md`](demos/README.md) (`node demos/run.mjs`)
 - **Acceptance tests** (separate repo, 134 automated rows): https://github.com/ramsaipv4-lgtm/tins-lms-tests
 
 ---
@@ -101,6 +102,13 @@ node packages/cli/src/main.ts loadtest --learners 200 --target http://localhost:
 
 It signs 200 simulated learners in, marks attendance, answers a live quiz and syncs; it passes when
 95% of requests finish within 1 s and no write is lost (SPEC AC-103). Point it only at a server you run.
+
+## Product demo videos
+
+`node demos/run.mjs` records walkthrough videos of the real app (admin, trainer, learner phone, coordinator, Coach space, offline use and
+more) against a throw-away hub filled with invented people, and writes `demos/out/*.mp4` plus an `index.md` that says which SPEC feature
+appears in which video and when. It needs ffmpeg and Chromium, and it runs the hub in test mode, which is for demos only and must never
+be used on a live server. See [`demos/README.md`](demos/README.md) for options, requirements and an optional Recordly workflow.
 
 ## 4. Use it live
 
