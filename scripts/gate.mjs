@@ -54,8 +54,10 @@ if (unit.length) {
     const b = spawnSync('npm', ['run', 'build', '-w', 'packages/web'], { cwd: root, env, encoding: 'utf8' });
     if (b.status !== 0) { console.error((b.stdout + b.stderr).split('\n').slice(-30).join('\n')); fail('web build fails'); }
   }
-  const r = spawnSync(process.execPath, ['--test', ...unit], { cwd: root, env, encoding: 'utf8' });
-  if (r.status !== 0) { console.error((r.stdout + r.stderr).split('\n').slice(-30).join('\n')); fail('builder unit tests fail'); }
+  const r = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...unit], { cwd: root, env, encoding: 'utf8' });
+  // The full unit output is kept on every run (D-67), like the acceptance TAP below; the terminal gets the last 30 lines.
+  try { mkdirSync(join(root, '.tins'), { recursive: true }); writeFileSync(join(root, '.tins', 'state-gate-unit.tap'), r.stdout + r.stderr); } catch { /* read-only checkout */ }
+  if (r.status !== 0) { console.error((r.stdout + r.stderr).split('\n').slice(-30).join('\n')); console.error('gate: full unit-test output in .tins/state-gate-unit.tap'); fail('builder unit tests fail'); }
 }
 
 // 4. progress list only grows. One file per task (build/progress/<task>.json, {"green": [...]})

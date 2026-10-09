@@ -94,6 +94,7 @@ tins-kit gate rejects any dependency not named here. Versions were read from npm
 | D-39 | The rebuild course (§11) is generated after v1 from the code, commits and build journal | locked | DEC-71 |
 | D-40 | The acceptance suite lives in the public repo `tins-lms-tests`. Builders work from this SPEC, the visible smoke subset (`acceptance/smoke/`) and the data fixtures (`acceptance/fixtures/`) only; reading the rest of the suite during the build experiment voids that run's score | locked | Owner, iteration 16 |
 | D-41 | Course `source_refs` and code-fence citations name commits reachable from `main`, that is the commit as it exists after `kit close` (close rewrites commits to add `Session:` trailers, so a sha taken before close is lost). The course check (`check.mjs course`) must pass on a fresh clone | locked | tins-kit RF-33 |
+| D-67 | The gate keeps the full output of its builder unit-test step (`node --test --test-reporter=tap` over every `packages/*/test/*.test.*` file, stdout then stderr) in `.tins/state-gate-unit.tap` on every run, pass or fail, next to `.tins/state-gate-last.tap`; on a failure the terminal still shows the last 30 lines and then names that file (from g-0's first close: one flaky unit failure could not be named from the 30-line tail) | locked | owner |
 
 ---
 
@@ -1255,6 +1256,9 @@ callFunction(p: Program, name: string, args: unknown[], opts?: RunOpts): RunResu
   3.14's `sys.settrace` line events.
 - **Limits:** `TooManySteps`, `TooDeep` and `TooBig` fire when `maxOps`, `maxDepth` or `maxCells` is
   exceeded, and each stops the run cleanly; `NotAllowed` covers the sandbox list (AC-213).
+  On a `TooManySteps` stop, `ops` is the count after the operation that took it past `maxOps`: the first
+  value over the limit, not clamped to `maxOps` (so it can exceed `maxOps` by more than 1 when a built-in's
+  cost crosses it). `peakCells` counts a string by its length. Both are owner rulings; do not change them.
 
 **Value conversion** (for `globals`, `args`, `value` and `vars`):
 

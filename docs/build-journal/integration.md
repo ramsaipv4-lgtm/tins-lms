@@ -184,3 +184,20 @@ After: 17/17 with the variable unset and 17/17 pointing at the missing folder; a
 **Lesson for the rebuild course:** a test must not depend on a path that exists only in the author's
 environment, and a library that reads an environment variable at import time needs the variable fixed
 before the import, not after.
+
+## I-14: the gate printed only the last 30 lines of a failing unit-test run
+
+**Problem:** g-0's first close failed with one unit-test failure, but the gate printed only the last
+30 lines of `node --test` output, which did not name the failing test. Four reruns passed (351/351), so the
+flake could not be identified afterwards.
+**Cause:** `scripts/gate.mjs` step 3 kept nothing of the unit run except that tail; the acceptance step
+already saved its full TAP to `.tins/state-gate-last.tap`, the unit step did not.
+**Choice (D-67):** run the unit step with `--test-reporter=tap` and write its full stdout and stderr to
+`.tins/state-gate-unit.tap` on every run, pass or fail (ignored by `.tins/state*` in `.gitignore`); on a
+failure the terminal still shows the tail and then names the file. Same session: SPEC §13.4's Snek limits
+now state the owner's rulings that `ops` on a `TooManySteps` stop is the first value over `maxOps`
+(not clamped; measured 1002 for `while True: pass` and 4996 for a `sorted` loop with `maxOps` 1000) and that
+`peakCells` counts a string by its length.
+**Proof:** the gate on close passes and leaves `.tins/state-gate-unit.tap` holding every unit test's line.
+**Lesson for the rebuild course:** keep the full output of every check a gate runs, not only the part
+shown on screen; a flaky failure you cannot name is a failure you cannot fix.
