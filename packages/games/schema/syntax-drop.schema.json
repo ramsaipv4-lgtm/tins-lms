@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coach-lms.invalid/schema/syntax-drop.schema.json",
+  "title": "Coach LMS syntax-drop pack (SPEC 13.5, 13.7)",
+  "type": "object",
+  "required": [
+    "game",
+    "id",
+    "title",
+    "day",
+    "concepts",
+    "language",
+    "levels"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$comment": {
+      "type": "string"
+    },
+    "game": {
+      "const": "syntax-drop"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "pack id (lower-case letters, digits and hyphens)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "day": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "concepts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/level"
+      }
+    }
+  },
+  "$defs": {
+    "concept": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$",
+      "description": "concept format (lower-case dotted, for example html.headings)"
+    },
+    "lessonCard": {
+      "type": "object",
+      "required": [
+        "concept",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {
+          "type": "string"
+        },
+        "concept": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$",
+          "description": "concept format (lower-case dotted, for example html.headings)"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "level": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "lesson",
+        "mode",
+        "renderer",
+        "template",
+        "slots",
+        "pieces",
+        "stages"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "description": "level id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lesson": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lessonCard"
+          }
+        },
+        "mode": {
+          "enum": [
+            "fill",
+            "strike"
+          ]
+        },
+        "renderer": {
+          "enum": [
+            "html",
+            "chart",
+            "console",
+            "pattern",
+            "regex"
+          ]
+        },
+        "lang": {
+          "enum": [
+            "snek"
+          ]
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "accepts"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "$comment": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "accepts": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "pieces": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "text",
+              "concept"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "$comment": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "size": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "concept": {
+                "$ref": "#/$defs/concept"
+              },
+              "decoy": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "stages": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "speed": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "piecesPerStage": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

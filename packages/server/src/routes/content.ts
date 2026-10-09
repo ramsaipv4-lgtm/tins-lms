@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   tarUnpack, runGate, parsePackage, sectionKey, sealSection, releasePlan, isReleased,
 } from '../../../core/src/index.ts';
+import { register as registerGames, gamesGate, storeGamePacks } from './features/games.ts';
 
 const b64 = (u: Uint8Array): string => Buffer.from(u).toString('base64');
 const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
@@ -63,6 +64,7 @@ function normalizePaths(entries: [string, string][]): Record<string, string> {
 }
 
 export function register(app: any, ctx: any): void {
+  registerGames(app, ctx); // the games routes (routes/index.ts is not edited by the games task)
   const store = ctx.store;
   const priv = store.priv;
 
@@ -100,8 +102,15 @@ export function register(app: any, ctx: any): void {
     return rawPut(dbName, doc);
   };
 
+  // The core gate is G1 to G8; the hub adds G9-games (D-55): the pack check on every game pack, never waivable.
+  async function gateOf(files: Record<string, string>, waivers: any[]) {
+    const gate = runGate(files, waivers, ctx.clock.now());
+    const g9 = await gamesGate(files);
+    return { ...gate, pass: gate.pass && g9.pass, checks: [...gate.checks, g9] };
+  }
+
   async function storePackage(files: Record<string, string>, classKey: string | null, by: string) {
-    const gate = runGate(files, [], ctx.clock.now());
+    const gate = await gateOf(files, []);
     const id = ctx.ids.randomKey();
     const status = gate.pass ? 'ready' : 'draft';
     await store.put(priv, { id: `package:${id}`, type: 'package', status, classId: classKey, checks: gate.checks, files, createdBy: by, createdAt: ctx.clock.now() });
@@ -130,6 +139,7 @@ export function register(app: any, ctx: any): void {
         });
       }
     }
+    if (key) await storeGamePacks(ctx, key, pkg.files); // packs are released on their `day` (D-55)
     await store.put(priv, { ...pkg, status: 'published', classId: key ?? null, publishedAt: ctx.clock.now() });
   }
 
@@ -165,7 +175,7 @@ export function register(app: any, ctx: any): void {
     try { body = JSON.parse((await c.req.text()) || '{}'); } catch { /* no body */ }
     const waivers = ctx.http.parseWith(waiversSchema, body?.waivers ?? []).map((w: any) => ({ ...w, by: w.by }));
     // Re-run the gate with the waivers: G7 can never be waived and an expired waiver is ignored (core decides).
-    const gate = runGate(pkg.files, waivers, ctx.clock.now());
+    const gate = await gateOf(pkg.files, waivers);
     if (!gate.pass) {
       throw new ctx.http.ApiError(409, {
         error: { package: 'gate-failed' }, status: pkg.status,
