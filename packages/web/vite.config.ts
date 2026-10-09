@@ -15,6 +15,20 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 // the rest of the app also uses. They are listed, board critical files first, in /warm-board.json; the service worker
 // (src/sw.ts) keeps them out of its install and fetches them in the background for staff only.
 const boardChunks = new Set<string>();
+
+// Game chunks (SPEC D-57, AC-200): the engine, the story player, Snek and each game are separate chunks with these names, so
+// nothing of a game is requested before the arcade opens and the budgets can be checked in .vite/manifest.json by name.
+// `three` joins when the first 3D game exists.
+export function gameChunkName(id: string): string | null {
+  const m = /packages[\\/]games[\\/]src[\\/](engine|tuning\.ts|story|lang|games[\\/]([a-z0-9-]+))/.exec(id);
+  if (m) {
+    if (m[1] === 'story') return 'games-story';
+    if (m[1] === 'lang') return 'snek';
+    if (m[2]) return `game-${m[2]}`;
+    return 'games-engine';
+  }
+  return /node_modules[\\/]three[\\/]/.test(id) ? 'three' : null;
+}
 function boardList(): Plugin {
   return {
     name: 'lms-board-list',
@@ -83,7 +97,11 @@ export default defineConfig({
   // build ("Class extends value #<Object>"). The `pouchdb` package ships the same 9.0.0 as one self-contained browser file
   // with `events` inlined, so app/db.ts keeps importing 'pouchdb-browser' and the build resolves it to that file.
   resolve: { dedupe: ['react', 'react-dom', 'scheduler'], alias: { 'pouchdb-browser': require.resolve('pouchdb/dist/pouchdb.js') } },
-  build: { outDir: process.env.LMS_WEB_OUT || 'dist', emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 400 },
+  build: {
+    outDir: process.env.LMS_WEB_OUT || 'dist', emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 400,
+    manifest: true, // packages/web/dist/.vite/manifest.json (D-57)
+    rolldownOptions: { output: { codeSplitting: { groups: [{ name: gameChunkName, debugName: 'games', includeDependenciesRecursively: false, priority: 10 }] } } },
+  },
   plugins: [
     react(),
     boardList(),

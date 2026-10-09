@@ -1,5 +1,7 @@
-// Coach LMS command line: `node packages/cli/src/main.ts loadtest --learners 200 --target <url>` (SPEC Appendix B).
+// Coach LMS command line: `node packages/cli/src/main.ts loadtest --learners 200 --target <url>` (SPEC Appendix B)
+// and `node packages/cli/src/main.ts games check|new ...` (SPEC §13.5).
 import { runLoadTest } from './loadtest.ts';
+import { runGames } from './games.ts';
 
 export function parseArgs(argv: string[]): { command: string; flags: Record<string, string> } {
   const [command = '', ...rest] = argv;
@@ -16,9 +18,10 @@ export function parseArgs(argv: string[]): { command: string; flags: Record<stri
 }
 
 async function main(argv: string[]): Promise<number> {
+  if (argv[0] === 'games') return runGames(argv.slice(1));
   const { command, flags } = parseArgs(argv);
   if (command !== 'loadtest') {
-    console.error('usage: lms loadtest --learners <n> --target <url>');
+    console.error('usage: lms loadtest --learners <n> --target <url>\n       lms games check <dir-or-file>\n       lms games new <gameId> <packId> [--dir <dir>]');
     return 2;
   }
   const learners = Number(flags.learners ?? 200);

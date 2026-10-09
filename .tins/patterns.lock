@@ -8,5 +8,15 @@
       "ledger.mjs": "2afe0edeb8f0001f",
       "ledger.test.mjs": "e243b096d4831ab3"
     }
+  },
+  "atomic-write": {
+    "files": [
+      "lib/atomic-write.mjs",
+      "lib/atomic-write.test.mjs"
+    ],
+    "hash": {
+      "atomic-write.mjs": "f9c7edf79502f133",
+      "atomic-write.test.mjs": "29a3e7a4adc88c10"
+    }
   }
 }

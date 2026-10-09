@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coach-lms.invalid/schema/aftershock.schema.json",
+  "title": "Coach LMS aftershock pack (SPEC 13.5, 13.7)",
+  "type": "object",
+  "required": [
+    "game",
+    "id",
+    "title",
+    "day",
+    "concepts",
+    "language",
+    "levels"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$comment": {
+      "type": "string"
+    },
+    "game": {
+      "const": "aftershock"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "pack id (lower-case letters, digits and hyphens)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "day": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "concepts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/level"
+      }
+    }
+  },
+  "$defs": {
+    "concept": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$",
+      "description": "concept format (lower-case dotted, for example html.headings)"
+    },
+    "lessonCard": {
+      "type": "object",
+      "required": [
+        "concept",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {
+          "type": "string"
+        },
+        "concept": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$",
+          "description": "concept format (lower-case dotted, for example html.headings)"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "level": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "lesson",
+        "lines",
+        "tests",
+        "shockSec",
+        "fallSpeed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "description": "level id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lesson": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lessonCard"
+          }
+        },
+        "lang": {
+          "enum": [
+            "snek"
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "text",
+              "indent"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "$comment": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "indent": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              }
+            }
+          }
+        },
+        "decoys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "text",
+              "why"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "$comment": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "why": {
+                "type": "string",
+                "minLength": 1
+              },
+              "concept": {
+                "$ref": "#/$defs/concept"
+              }
+            }
+          }
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "args",
+                  "expect"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "$comment": {
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "array"
+                  },
+                  "expect": {}
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "stdout"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "$comment": {
+                    "type": "string"
+                  },
+                  "input": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "stdout": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "shockSec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fallSpeed": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "altOrders": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "entry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signature": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept": {
+          "$ref": "#/$defs/concept"
+        }
+      }
+    }
+  }
+}
