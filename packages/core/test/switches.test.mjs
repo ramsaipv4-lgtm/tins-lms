@@ -32,6 +32,7 @@ test('switchDefaults returns correct table', () => {
     'game.whackABug': true,
     'game.aftershock': true,
     'game.garage': true,
+    'games.unlockAll': false,
   };
   assert.deepEqual(defaults, expected);
 });
@@ -119,7 +120,7 @@ test('AC-49: all switches have correct defaults', () => {
 test('AC-49: the nine games keys of D-49 exist, default on, and follow the same precedence', () => {
   const keys = ['games', 'game.syntaxDrop', 'game.mazeCoder', 'game.breakout', 'game.raid', 'game.sniper', 'game.whackABug', 'game.aftershock', 'game.garage'];
   const defaults = switchDefaults();
-  assert.equal(Object.keys(defaults).length, 18 + keys.length);
+  assert.equal(Object.keys(defaults).length, 18 + keys.length + 1); // + games.unlockAll (D-78)
   for (const k of keys) {
     assert.equal(defaults[k], true, k);
     assert.equal(isOn(k, {}), true, k);
@@ -128,4 +129,10 @@ test('AC-49: the nine games keys of D-49 exist, default on, and follow the same 
     assert.equal(isOn(k, { org: { [k]: true }, program: { [k]: true }, class: { [k]: false } }), false, k);
   }
   assert.throws(() => isOn('game.nosuch', {}), /Unknown switch/);
+});
+
+test('D-78: games.unlockAll exists, default off, and a class can turn it on', () => {
+  assert.equal(switchDefaults()['games.unlockAll'], false);
+  assert.equal(isOn('games.unlockAll', {}), false);
+  assert.equal(isOn('games.unlockAll', { class: { 'games.unlockAll': true } }), true);
 });

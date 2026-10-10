@@ -127,10 +127,13 @@ function Frame() {
     if (!staff || !('serviceWorker' in navigator)) return;
     void navigator.serviceWorker.ready.then((reg) => reg.active?.postMessage({ type: 'warm-board' })).catch(() => {});
   }, [staff]);
+  // A full-page feature screen (SPEC D-79) is drawn without the header and space nav; it carries its own way back.
+  const path = usePath();
+  const fullPage = !!me && featureRoutes.some((r) => r.fullPage && matchPath(r.path, path));
   return (
-    <div className="app" {...(ready && interactive ? { 'data-testid': 'app-ready' } : {})}>
+    <div className={fullPage ? 'app full-page' : 'app'} {...(ready && interactive ? { 'data-testid': 'app-ready' } : {})}>
       <a className="skip" href="#main" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }}>{t('app.skip')}</a>
-      <Header />
+      {!fullPage && <Header />}
       <main id="main" tabIndex={-1}><Content /></main>
     </div>
   );

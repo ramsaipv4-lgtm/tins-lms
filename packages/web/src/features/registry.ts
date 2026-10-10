@@ -22,6 +22,8 @@
  *     screen may still explain why it is off.
  *   - link (optional, a path): the nav entry points there instead of at `path`, so a space can offer a door to another
  *     space's screen (Coach's "Today" opens the course content). The route itself still renders if opened by URL.
+ *   - fullPage (optional): the shell draws this screen alone, without the LMS header and space nav (SPEC D-79); the screen
+ *     must then offer its own way back to the LMS.
  *   - Kiosk mode (a shared device, set by features/files Settings): the shell hides the Coach space entirely; a group
  *     never hides it itself. Read the flag with `useKiosk()` / `kioskOn()` from '../../app/kiosk.ts'.
  *   - Routes are deep-linkable: the server falls back to index.html for any path without an extension.
@@ -54,6 +56,7 @@ export interface FeatureRoute {
   home?: Role[];
   link?: string;
   switch?: string | string[];
+  fullPage?: boolean;
   load: () => Promise<{ default: ComponentType<{ params: Record<string, string> }> }>;
 }
 

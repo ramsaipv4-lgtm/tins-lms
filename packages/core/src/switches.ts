@@ -30,6 +30,8 @@ export function switchDefaults(): Record<string, boolean> {
     'game.whackABug': true,
     'game.aftershock': true,
     'game.garage': true,
+    // every level of every released pack open for a class (SPEC D-78), set by the class's trainer
+    'games.unlockAll': false,
   };
 }
 
