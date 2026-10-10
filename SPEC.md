@@ -95,6 +95,7 @@ tins-kit gate rejects any dependency not named here. Versions were read from npm
 | D-40 | The acceptance suite lives in the public repo `tins-lms-tests`. Builders work from this SPEC, the visible smoke subset (`acceptance/smoke/`) and the data fixtures (`acceptance/fixtures/`) only; reading the rest of the suite during the build experiment voids that run's score | locked | Owner, iteration 16 |
 | D-41 | Course `source_refs` and code-fence citations name commits reachable from `main`, that is the commit as it exists after `kit close` (close rewrites commits to add `Session:` trailers, so a sha taken before close is lost). The course check (`check.mjs course`) must pass on a fresh clone | locked | tins-kit RF-33 |
 | D-67 | The gate keeps the full output of its builder unit-test step (`node --test --test-reporter=tap` over every `packages/*/test/*.test.*` file, stdout then stderr) in `.tins/state-gate-unit.tap` on every run, pass or fail, next to `.tins/state-gate-last.tap`; on a failure the terminal still shows the last 30 lines and then names that file (from g-0's first close: one flaky unit failure could not be named from the 30-line tail) | locked | owner |
+| D-68 | **No copyleft code or assets ship in the app.** Nothing under `packages/` that reaches a learner's or trainer's device or the hub (web bundle, server, CLI, packs, story data, audio, images) may be under GPL, AGPL or another licence that would bind the app's own licence (the app's licence is not decided yet). Development and authoring tools (for example Blender or a speech model run on the author's machine) may have any licence; they are never bundled, and the licence of what they produce is recorded in the D-row that adopts the tool. So speech is offline recordings plus the device's own voice as a fallback; no eSpeak-based browser speech | locked | owner |
 
 ---
 
@@ -1050,6 +1051,9 @@ first-wave test contract; D-66 is the builders' per-row feedback tool.
 | D-64 | (was D-G23) **One tuning source.** Every number that sets game feel or scoring is in the Tuning table (§13.9); `packages/games/src/tuning.ts` exports `TUNING` with exactly the table's names and values, and a unit test in `packages/games/test` checks that they are equal. The acceptance tests parse the table from this file at run time, so a retune is an edit of this table plus `tuning.ts`, and no test file changes | locked | owner |
 | D-65 | (was D-G24) **Phasing.** The first build covers the engine, Snek, packs, the story, the two scores, the `player` document with XP and coins, and the four first-wave games, built as a vertical slice (§13.10). The shop and gear (AC-237, AC-238) are their own task after the owner's playtests; until then `player.cosmetics`, `player.gear` and `player.purchases` exist and stay empty | locked | owner |
 | D-66 | **`scripts/rowcheck.mjs` is the builders' per-row feedback tool.** Usage: `node scripts/rowcheck.mjs AC-217 [AC-218 ...] [--part <gameId or shared>] [--no-build]`, run under the shared lock (`flock ~/tins-orch/gate.lock node scripts/rowcheck.mjs ...`). For each id it finds the row's check files in SPEC.md exactly as `scripts/gate.mjs` does, claimed or not. An unknown id, a `manual` row or a check file outside `acceptance/` is a usage error (exit 2). It runs `node --test --test-concurrency=1 --test-reporter=tap` on just those files with `--test-name-pattern` selecting the test names that start with the id (suite names start with the AC id; per-game parts are `<AC-id> <gameId>: ...`, shared parts `<AC-id> shared: ...`; journeys append ` [desktop]` or ` [phone]`); with `--part X` only names starting `<AC-id> X:`. If a selected file is a `*.journey.mjs` it first builds the web app once (`npm run build -w packages/web`) unless `--no-build`. It prints each selected test as ok or not ok and, for a failure, the first lines of its error block as `scripts/gate.mjs` prints them (message, expected, actual, artifacts folder) with every stack line that points into `acceptance/` removed, then a passed/failed count per id and part. **Zero matches is a failure:** an id or id plus part that matches no test (skipped tests do not count) prints `no tests matched <AC-id>[ <part>]` and exits 1. The full TAP goes to `.tins/state-rowcheck-last.tap`. Exit 0 only when every selected test passed and every requested id and part matched at least one test. It is feedback only: the gate (`kit gate`) stays the proof | locked | owner |
+| D-69 | **Audience and wording.** Learners are young people in India. Every learner-facing text in the games (hub, story, instructions, lesson cards, results, errors) is simple Indian English: short sentences, everyday words, references familiar to young people in India, no Western idioms or slang, and no game jargon (combo, socket, decoy, fever, boss, power-up) without a plain explanation the first time it appears. The owner reviews the wording in each game's playtest | locked | owner |
+| D-70 | **Hub layout.** The games hub follows the layout patterns of the big kids' game platforms (a left rail or, on phones, a bottom tab bar; a top bar with the player; rows of large cards; a game page with one big Play button) but uses no other platform's name, logo, assets or currency names; coins and XP keep their names. Hub screens are styled as part of the games (the games theme, large rounded cards, touch targets of at least 44 px), not as LMS pages; every control is still a real link or button with an accessible name | locked | owner |
+| D-71 | **g-3 is built in three phases, each ending with the owner's check:** A, screens, wording and the hub (§13.3); B, voice (offline recordings, D-68); C, art (sprite pipeline). AC-243 (the Syntax Drop sign-off) is played after phase C. Later games reuse what each phase builds | locked | owner |
 
 ### 13.2 Performance budgets
 
@@ -1086,23 +1090,81 @@ interface GameInstance { pause(): void; resume(): void; destroy(): void; act(act
 ```
 
 **Routes.**
-- `/learn/games` is the arcade (nav name "Games"): one tile per available game with the packs released to the
-  learner, last score and stars (own only), `player-xp`, `player-coins` and "Story so far" (`story-replay`).
-  A scene replayed from "Story so far" plays above the arcade; the arcade, with `story-replay`, stays on the
-  page while it plays.
-- `/learn/games/<gameId>` is the pack and level picker.
+- `/learn/games` is the hub's Home (nav name "Games"; called "the arcade" elsewhere in this section). A scene
+  replayed from "Story so far" plays above the page it was started from, which stays on the page while it plays.
+- `/learn/games/avatar`, `/learn/games/inventory`, `/learn/games/team`, `/learn/games/story` and
+  `/learn/games/settings` are the hub's other pages; `/learn/games/shop` is the shop (built with AC-237). These
+  names are reserved: no `gameId` may use them.
+- `/learn/games/<gameId>` is the game page (it replaces the plain pack and level picker).
 - `/learn/games/<gameId>/<packId>/<levelId>` opens the game on that level.
-- `/learn/games/shop` is the shop (built with AC-237).
 - Trainers see `/teach/games` with the class's concept-miss map and the raid controls (rows later).
+
+**The hub (D-70).** Every hub page has:
+- **Navigation** (`hub-rail`): Home, Avatar, Inventory, My Team, Story so far, Settings (`hub-nav-home`,
+  `hub-nav-avatar`, `hub-nav-inventory`, `hub-nav-team`, `hub-nav-story`, `hub-nav-settings`). On a wide screen
+  it is a left rail (`data-layout="rail"`); on a phone it is a bottom tab bar (`data-layout="tabs"`).
+- **A top bar** (`hub-topbar`): the player's avatar (`player-avatar`), `player-coins`, `player-xp`, a full-screen
+  button (`hub-fullscreen`) and Ada's mission alerts (`hub-alerts`, one `hub-alert-<n>` each: a short line such
+  as a new pack, a level left half-done, or a concept to practise, each linking to where it points).
+
+**Home** shows rows of large cards, each row scrolling sideways (`hub-row-<rowId>`), in this order, and a row
+with no cards is not shown:
+1. `continue`, "Continue playing": packs the learner has played and not finished (a level left to win), most
+   recently played first;
+2. `recommended`, "Recommended for you": for the learner's weakest mastery concepts (§4.4, lowest score first,
+   concepts never checked count as weakest only once the learner has played that game), the pack and the first
+   unlocked level not yet won with 3 stars that has sockets of that concept; at most 12 cards;
+3. `new`, "New this week": packs released to the learner's class in the last 7 days (§4.29 release, by the
+   server clock);
+4. `games`, "All games": one `game-tile-<gameId>` per available game (the tile of AC-204 and AC-206);
+5. `live` is reserved for trainer-hosted class games (rows later); it is not shown in this build.
+
+Below the rows Home keeps "Story so far" (`story-replay`), the same list as the Story so far page.
+
+**A card** (`hub-card-<gameId>-<packId>` inside a row) shows a thumbnail (`hub-card-thumb`), the pack title, and
+either the learner's own progress (`data-stars` and `data-stars-max`: stars won over the pack's levels × 3;
+`data-levels-left`) or, when locked, `data-locked="true"` with a plain line saying how to unlock it
+(`hub-card-unlock`). No card, row or page of the hub shows ratings, play counts, or any other learner's score
+or XP (AC-206). Thumbnails are drawn by the game module (an optional `thumbnail(canvas, pack)` in
+`GameModule`) until phase C art exists, kept as compressed images (WebP, at most 40 KB) and loaded lazily.
+
+**The game page** (`game-page-<gameId>`): the game's story blurb (`game-blurb`), one big Play button
+(`game-play`: opens the first unlocked level not yet won in the pack last played, else in the first pack), the
+packs (`game-pack-<packId>`), and for the chosen pack the level path: every level in order (`game-level-<levelId>`),
+a locked one with `data-locked="true"` and a plain hint saying how to open it (`game-level-unlock-<levelId>`, for
+example "Win level 1 to open this"); the learner's own best (`game-best`, `data-score`, `data-stars`) and the
+team's total (`game-team-total`, the team's average XP, as `wall-team-<teamId>`). A back button (`hub-back`)
+returns to Home.
+
+**Other hub pages.** Avatar: the avatar and its editor (the prologue's `avatar` choices). Inventory: owned
+cosmetics and gear (`inventory-item-<id>`), or a plain empty-state line. My Team: the team's name, its
+members by avatar and `nameTag` in alphabetical order (no per-member XP or score), and the team's XP.
+Story so far: `story-replay` with one `story-replay-<sceneId>` per seen scene. Settings: sound, quality,
+autoplay dialogue (`player.settings.autoAdvance`), assist by default, and timing calibration for games that
+have it.
 
 When `games` is off, every one of these routes shows `game-unavailable` (text "not available") and the nav
 entry is gone. When only `game.<x>` is off, or the pack is not released yet, or the level is locked, that
 game's tile (or pack, or level) is missing or locked and its deep links show `game-unavailable`.
 
-**Shared screens** every game uses: title and how to play; pause menu (resume, restart, quit, lesson cards,
-Story so far, sound, quality, timing calibration where the game has it); lesson card overlay between stages
-(each card ≤ 280 characters plus an optional code sample); results (score, Skill, Knowledge stars, each
-Knowledge mistake with a one-line "what it does" and "added to your cards").
+**Shared screens** every game uses, drawn as part of the game (D-70), with a visible menu button
+(`act-pause`) in every status where `pause` is valid and a visible way out in every other status:
+- **Title and how to play** (`howto`): one entry per action the learner uses while playing
+  (`howto-<n>`), each with its key or keys shown as key caps (`data-keys`, for example `"←,A"`), one plain
+  sentence saying what it does (D-69), and a short looping demo next to it (`howto-demo-<n>`, a canvas the
+  game draws itself, at most 4 s per loop, moving on its own with no input; no video files). Buttons:
+  `act-start`, `act-back` (to the game page), `act-fullscreen`.
+- **Pause menu** (`pause-menu`): resume, retry, back to the game page, quit to Home, lesson cards, Story so
+  far, sound, quality, full screen, timing calibration where the game has it.
+- **Lesson card overlay** between stages (each card ≤ 280 characters plus an optional code sample).
+- **Results** (score, Skill, Knowledge stars, each Knowledge mistake with a one-line "what it does" and "added
+  to your cards"), after a win or a loss alike, with three large buttons: `act-retry` (play this level
+  again), `act-back` (the game page, with the level path) and `act-quit` (Home).
+- **Dialogue bar** in every scene, drawn as game UI: `act-previous`, `act-next`, `act-pause`, `act-autoplay`
+  (`aria-pressed` shows whether autoplay is on) and `act-skip`. A tap or click anywhere on the scene outside
+  these buttons is `next`.
+- **Full screen:** `act-fullscreen` (and `hub-fullscreen` on the hub) asks the browser for full screen on
+  the games area and asks it to leave full screen when pressed again.
 
 **Statuses.** `state().status` is one of:
 - `'story'`: a scene or dialogue is playing; the play clock (`clockMs`) is stopped and the scene clock runs;
@@ -1125,8 +1187,11 @@ is mounted like a game: `window.__game.id` is `'prologue'` and the status is `'s
 **Scene state and timing.** `extra.scene` is `{ id, beat, line }` or `null` in every game and in the
 prologue (`beat` is the 0-based index of the running beat; `line` is the `en.json` key of the current `say`
 text, or `null`).
-- A `say` beat waits for `next`; it never advances by itself. The optional setting
-  `player.settings.autoAdvance` (default `false`) advances it after `story.sayNominalMs` of scene time.
+- A `say` beat waits for `next`; it never advances by itself unless autoplay is on: `autoplay` toggles
+  `player.settings.autoAdvance` (default `false`, kept in the player document), and while it is on a `say`
+  line advances after `story.sayNominalMs` of scene time.
+- `previous` goes back to the previous `say` line of the running scene (`extra.scene.line` shows it again);
+  on the first `say` line it does nothing and returns false.
 - Other beats take their `ms`; `skip` ends the scene at once; in `'story'`, `advance(ms)` moves the scene
   clock; a scene's `seen` flag is set when the scene ends or is skipped.
 
@@ -1169,9 +1234,14 @@ Every timing window is measured in game time, so assist widens it in real time (
 | `resume` | P or Escape | paused (pause menu) |
 | `continue` | Enter | paused (lesson card) |
 | `quit` | Q | paused, won, lost; destroys the game and returns to `/learn/games` |
+| `retry` | R | paused, won, lost; starts the same level again |
+| `back` | Backspace | title, paused, won, lost; destroys the game and opens the game page `/learn/games/<gameId>` |
+| `fullscreen` | G | every status; enters or leaves full screen |
 | `assist` (arg: boolean; no arg toggles) | H | title, paused |
 | `next` | N or Enter | story: advance the current `say` line |
 | `skip` | F or Backspace | story: end the scene |
+| `previous` | B | story: go back to the previous `say` line |
+| `autoplay` (arg: boolean; no arg toggles) | A | story: autoplay the dialogue on or off |
 | `replay` (arg: sceneId; no arg = the most recent seen scene) | L | paused, title, and the arcade's "Story so far" |
 | `avatar` (arg: `{ look, color, nameTag }`) | ←/→ to choose, Enter to confirm | prologue, `avatar` beat |
 
@@ -1212,6 +1282,16 @@ or mastery.
 | AC-205 | Finishing a round writes one `gameResult` with `personId`, `classId`, `gameId`, `packId`, `levelId`, `score`, `stars`, `skill`, `knowledgeStars`, `xp`, `coins`, `outcome`, `mistakes` (each `{ itemId, concept }`), `assist`, `durationMs`, `at`, with `stars` equal to `knowledgeStars`; each Knowledge mistake upserts a `card` with that `concept` and an `errorNote` with `subtopic` equal to the concept, and the error notebook lists it; the mastery map gains or updates `mastery-skill-<concept>` for the concepts played | `acceptance/games/results.journey.mjs` |
 | AC-206 | Nothing in the arcade or any game shows another learner's individual score or XP; the celebration wall shows `wall-team-<teamId>` with the team's average XP per current member (`teamScore.xp`) only | `acceptance/games/privacy.journey.mjs` |
 | AC-207 | Every game can be finished with keyboard only and with on-screen buttons only; pause and story scenes stop the game clock; assist halves speed (Action only: sockets and Knowledge judging are unchanged) and sets `assist: true` | `acceptance/games/controls.journey.mjs` |
+
+**Phase A rows (pending).** These become table rows, with their check files, in the session that lands the
+test writer's hub checks (the gate needs every row's check file to exist): AC-247, the hub's navigation, top bar
+and Home rows show what this section says for seeded learners (rail on a wide screen, tab bar on a phone);
+AC-248, "Recommended for you" puts the learner's weakest concept first; AC-249, the game page's Play button,
+level path with unlock hints, own best and team total; AC-250, a way out in every status (`retry`, `back`,
+`quit` and their buttons, after a win and after a loss); AC-251, the dialogue bar (`previous`, `next`,
+`pause`, `autoplay` kept in the player document, `skip`, and a tap on the scene is `next`); AC-252, full
+screen from the hub and from a game; AC-253, how to play lists each playing action with its keys and a demo
+that moves on its own.
 
 ### 13.4 Snek, the Python-subset interpreter (`packages/games/src/lang`)
 
@@ -1900,7 +1980,7 @@ part) pass, checked with `scripts/rowcheck.mjs` (D-66), and the last first-wave 
 | g-0 | `scripts/rowcheck.mjs` (a builder runs one row's acceptance file without reading it) and the nine D-49 switch keys in core (AC-49) | (keeps AC-49 green) | (none) |
 | g-1 | Snek interpreter, counting, sandbox | AC-208 to AC-213 | g-0 |
 | g-2 | Engine, arcade shell, shared screens, test hooks, story system (scene player, `games check` for story files), `player` document with XP and coins, results, cards and mastery hooks, switches, pack schemas and pack check for the four first-wave games, content gate `G9-games`, `games new`, `tuning.ts` with its unit test, budgets tooling | AC-216 | g-0; uses g-1's API by interface; merges after g-1 |
-| g-3 | **Vertical slice:** Syntax Drop complete (rhythm, calibration, renderers, its story) and the prologue; then the owner's playtest. Also makes the shared and Syntax Drop parts of AC-200, AC-203, AC-207, AC-214, AC-234 and AC-235 pass (checked per part with `scripts/rowcheck.mjs`). May fix engine defects it finds inside `packages/games`, logged as integration fixes in its journal | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | g-1, g-2 |
+| g-3 | **Vertical slice, in three phases (D-71):** A, screens, wording and the hub (AC-247 to AC-253 when they land); B, voice; C, art; then the owner's playtest. Syntax Drop complete (rhythm, calibration, renderers, its story) and the prologue; then the owner's playtest. Also makes the shared and Syntax Drop parts of AC-200, AC-203, AC-207, AC-214, AC-234 and AC-235 pass (checked per part with `scripts/rowcheck.mjs`). May fix engine defects it finds inside `packages/games`, logged as integration fixes in its journal | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | g-1, g-2 |
 | g-6 | Snippet Sniper | AC-227, AC-240, AC-244 | g-3 and the owner's playtest |
 | g-4 | Whack-a-Bug | AC-228, AC-241, AC-245 | g-3 and the owner's playtest |
 | g-5 | Aftershock | AC-229, AC-242, AC-246 | g-3 and the owner's playtest |
@@ -1940,6 +2020,13 @@ These entries are part of the contract, like Appendices C and E.
 | `calibration` | Syntax Drop calibration panel (`data-offset-ms` once done) | AC-239 |
 | `shop-item-<id>`, `shop-buy-<id>` | Shop entry and its Buy button (`data-owned="true"` once owned) | AC-237, AC-238 |
 | `code-editor` | Code editor (reserved for the later games) | (none yet) |
+| `hub-rail` (`data-layout` `rail` or `tabs`), `hub-nav-<page>` | Hub navigation and its entries (`home`, `avatar`, `inventory`, `team`, `story`, `settings`) | phase A rows |
+| `hub-topbar`, `player-avatar`, `hub-fullscreen`, `hub-alerts`, `hub-alert-<n>` | Hub top bar | phase A rows |
+| `hub-row-<rowId>` | A Home row: `continue`, `recommended`, `new`, `games` (`live` reserved) | phase A rows |
+| `hub-card-<gameId>-<packId>`, `hub-card-thumb`, `hub-card-unlock` | A card in a row (`data-stars`, `data-stars-max`, `data-levels-left`, or `data-locked="true"`) | phase A rows |
+| `game-page-<gameId>`, `game-blurb`, `game-play`, `game-best`, `game-team-total`, `game-level-unlock-<levelId>`, `hub-back` | The game page | phase A rows |
+| `inventory-item-<id>` | An owned cosmetic or gear item | phase A rows |
+| `howto`, `howto-<n>` (`data-keys`), `howto-demo-<n>` | How to play on the title screen | phase A rows |
 
 **Sample packs for the performance rows.** AC-201 and AC-203 use the last level of these sample packs, with
 `story=off`: `syntax-drop/html-headings`, `whack-a-bug/dsa-bugs`, `aftershock/dsa-order` and
