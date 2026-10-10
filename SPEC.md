@@ -1499,7 +1499,8 @@ matches highlighted).
   stage n is base × `speed`^(n−1) (level field `speed`, default `syntaxDrop.speedPerStage`; the base beat is
   `syntaxDrop.baseBeatFactor` × `syntaxDrop.minBeatMs`), and beats are at least `syntaxDrop.minBeatMs` apart;
   the fall speed is tied to `bpm` (a piece is visible `syntaxDrop.fallBeats` beats before its `hitAtMs`; in
-  fill mode pieces come `syntaxDrop.fillGapBeats` beats apart). In strike mode, when the level has decoys,
+  fill mode pieces come `syntaxDrop.fillGapBeats` beats apart; with chance `syntaxDrop.restChance` one extra rest
+  beat comes before the next piece). In strike mode, when the level has decoys,
   about `syntaxDrop.decoyShare` of a stage's pieces (at least 1, in stages of 4 pieces or more) are decoys. Timing grade = |press −
   `timingOffsetMs` − `hitAtMs`|: Perfect ≤ `syntaxDrop.windowPerfectMs`, Good ≤ `syntaxDrop.windowGoodMs`,
   Late ≤ `syntaxDrop.windowLateMs`; beyond is a miss. A strike stage has `piecesPerStage` pieces (level field,
@@ -1791,7 +1792,9 @@ fuel; projected sizes; a challenge result is not visible to a third learner).
 
 Every value below is exported by `packages/games/src/tuning.ts` as `TUNING['<name>']` (D-64). The acceptance
 suite reads this table at run time. Names are fixed; values may be retuned by editing this table and
-`tuning.ts` together.
+`tuning.ts` together. A unit test in `packages/games/test` also fails on any bare decimal literal or `r() <`
+comparison in a game's `packages/games/src/games/<gameId>/model.ts` that does not come from `TUNING`, so a
+feel number cannot stay outside this table.
 
 | Name | Value | Meaning |
 |---|---|---|
@@ -1839,6 +1842,7 @@ suite reads this table at run time. Names are fixed; values may be retuned by ed
 | `syntaxDrop.fillGapBeats` | 2 | fill: beats between two pieces |
 | `syntaxDrop.bonusShare` | 0.5 | bonus round pieces as a share of `piecesPerStage` (at least 2) |
 | `syntaxDrop.decoyShare` | 0.25 | strike: share of a stage's pieces that are decoys when the level has decoys |
+| `syntaxDrop.restChance` | 0.25 | chance of one extra rest beat before the next piece |
 | `sniper.breathMs` | 4000 | breath meter, full |
 | `sniper.breathRecoverPerSec` | 0.5 | breath regained per second (s/s) |
 | `sniper.breathSwayFactor` | 0.2 | sway factor while breathing |

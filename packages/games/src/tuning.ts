@@ -46,6 +46,7 @@ export const TUNING = {
   'syntaxDrop.fillGapBeats': 2,
   'syntaxDrop.bonusShare': 0.5,
   'syntaxDrop.decoyShare': 0.25,
+  'syntaxDrop.restChance': 0.25,
   'sniper.breathMs': 4000,
   'sniper.breathRecoverPerSec': 0.5,
   'sniper.breathSwayFactor': 0.2,
