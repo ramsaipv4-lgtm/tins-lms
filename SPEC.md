@@ -1283,15 +1283,17 @@ or mastery.
 | AC-206 | Nothing in the arcade or any game shows another learner's individual score or XP; the celebration wall shows `wall-team-<teamId>` with the team's average XP per current member (`teamScore.xp`) only | `acceptance/games/privacy.journey.mjs` |
 | AC-207 | Every game can be finished with keyboard only and with on-screen buttons only; pause and story scenes stop the game clock; assist halves speed (Action only: sockets and Knowledge judging are unchanged) and sets `assist: true` | `acceptance/games/controls.journey.mjs` |
 
-**Phase A rows (pending).** These become table rows, with their check files, in the session that lands the
-test writer's hub checks (the gate needs every row's check file to exist): AC-247, the hub's navigation, top bar
-and Home rows show what this section says for seeded learners (rail on a wide screen, tab bar on a phone);
-AC-248, "Recommended for you" puts the learner's weakest concept first; AC-249, the game page's Play button,
-level path with unlock hints, own best and team total; AC-250, a way out in every status (`retry`, `back`,
-`quit` and their buttons, after a win and after a loss); AC-251, the dialogue bar (`previous`, `next`,
-`pause`, `autoplay` kept in the player document, `skip`, and a tap on the scene is `next`); AC-252, full
-screen from the hub and from a game; AC-253, how to play lists each playing action with its keys and a demo
-that moves on its own.
+**Phase A rows** (g-3 phase A, D-71):
+
+| ID | Behaviour | Check |
+|---|---|---|
+| AC-247 | **Hub:** every hub page has `hub-rail` (a left rail, `data-layout="rail"`, on a wide screen; a bottom tab bar, `data-layout="tabs"`, on a phone) whose six entries open their pages, and `hub-topbar` with `player-avatar`, `player-coins`, `player-xp`, `hub-fullscreen` and `hub-alerts`; for a seeded learner Home shows `hub-row-continue` (played, unfinished packs, most recent first), `hub-row-new` (packs released in the last 7 days only) and `hub-row-games`, with no `live` row; each card shows the learner's own `data-stars`, `data-stars-max` and `data-levels-left` or a lock with its unlock line; My Team lists members by avatar and game name with no per-member score; no hub page shows another learner's score or XP | `acceptance/games/hub.journey.mjs` |
+| AC-248 | **Recommended for you:** after the learner plays a round with a Knowledge mistake on one concept and a clean round on another, `hub-row-recommended`'s first card is a pack and level with sockets of the weaker concept | `acceptance/games/hub-recommended.journey.mjs` |
+| AC-249 | **Game page:** `game-page-<gameId>` shows `game-blurb`, the packs, the chosen pack's full level path in order (a locked level has `data-locked="true"` and a `game-level-unlock-<levelId>` hint), `game-best` (own only) and `game-team-total`; `game-play` opens the first unlocked level not yet won; `hub-back` returns to Home | `acceptance/games/game-page.journey.mjs` |
+| AC-250 | **A way out everywhere:** after a win and after a loss the results show `act-retry`, `act-back` and `act-quit`; `retry` (R) starts the same level again, `back` (Backspace) opens the game page and `quit` (Q) opens Home; `act-pause` is visible while playing; title and pause menu offer `back` too | `acceptance/games/way-out.journey.mjs` |
+| AC-251 | **Dialogue bar:** in a scene, `act-previous`, `act-next`, `act-pause`, `act-autoplay` and `act-skip` are visible; `previous` (B) shows the previous `say` line again and returns false on the first; a tap on the scene outside the buttons is `next`; `autoplay` (A) sets `player.settings.autoAdvance`, which survives a reload, and while it is on a `say` line advances after `story.sayNominalMs` | `acceptance/games/dialogue.journey.mjs` |
+| AC-252 | **Full screen:** `hub-fullscreen` on the hub and `act-fullscreen` (or G) in a game ask the browser for full screen, and pressing again asks it to leave | `acceptance/games/fullscreen.journey.mjs` |
+| AC-253 | **How to play:** the title screen's `howto` has one `howto-<n>` per action used while playing, each with its keys in `data-keys` and one plain sentence, and a `howto-demo-<n>` canvas whose frames change with no input | `acceptance/games/howto.journey.mjs` |
 
 ### 13.4 Snek, the Python-subset interpreter (`packages/games/src/lang`)
 
@@ -1980,7 +1982,7 @@ part) pass, checked with `scripts/rowcheck.mjs` (D-66), and the last first-wave 
 | g-0 | `scripts/rowcheck.mjs` (a builder runs one row's acceptance file without reading it) and the nine D-49 switch keys in core (AC-49) | (keeps AC-49 green) | (none) |
 | g-1 | Snek interpreter, counting, sandbox | AC-208 to AC-213 | g-0 |
 | g-2 | Engine, arcade shell, shared screens, test hooks, story system (scene player, `games check` for story files), `player` document with XP and coins, results, cards and mastery hooks, switches, pack schemas and pack check for the four first-wave games, content gate `G9-games`, `games new`, `tuning.ts` with its unit test, budgets tooling | AC-216 | g-0; uses g-1's API by interface; merges after g-1 |
-| g-3 | **Vertical slice, in three phases (D-71):** A, screens, wording and the hub (AC-247 to AC-253 when they land); B, voice; C, art; then the owner's playtest. Syntax Drop complete (rhythm, calibration, renderers, its story) and the prologue; then the owner's playtest. Also makes the shared and Syntax Drop parts of AC-200, AC-203, AC-207, AC-214, AC-234 and AC-235 pass (checked per part with `scripts/rowcheck.mjs`). May fix engine defects it finds inside `packages/games`, logged as integration fixes in its journal | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | g-1, g-2 |
+| g-3 | **Vertical slice, in three phases (D-71):** A, screens, wording and the hub (AC-247 to AC-253); B, voice; C, art; then the owner's playtest. Syntax Drop complete (rhythm, calibration, renderers, its story) and the prologue; then the owner's playtest. Also makes the shared and Syntax Drop parts of AC-200, AC-203, AC-207, AC-214, AC-234 and AC-235 pass (checked per part with `scripts/rowcheck.mjs`). May fix engine defects it finds inside `packages/games`, logged as integration fixes in its journal | AC-204 to AC-206, AC-215, AC-217 to AC-219, AC-231 to AC-233, AC-236, AC-239, AC-243 | g-1, g-2 |
 | g-6 | Snippet Sniper | AC-227, AC-240, AC-244 | g-3 and the owner's playtest |
 | g-4 | Whack-a-Bug | AC-228, AC-241, AC-245 | g-3 and the owner's playtest |
 | g-5 | Aftershock | AC-229, AC-242, AC-246 | g-3 and the owner's playtest |
@@ -2020,13 +2022,13 @@ These entries are part of the contract, like Appendices C and E.
 | `calibration` | Syntax Drop calibration panel (`data-offset-ms` once done) | AC-239 |
 | `shop-item-<id>`, `shop-buy-<id>` | Shop entry and its Buy button (`data-owned="true"` once owned) | AC-237, AC-238 |
 | `code-editor` | Code editor (reserved for the later games) | (none yet) |
-| `hub-rail` (`data-layout` `rail` or `tabs`), `hub-nav-<page>` | Hub navigation and its entries (`home`, `avatar`, `inventory`, `team`, `story`, `settings`) | phase A rows |
-| `hub-topbar`, `player-avatar`, `hub-fullscreen`, `hub-alerts`, `hub-alert-<n>` | Hub top bar | phase A rows |
-| `hub-row-<rowId>` | A Home row: `continue`, `recommended`, `new`, `games` (`live` reserved) | phase A rows |
-| `hub-card-<gameId>-<packId>`, `hub-card-thumb`, `hub-card-unlock` | A card in a row (`data-stars`, `data-stars-max`, `data-levels-left`, or `data-locked="true"`) | phase A rows |
-| `game-page-<gameId>`, `game-blurb`, `game-play`, `game-best`, `game-team-total`, `game-level-unlock-<levelId>`, `hub-back` | The game page | phase A rows |
-| `inventory-item-<id>` | An owned cosmetic or gear item | phase A rows |
-| `howto`, `howto-<n>` (`data-keys`), `howto-demo-<n>` | How to play on the title screen | phase A rows |
+| `hub-rail` (`data-layout` `rail` or `tabs`), `hub-nav-<page>` | Hub navigation and its entries (`home`, `avatar`, `inventory`, `team`, `story`, `settings`) | AC-247 |
+| `hub-topbar`, `player-avatar`, `hub-fullscreen`, `hub-alerts`, `hub-alert-<n>` | Hub top bar | AC-247, AC-252 |
+| `hub-row-<rowId>` | A Home row: `continue`, `recommended`, `new`, `games` (`live` reserved) | AC-247, AC-248 |
+| `hub-card-<gameId>-<packId>`, `hub-card-thumb`, `hub-card-unlock` | A card in a row (`data-stars`, `data-stars-max`, `data-levels-left`, or `data-locked="true"`) | AC-247 |
+| `game-page-<gameId>`, `game-blurb`, `game-play`, `game-best`, `game-team-total`, `game-level-unlock-<levelId>`, `hub-back` | The game page | AC-249 |
+| `inventory-item-<id>` | An owned cosmetic or gear item | AC-247 |
+| `howto`, `howto-<n>` (`data-keys`), `howto-demo-<n>` | How to play on the title screen | AC-253 |
 
 **Sample packs for the performance rows.** AC-201 and AC-203 use the last level of these sample packs, with
 `story=off`: `syntax-drop/html-headings`, `whack-a-bug/dsa-bugs`, `aftershock/dsa-order` and

@@ -250,3 +250,16 @@ writer's checks land, because the gate needs each row's check file to exist.
 **Proof:** the gate on close passes.
 **Lesson for the rebuild course:** a playtest by someone outside the build finds what no acceptance row asked
 for: the way out, the words, and whether the player can even see that more levels exist.
+
+## I-18: phase A acceptance rows land (AC-247 to AC-253)
+
+**Problem:** I-17 wrote the phase A rows as pending text, because the gate needs every row's check file to
+exist and the test writer's checks were still on a branch.
+**Choice:** the test writer's branch `games-phase-a` (tests 9ff8a84: one journey per row, the `games-hub`
+seed and package, and one change to `results.journey.mjs` so it opens `/` before using the LMS navigation)
+is merged to tests main right before this session closes, and the rows become table rows naming those
+files. The test writer proved v1 unharmed (AC-49 core/switches 3/3, attendance 2/2), every §13 id named,
+and each new check failing on main for the missing hub or game.
+**Proof:** the gate on close passes (the new rows are not yet claimed, so the gate checks their files exist).
+**Lesson for the rebuild course:** write the behaviour first and the row when its check exists; the order
+lets the builder start while the checks are still being written.
