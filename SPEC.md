@@ -1088,6 +1088,8 @@ interface GameInstance { pause(): void; resume(): void; destroy(): void; act(act
 **Routes.**
 - `/learn/games` is the arcade (nav name "Games"): one tile per available game with the packs released to the
   learner, last score and stars (own only), `player-xp`, `player-coins` and "Story so far" (`story-replay`).
+  A scene replayed from "Story so far" plays above the arcade; the arcade, with `story-replay`, stays on the
+  page while it plays.
 - `/learn/games/<gameId>` is the pack and level picker.
 - `/learn/games/<gameId>/<packId>/<levelId>` opens the game on that level.
 - `/learn/games/shop` is the shop (built with AC-237).
@@ -1494,8 +1496,11 @@ matches highlighted).
 | `offset` (arg: ms) | − or = (±10 ms) | title or paused: set `timingOffsetMs` directly |
 
 - **Rhythm:** pieces spawn on beats; each has `hitAtMs`, the game time at which it crosses the line; `bpm` in
-  stage n is base × `speed`^(n−1) (level field `speed`, default `syntaxDrop.speedPerStage`), and beats are at
-  least `syntaxDrop.minBeatMs` apart; the fall speed is tied to `bpm`. Timing grade = |press −
+  stage n is base × `speed`^(n−1) (level field `speed`, default `syntaxDrop.speedPerStage`; the base beat is
+  `syntaxDrop.baseBeatFactor` × `syntaxDrop.minBeatMs`), and beats are at least `syntaxDrop.minBeatMs` apart;
+  the fall speed is tied to `bpm` (a piece is visible `syntaxDrop.fallBeats` beats before its `hitAtMs`; in
+  fill mode pieces come `syntaxDrop.fillGapBeats` beats apart). In strike mode, when the level has decoys,
+  about `syntaxDrop.decoyShare` of a stage's pieces (at least 1, in stages of 4 pieces or more) are decoys. Timing grade = |press −
   `timingOffsetMs` − `hitAtMs`|: Perfect ≤ `syntaxDrop.windowPerfectMs`, Good ≤ `syntaxDrop.windowGoodMs`,
   Late ≤ `syntaxDrop.windowLateMs`; beyond is a miss. A strike stage has `piecesPerStage` pieces (level field,
   default `syntaxDrop.piecesPerStage`); a fill stage ends when every slot is filled.
@@ -1513,8 +1518,11 @@ matches highlighted).
   breaks off); strike, striking a decoy inside its window (`itemId` = the decoy's pieceId); strike, a digit
   pressed while a non-decoy piece is inside its window and no piece with that key is (`itemId` = the in-window
   piece's id).
-- **Action misses** (each chips the shield by `syntaxDrop.shieldChip`): a non-decoy piece passes its window
-  without a press (in fill mode it comes back later, so its socket stays open); a press with no piece inside
+- **Action misses** (each chips the shield by `syntaxDrop.shieldChip`; Skill only, never a Knowledge mistake): a
+  non-decoy piece reaches the line and passes its window without a press. In both modes that piece **comes
+  back later in the round** (fill: its socket stays open; strike: it is queued again after the stage's
+  remaining pieces, as an extra piece beyond `piecesPerStage`, and the strike stage ends only when no piece is
+  left to fall), so its concept is still asked; a press with no piece inside
   any window; in fill mode, a correct slot with a miss grade.
 - **Shield** (replaces lives): `syntaxDrop.shieldStart` at the start; 0 means `'lost'`.
 - **Skill points:** Perfect, Good and Late give `syntaxDrop.pointsPerfect`, `pointsGood`, `pointsLate`.
@@ -1525,11 +1533,11 @@ matches highlighted).
   `syntaxDrop.slowmoFactor` for `syntaxDrop.slowmoMs`), `repair` (shield + `syntaxDrop.shieldRepair`), `echo`
   (the preview replays the last placed piece). They never answer a socket.
 - **Progression:** after each stage a lesson card for the concepts just played (Ada, in character), then a
-  **bonus round** where those pieces score double.
+  **bonus round** where those pieces score double (`syntaxDrop.bonusShare` × `piecesPerStage` pieces, at least 2).
 - **`extra`:** `{ scene, mode, bpm, shield, combo, timingOffsetMs, calibration, fever, powers, piece, pieces,
   slots, previewPiece, lastGrade, skyline }` where `fever` is `{ untilMs }` or null; `piece` is `{ uid, pieceId,
   over, hitAtMs }` or null; `pieces` is `[{ uid, pieceId, key, decoy, hitAtMs }]`; `slots` is `[{ id, filled
-  }]`; `lastGrade` is `'perfect'`, `'good'`, `'late'`, `'miss'` or null; `skyline` counts buildings rebuilt in
+  }]` with `filled` the pieceId placed in that slot, or null while it is empty; `lastGrade` is `'perfect'`, `'good'`, `'late'`, `'miss'` or null; `skyline` counts buildings rebuilt in
   this pack.
 - **Level fields:** `mode` (`fill` or `strike`), `renderer`, `template`, `slots: [{ id, accepts:[pieceId]
   }]`, `pieces: [{ id, text, size?, key?, concept, decoy? }]`, `stages`, `speed`, `piecesPerStage`.
@@ -1826,6 +1834,11 @@ suite reads this table at run time. Names are fixed; values may be retuned by ed
 | `syntaxDrop.calibrationBeats` | 8 | beats in the calibration test |
 | `syntaxDrop.calibrationIntervalMs` | 500 | time between calibration beats |
 | `syntaxDrop.calibrationMaxOffsetMs` | 150 | offset clamp (±) |
+| `syntaxDrop.baseBeatFactor` | 1.5 | stage 1's beat is this × `syntaxDrop.minBeatMs` |
+| `syntaxDrop.fallBeats` | 3 | a piece is visible this many beats before its `hitAtMs` |
+| `syntaxDrop.fillGapBeats` | 2 | fill: beats between two pieces |
+| `syntaxDrop.bonusShare` | 0.5 | bonus round pieces as a share of `piecesPerStage` (at least 2) |
+| `syntaxDrop.decoyShare` | 0.25 | strike: share of a stage's pieces that are decoys when the level has decoys |
 | `sniper.breathMs` | 4000 | breath meter, full |
 | `sniper.breathRecoverPerSec` | 0.5 | breath regained per second (s/s) |
 | `sniper.breathSwayFactor` | 0.2 | sway factor while breathing |
